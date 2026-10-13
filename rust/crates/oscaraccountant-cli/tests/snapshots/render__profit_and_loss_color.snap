@@ -1,0 +1,52 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: reports profit-and-loss --date-from 2026-01-01 --date-to 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+[90mCurrency[0m           EUR
+[90mCompare from[0m       2026-09-01
+[90mCompare to[0m         2026-09-01
+[90mSimplified[0m         [90mno[0m
+[90mResult[0m             0.01 EUR
+[90mCompare result[0m     0.01 EUR
+[90mUnmapped accounts[0m  unmapped_accounts
+[90mFrom[0m               2026-09-01
+[90mTo[0m                 2026-09-01
+
+[1mSchema[0m
+  [90mKey[0m           key
+  [90mVersion[0m       version
+  [90mJurisdiction[0m  jurisdiction
+  [90mKind[0m          kind
+  [90mName[0m          name
+  [90mContent hash[0m  content_hash
+
+[1mRows[0m [2m(1)[0m
+  [1mCODE[0m  [1mLABEL[0m    [1mAMOUNT[0m   [1mCOMPARE[0m  [1mKIND[0m
+  code  label  0.01 EUR  0.01 EUR  heading
+    [1mACCOUNT CODE[0m  [1mACCOUNT NAME[0m       [1mAMOUNT[0m   [1mCOMPARE[0m
+    account_code  account_name_en  0.01 EUR  0.01 EUR
+=== 120 columns
+[90mCurrency[0m           EUR
+[90mCompare from[0m       2026-09-01
+[90mCompare to[0m         2026-09-01
+[90mSimplified[0m         [90mno[0m
+[90mResult[0m             0.01 EUR
+[90mCompare result[0m     0.01 EUR
+[90mUnmapped accounts[0m  unmapped_accounts
+[90mFrom[0m               2026-09-01
+[90mTo[0m                 2026-09-01
+
+[1mSchema[0m
+  [90mKey[0m           key
+  [90mVersion[0m       version
+  [90mJurisdiction[0m  jurisdiction
+  [90mKind[0m          kind
+  [90mName[0m          name
+  [90mContent hash[0m  content_hash
+
+[1mRows[0m [2m(1)[0m
+  [1mCODE[0m  [1mLABEL[0m    [1mAMOUNT[0m   [1mCOMPARE[0m  [1mKIND[0m
+  code  label  0.01 EUR  0.01 EUR  heading
+    [1mACCOUNT CODE[0m  [1mACCOUNT NAME[0m       [1mAMOUNT[0m   [1mCOMPARE[0m
+    account_code  account_name_en  0.01 EUR  0.01 EUR

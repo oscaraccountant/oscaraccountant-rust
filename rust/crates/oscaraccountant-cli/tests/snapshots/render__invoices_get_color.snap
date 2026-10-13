@@ -1,0 +1,138 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: invoices get 01J90000000000000000000116 --company cmp0000001
+---
+=== 80 columns
+[1mnumber[0m  [2m● [0mrecorded  [1m0.01 EUR[0m
+
+[90mDirection[0m        purchase
+[90mKind[0m             invoice
+[90mState[0m            recorded
+[90mParty name[0m       party_name
+[90mIssued at[0m        2026-09-27
+[90mCancelled at[0m     2026-09-27
+[90mCancel reason[0m    cancel_reason
+[90mExternal source[0m  external_source
+[90mRevision no[0m      1
+[90mInvoice date[0m     2026-09-01
+[90mSupply date[0m      2026-09-01
+[90mDue date[0m         2026-09-01
+[90mCurrency[0m         EUR
+[90mNet[0m              0.01 EUR
+[90mTax[0m              0.01 EUR
+[90mPrepaid[0m          0.01 EUR
+[90mRounding[0m         0.01 EUR
+[90mAmount due[0m       0.01 EUR
+[90mBase gross[0m       0.01 EUR
+[90mBase currency[0m    EUR
+[90mNeeds review[0m     [90mno[0m
+[90mReview note[0m      review_note
+[90mOpen[0m             0.01 EUR
+
+[1mRevision[0m
+  [90mParty name raw[0m       party_name_raw
+  [90mService from[0m         2026-09-01
+  [90mService to[0m           2026-09-01
+  [90mFX rate source[0m       fx_rate_source
+  [90mVAT code source[0m      vat_code_source
+  [90mSupplier VAT number[0m  supplier_vat_number
+  [90mBuyer VAT number[0m     buyer_vat_number
+  [90mReason[0m               reason
+  [90mPrices include VAT[0m   [90mno[0m
+
+  [1mLines[0m [2m(1)[0m
+    [1mDESCRIPTION[0m  [1mVAT CODE[0m       [1mNET[0m       [1mTAX[0m     [1mGROSS[0m  [1mACCOUNT CODE[0m
+    description  vat_code  0.01 EUR  0.01 EUR  0.01 EUR  account_code
+
+  [1mDocuments[0m [2m(1)[0m
+    [1mFILENAME[0m  [1mROLE[0m  [1mKIND[0m
+    filename  role  invoice
+
+[1mRevisions[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mSTATE[0m       [1mGROSS[0m  [1mINVOICE DATE[0m
+            1  [2m● [0mstate  0.01 EUR  2026-09-01
+
+[1mEntries[0m [2m(1)[0m
+  [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE ROLE[0m
+         1  [32m● [0m[32mposted[0m  2026-09-01     purchases  primary
+
+[1mSettlement[0m
+  [90mResidual[0m     0.01 EUR
+  [90mStatus[0m       [33m● [0m[33mopen[0m
+  [90mPaid[0m         [90mno[0m
+  [90mCredited[0m     [90mno[0m
+  [90mWritten off[0m  [90mno[0m
+
+[2mMeta[0m
+  [2mID                   01J90000000000000000000116[0m
+  [2mParty ID             01J90000000000000000000117[0m
+  [2mCorrects invoice ID  01J90000000000000000000118[0m
+  [2mCreated at           2026-09-27T10:00:00Z[0m
+  [2mRevision ID          01J90000000000000000000119[0m
+=== 120 columns
+[1mnumber[0m  [2m● [0mrecorded  [1m0.01 EUR[0m
+
+[90mDirection[0m        purchase
+[90mKind[0m             invoice
+[90mState[0m            recorded
+[90mParty name[0m       party_name
+[90mIssued at[0m        2026-09-27
+[90mCancelled at[0m     2026-09-27
+[90mCancel reason[0m    cancel_reason
+[90mExternal source[0m  external_source
+[90mRevision no[0m      1
+[90mInvoice date[0m     2026-09-01
+[90mSupply date[0m      2026-09-01
+[90mDue date[0m         2026-09-01
+[90mCurrency[0m         EUR
+[90mNet[0m              0.01 EUR
+[90mTax[0m              0.01 EUR
+[90mPrepaid[0m          0.01 EUR
+[90mRounding[0m         0.01 EUR
+[90mAmount due[0m       0.01 EUR
+[90mBase gross[0m       0.01 EUR
+[90mBase currency[0m    EUR
+[90mNeeds review[0m     [90mno[0m
+[90mReview note[0m      review_note
+[90mOpen[0m             0.01 EUR
+
+[1mRevision[0m
+  [90mParty name raw[0m       party_name_raw
+  [90mService from[0m         2026-09-01
+  [90mService to[0m           2026-09-01
+  [90mFX rate source[0m       fx_rate_source
+  [90mVAT code source[0m      vat_code_source
+  [90mSupplier VAT number[0m  supplier_vat_number
+  [90mBuyer VAT number[0m     buyer_vat_number
+  [90mReason[0m               reason
+  [90mPrices include VAT[0m   [90mno[0m
+
+  [1mLines[0m [2m(1)[0m
+    [1mDESCRIPTION[0m  [1mVAT CODE[0m       [1mNET[0m       [1mTAX[0m     [1mGROSS[0m  [1mACCOUNT CODE[0m
+    description  vat_code  0.01 EUR  0.01 EUR  0.01 EUR  account_code
+
+  [1mDocuments[0m [2m(1)[0m
+    [1mFILENAME[0m  [1mROLE[0m  [1mKIND[0m
+    filename  role  invoice
+
+[1mRevisions[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mSTATE[0m       [1mGROSS[0m  [1mINVOICE DATE[0m
+            1  [2m● [0mstate  0.01 EUR  2026-09-01
+
+[1mEntries[0m [2m(1)[0m
+  [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE ROLE[0m
+         1  [32m● [0m[32mposted[0m  2026-09-01     purchases  primary
+
+[1mSettlement[0m
+  [90mResidual[0m     0.01 EUR
+  [90mStatus[0m       [33m● [0m[33mopen[0m
+  [90mPaid[0m         [90mno[0m
+  [90mCredited[0m     [90mno[0m
+  [90mWritten off[0m  [90mno[0m
+
+[2mMeta[0m
+  [2mID                   01J90000000000000000000116[0m
+  [2mParty ID             01J90000000000000000000117[0m
+  [2mCorrects invoice ID  01J90000000000000000000118[0m
+  [2mCreated at           2026-09-27T10:00:00Z[0m
+  [2mRevision ID          01J90000000000000000000119[0m

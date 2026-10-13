@@ -1,0 +1,43 @@
+{
+  "name": "@oscaraccountant/cli",
+  "version": "0.1.0",
+  "description": "oscar, the command-line tool of the Oscar accounting API",
+  "license": "MIT",
+  "author": "OscarAI OÜ",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oscaraccountant/oscaraccountant-rust.git"
+  },
+  "homepage": "https://oscaraccountant.com/docs",
+  "bugs": {
+    "url": "https://github.com/oscaraccountant/oscaraccountant-rust/issues"
+  },
+  "keywords": [
+    "oscar",
+    "accounting",
+    "api",
+    "cli",
+    "bookkeeping",
+    "invoices",
+    "estonia"
+  ],
+  "bin": {
+    "oscar": "bin/oscar.js"
+  },
+  "files": [
+    "bin/oscar.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "@oscaraccountant/cli-darwin-arm64": "0.1.0",
+    "@oscaraccountant/cli-darwin-x64": "0.1.0",
+    "@oscaraccountant/cli-linux-x64": "0.1.0",
+    "@oscaraccountant/cli-linux-arm64": "0.1.0",
+    "@oscaraccountant/cli-win32-x64": "0.1.0",
+    "@oscaraccountant/cli-win32-arm64": "0.1.0"
+  }
+}

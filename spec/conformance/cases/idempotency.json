@@ -1,0 +1,831 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Idempotency-Key",
+  "description": "The automatic key, the caller key, and the key on retries (clients/spec/README.md, section 3.5).",
+  "cases": [
+    {
+      "id": "idempotency.automatic-key",
+      "description": "An operation that accepts Idempotency-Key gets one from the UUID source, lower case with hyphens.",
+      "spec": [
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01",
+          "7a2e4c6b-1f3d-4e5a-9b8c-0d1e2f3a4b02"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "idempotency.automatic-key-reused",
+      "description": "The key is made once per call: both retries send the first key, and the second UUID is never taken.",
+      "spec": [
+        "3.4",
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01",
+          "7a2e4c6b-1f3d-4e5a-9b8c-0d1e2f3a4b02"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "fault": "connection_error"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5,
+        1.0
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "idempotency.caller-key",
+      "description": "A key the caller gives is sent as it is, and the UUID source is not called (it has no value here).",
+      "spec": [
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": []
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        },
+        "options": {
+          "idempotency_key": "cancel-inv-2026-001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "cancel-inv-2026-001"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "cancel-inv-2026-001"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "idempotency.not-on-get",
+      "description": "A GET never carries an Idempotency-Key, and the UUID source is not called.",
+      "spec": [
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": []
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000116",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000117",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000118",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000119",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted",
+                "revision": {
+                  "id": "01J90000000000000000000132",
+                  "revision_no": 1,
+                  "state": "state",
+                  "party_id": "01J90000000000000000000133",
+                  "party_name_raw": "party_name_raw",
+                  "invoice_date": "2026-09-01",
+                  "supply_date": "2026-09-01",
+                  "due_date": "2026-09-01",
+                  "service_from": "2026-09-01",
+                  "service_to": "2026-09-01",
+                  "currency": "EUR",
+                  "net_minor": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "prepaid_minor": 1,
+                  "rounding_minor": 1,
+                  "amount_due_minor": 1,
+                  "base_gross_minor": 1,
+                  "base_currency": "EUR",
+                  "exchange_rate_id": "01J90000000000000000000134",
+                  "fx_rate_source": "fx_rate_source",
+                  "vat_code_source": "vat_code_source",
+                  "supplier_vat_number": "supplier_vat_number",
+                  "buyer_vat_number": "buyer_vat_number",
+                  "seller_snapshot": {},
+                  "buyer_snapshot": {},
+                  "source_payload": {},
+                  "needs_review": false,
+                  "review_note": "review_note",
+                  "reason": "reason",
+                  "customer_note": null,
+                  "prices_include_vat": false,
+                  "language": null,
+                  "base_vat": null,
+                  "created_at": "2026-09-27T10:00:00Z",
+                  "actor_id": "01J90000000000000000000135",
+                  "command_id": "01J90000000000000000000136",
+                  "lines": [
+                    {
+                      "id": "01J90000000000000000000137",
+                      "line_no": 1,
+                      "kind": "kind",
+                      "description": "description",
+                      "quantity": "quantity",
+                      "unit": "unit",
+                      "unit_price_minor": 1,
+                      "allowance_minor": 1,
+                      "charge_minor": 1,
+                      "net_minor": 1,
+                      "vat_code": "vat_code",
+                      "vat_rate_bps": 1,
+                      "tax_minor": 1,
+                      "gross_minor": 1,
+                      "account_id": "01J90000000000000000000138",
+                      "account_code": "account_code",
+                      "expense_role": "expense_role",
+                      "deductible_bps": 1,
+                      "business_use_bps": 1,
+                      "fixed_asset": null,
+                      "fixed_asset_id": null,
+                      "fixed_asset_component_id": null,
+                      "fixed_asset_link": null
+                    }
+                  ],
+                  "documents": [
+                    {
+                      "document_id": "01J90000000000000000000139",
+                      "role": "role",
+                      "filename": "filename",
+                      "kind": "invoice"
+                    }
+                  ]
+                },
+                "revisions": [
+                  {
+                    "id": "01J90000000000000000000140",
+                    "revision_no": 1,
+                    "state": "state",
+                    "invoice_date": "2026-09-01",
+                    "gross_minor": 1,
+                    "reason": "reason",
+                    "created_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "entries": [
+                  {
+                    "id": "01J90000000000000000000141",
+                    "revision_id": "01J90000000000000000000142",
+                    "journal": "purchases",
+                    "entry_no": 1,
+                    "economic_date": "2026-09-01",
+                    "source_role": "primary",
+                    "state": "posted"
+                  }
+                ],
+                "settlement": {
+                  "invoice_id": "01J90000000000000000000143",
+                  "number": "number",
+                  "direction": "purchase",
+                  "kind": "invoice",
+                  "state": "recorded",
+                  "party_id": "01J90000000000000000000144",
+                  "currency": "EUR",
+                  "gross_minor": 1,
+                  "residual_minor": 1,
+                  "status": "open",
+                  "paid": false,
+                  "credited": false,
+                  "written_off": false
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000116",
+            "direction": "purchase",
+            "kind": "invoice",
+            "sign": 1,
+            "state": "recorded",
+            "number": "number",
+            "party_id": "01J90000000000000000000117",
+            "party_name": "party_name",
+            "corrects_invoice_id": "01J90000000000000000000118",
+            "origin": "origin",
+            "issued_at": "2026-09-27T10:00:00Z",
+            "cancelled_at": "2026-09-27T10:00:00Z",
+            "cancel_reason": "cancel_reason",
+            "created_at": "2026-09-27T10:00:00Z",
+            "reference_number": null,
+            "external_source": "external_source",
+            "revision_id": "01J90000000000000000000119",
+            "revision_no": 1,
+            "invoice_date": "2026-09-01",
+            "supply_date": "2026-09-01",
+            "due_date": "2026-09-01",
+            "currency": "EUR",
+            "net_minor": 1,
+            "tax_minor": 1,
+            "gross_minor": 1,
+            "prepaid_minor": 1,
+            "rounding_minor": 1,
+            "amount_due_minor": 1,
+            "base_gross_minor": 1,
+            "base_currency": "EUR",
+            "needs_review": false,
+            "review_note": "review_note",
+            "open_minor": 1,
+            "settlement_state": "unposted",
+            "revision": {
+              "id": "01J90000000000000000000132",
+              "revision_no": 1,
+              "state": "state",
+              "party_id": "01J90000000000000000000133",
+              "party_name_raw": "party_name_raw",
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "service_from": "2026-09-01",
+              "service_to": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "exchange_rate_id": "01J90000000000000000000134",
+              "fx_rate_source": "fx_rate_source",
+              "vat_code_source": "vat_code_source",
+              "supplier_vat_number": "supplier_vat_number",
+              "buyer_vat_number": "buyer_vat_number",
+              "seller_snapshot": {},
+              "buyer_snapshot": {},
+              "source_payload": {},
+              "needs_review": false,
+              "review_note": "review_note",
+              "reason": "reason",
+              "customer_note": null,
+              "prices_include_vat": false,
+              "language": null,
+              "base_vat": null,
+              "created_at": "2026-09-27T10:00:00Z",
+              "actor_id": "01J90000000000000000000135",
+              "command_id": "01J90000000000000000000136",
+              "lines": [
+                {
+                  "id": "01J90000000000000000000137",
+                  "line_no": 1,
+                  "kind": "kind",
+                  "description": "description",
+                  "quantity": "quantity",
+                  "unit": "unit",
+                  "unit_price_minor": 1,
+                  "allowance_minor": 1,
+                  "charge_minor": 1,
+                  "net_minor": 1,
+                  "vat_code": "vat_code",
+                  "vat_rate_bps": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "account_id": "01J90000000000000000000138",
+                  "account_code": "account_code",
+                  "expense_role": "expense_role",
+                  "deductible_bps": 1,
+                  "business_use_bps": 1,
+                  "fixed_asset": null,
+                  "fixed_asset_id": null,
+                  "fixed_asset_component_id": null,
+                  "fixed_asset_link": null
+                }
+              ],
+              "documents": [
+                {
+                  "document_id": "01J90000000000000000000139",
+                  "role": "role",
+                  "filename": "filename",
+                  "kind": "invoice"
+                }
+              ]
+            },
+            "revisions": [
+              {
+                "id": "01J90000000000000000000140",
+                "revision_no": 1,
+                "state": "state",
+                "invoice_date": "2026-09-01",
+                "gross_minor": 1,
+                "reason": "reason",
+                "created_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "entries": [
+              {
+                "id": "01J90000000000000000000141",
+                "revision_id": "01J90000000000000000000142",
+                "journal": "purchases",
+                "entry_no": 1,
+                "economic_date": "2026-09-01",
+                "source_role": "primary",
+                "state": "posted"
+              }
+            ],
+            "settlement": {
+              "invoice_id": "01J90000000000000000000143",
+              "number": "number",
+              "direction": "purchase",
+              "kind": "invoice",
+              "state": "recorded",
+              "party_id": "01J90000000000000000000144",
+              "currency": "EUR",
+              "gross_minor": 1,
+              "residual_minor": 1,
+              "status": "open",
+              "paid": false,
+              "credited": false,
+              "written_off": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "idempotency.replayed",
+      "description": "An answer with Idempotent-Replayed: true is a normal success.",
+      "spec": [
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": true,
+                "result": {}
+              }
+            },
+            "headers": {
+              "idempotent-replayed": "true"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": true,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "idempotency.header-not-replaced",
+      "description": "A caller header cannot replace Idempotency-Key or Authorization; the other caller headers are sent.",
+      "spec": [
+        "3.3",
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        },
+        "options": {
+          "headers": {
+            "Idempotency-Key": "from-headers",
+            "Authorization": "Bearer other",
+            "X-Trace-Id": "trace-1"
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01",
+              "x-trace-id": "trace-1"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: parties get 01J90000000000000000000179 --company cmp0000001
+---
+=== 80 columns
+name
+
+Name key          name_key
+Kind              supplier
+Country           country
+VAT area          vat_area
+VAT area source   vat_area_source
+VAT number        vat_number
+Vies checked at   2026-09-27
+Reg code          reg_code
+Expects document  no
+Is confirmed      no
+Notes             notes
+Private persons   no
+
+Defaults
+  Expense role  expense_role
+  VAT code      vat_code
+  Currency      EUR
+  Payment days  1
+
+Meta
+  ID              01J90000000000000000000179
+  Merged into ID  01J90000000000000000000180
+  Created at      2026-09-27T10:00:00Z
+=== 120 columns
+name
+
+Name key          name_key
+Kind              supplier
+Country           country
+VAT area          vat_area
+VAT area source   vat_area_source
+VAT number        vat_number
+Vies checked at   2026-09-27
+Reg code          reg_code
+Expects document  no
+Is confirmed      no
+Notes             notes
+Private persons   no
+
+Defaults
+  Expense role  expense_role
+  VAT code      vat_code
+  Currency      EUR
+  Payment days  1
+
+Meta
+  ID              01J90000000000000000000179
+  Merged into ID  01J90000000000000000000180
+  Created at      2026-09-27T10:00:00Z

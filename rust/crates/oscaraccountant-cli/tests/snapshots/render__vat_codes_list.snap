@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: vat-codes list --company cmp0000001
+---
+=== 80 columns
+CODE  NAME  DIRECTION  TREATMENT  DEDUCTIBLE  ACTIVE
+code  name  purchase   standard        0.01%  no
+code  name  purchase   standard        0.01%  no
+=== 120 columns
+CODE  NAME  DIRECTION  TREATMENT  DEDUCTIBLE  ACTIVE
+code  name  purchase   standard        0.01%  no
+code  name  purchase   standard        0.01%  no

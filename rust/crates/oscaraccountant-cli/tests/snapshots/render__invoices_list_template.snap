@@ -1,0 +1,7 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: template
+---
+number recorded
+number recorded
+number recorded

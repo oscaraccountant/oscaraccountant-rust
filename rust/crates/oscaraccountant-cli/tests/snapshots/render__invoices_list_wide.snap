@@ -1,0 +1,8 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: wide
+---
+NUMBER  PARTY NAME  INVOICE DATE  DUE DATE       GROSS  STATUS      DIRECTION  KIND     STATE         OPEN  ID
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  ● recorded  purchase   invoice  recorded  0.01 EUR  00000116
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  ● recorded  purchase   invoice  recorded  0.01 EUR  00000120
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  ● recorded  purchase   invoice  recorded  0.01 EUR  00000124

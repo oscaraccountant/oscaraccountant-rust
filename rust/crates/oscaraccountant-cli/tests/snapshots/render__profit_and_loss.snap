@@ -1,0 +1,52 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: reports profit-and-loss --date-from 2026-01-01 --date-to 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+Currency           EUR
+Compare from       2026-09-01
+Compare to         2026-09-01
+Simplified         no
+Result             0.01 EUR
+Compare result     0.01 EUR
+Unmapped accounts  unmapped_accounts
+From               2026-09-01
+To                 2026-09-01
+
+Schema
+  Key           key
+  Version       version
+  Jurisdiction  jurisdiction
+  Kind          kind
+  Name          name
+  Content hash  content_hash
+
+Rows (1)
+  CODE  LABEL    AMOUNT   COMPARE  KIND
+  code  label  0.01 EUR  0.01 EUR  heading
+    ACCOUNT CODE  ACCOUNT NAME       AMOUNT   COMPARE
+    account_code  account_name_en  0.01 EUR  0.01 EUR
+=== 120 columns
+Currency           EUR
+Compare from       2026-09-01
+Compare to         2026-09-01
+Simplified         no
+Result             0.01 EUR
+Compare result     0.01 EUR
+Unmapped accounts  unmapped_accounts
+From               2026-09-01
+To                 2026-09-01
+
+Schema
+  Key           key
+  Version       version
+  Jurisdiction  jurisdiction
+  Kind          kind
+  Name          name
+  Content hash  content_hash
+
+Rows (1)
+  CODE  LABEL    AMOUNT   COMPARE  KIND
+  code  label  0.01 EUR  0.01 EUR  heading
+    ACCOUNT CODE  ACCOUNT NAME       AMOUNT   COMPARE
+    account_code  account_name_en  0.01 EUR  0.01 EUR

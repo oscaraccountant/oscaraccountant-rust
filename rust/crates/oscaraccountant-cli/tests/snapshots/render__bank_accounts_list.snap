@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: bank-accounts list --company cmp0000001
+---
+=== 80 columns
+LABEL  IBAN  CURRENCY  LEDGER BALANCE  BANK BALANCE  LAST BOOKING DATE
+label  iban  EUR             0.01 EUR      0.01 EUR  2026-09-01
+label  iban  EUR             0.01 EUR      0.01 EUR  2026-09-01
+=== 120 columns
+LABEL  IBAN  CURRENCY  LEDGER BALANCE  BANK BALANCE  LAST BOOKING DATE
+label  iban  EUR             0.01 EUR      0.01 EUR  2026-09-01
+label  iban  EUR             0.01 EUR      0.01 EUR  2026-09-01

@@ -1,0 +1,4912 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Every operation",
+  "description": "One call of every public operation: the method, the path, the query, the body and the result.",
+  "cases": [
+    {
+      "id": "operations.accounts.list",
+      "description": "`accounts.list` sends GET /api/companies/cmp0000001/accounts/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "accounts.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "active": true,
+          "type": "asset"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/accounts/",
+            "query": [
+              [
+                "active",
+                "true"
+              ],
+              [
+                "type",
+                "asset"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000022",
+                    "code": "code",
+                    "name": "name",
+                    "name_en": "name_en",
+                    "type": "asset",
+                    "normal_side": "debit",
+                    "parent_code": "parent_code",
+                    "currency": "EUR",
+                    "control_kind": "payable",
+                    "requires_party": false,
+                    "is_open_item": false,
+                    "source": "seed",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "fixed_asset_class": null
+                  },
+                  {
+                    "id": "01J90000000000000000000023",
+                    "code": "code",
+                    "name": "name",
+                    "name_en": "name_en",
+                    "type": "asset",
+                    "normal_side": "debit",
+                    "parent_code": "parent_code",
+                    "currency": "EUR",
+                    "control_kind": "payable",
+                    "requires_party": false,
+                    "is_open_item": false,
+                    "source": "seed",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "fixed_asset_class": null
+                  },
+                  {
+                    "id": "01J90000000000000000000024",
+                    "code": "code",
+                    "name": "name",
+                    "name_en": "name_en",
+                    "type": "asset",
+                    "normal_side": "debit",
+                    "parent_code": "parent_code",
+                    "currency": "EUR",
+                    "control_kind": "payable",
+                    "requires_party": false,
+                    "is_open_item": false,
+                    "source": "seed",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "fixed_asset_class": null
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000022",
+                "code": "code",
+                "name": "name",
+                "name_en": "name_en",
+                "type": "asset",
+                "normal_side": "debit",
+                "parent_code": "parent_code",
+                "currency": "EUR",
+                "control_kind": "payable",
+                "requires_party": false,
+                "is_open_item": false,
+                "source": "seed",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "fixed_asset_class": null
+              },
+              {
+                "id": "01J90000000000000000000023",
+                "code": "code",
+                "name": "name",
+                "name_en": "name_en",
+                "type": "asset",
+                "normal_side": "debit",
+                "parent_code": "parent_code",
+                "currency": "EUR",
+                "control_kind": "payable",
+                "requires_party": false,
+                "is_open_item": false,
+                "source": "seed",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "fixed_asset_class": null
+              },
+              {
+                "id": "01J90000000000000000000024",
+                "code": "code",
+                "name": "name",
+                "name_en": "name_en",
+                "type": "asset",
+                "normal_side": "debit",
+                "parent_code": "parent_code",
+                "currency": "EUR",
+                "control_kind": "payable",
+                "requires_party": false,
+                "is_open_item": false,
+                "source": "seed",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "fixed_asset_class": null
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.bank-accounts.list",
+      "description": "`bank_accounts.list` sends GET /api/companies/cmp0000001/bank-accounts/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "bank_accounts.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 20
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/bank-accounts/",
+            "query": [
+              [
+                "limit",
+                "20"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000025",
+                    "provider": "provider",
+                    "label": "label",
+                    "iban": "iban",
+                    "bic": "bic",
+                    "currency": "EUR",
+                    "account_id": "01J90000000000000000000026",
+                    "account_code": "account_code",
+                    "is_debtor": false,
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "transaction_count": 1,
+                    "last_booking_date": "2026-09-01",
+                    "ledger_balance_minor": 1,
+                    "bank_balance_minor": 1,
+                    "bank_balance_on": "2026-09-01",
+                    "ledger_balance_on_bank_date_minor": 1,
+                    "bank_difference_minor": 0,
+                    "external_account_id": null,
+                    "livemode": null,
+                    "fee_accrual_account_code": null,
+                    "dispute_account_code": null,
+                    "reserve_account_code": null,
+                    "customer_party_id": null
+                  },
+                  {
+                    "id": "01J90000000000000000000027",
+                    "provider": "provider",
+                    "label": "label",
+                    "iban": "iban",
+                    "bic": "bic",
+                    "currency": "EUR",
+                    "account_id": "01J90000000000000000000028",
+                    "account_code": "account_code",
+                    "is_debtor": false,
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "transaction_count": 1,
+                    "last_booking_date": "2026-09-01",
+                    "ledger_balance_minor": 1,
+                    "bank_balance_minor": 1,
+                    "bank_balance_on": "2026-09-01",
+                    "ledger_balance_on_bank_date_minor": 1,
+                    "bank_difference_minor": 0,
+                    "external_account_id": null,
+                    "livemode": null,
+                    "fee_accrual_account_code": null,
+                    "dispute_account_code": null,
+                    "reserve_account_code": null,
+                    "customer_party_id": null
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000025",
+                "provider": "provider",
+                "label": "label",
+                "iban": "iban",
+                "bic": "bic",
+                "currency": "EUR",
+                "account_id": "01J90000000000000000000026",
+                "account_code": "account_code",
+                "is_debtor": false,
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "transaction_count": 1,
+                "last_booking_date": "2026-09-01",
+                "ledger_balance_minor": 1,
+                "bank_balance_minor": 1,
+                "bank_balance_on": "2026-09-01",
+                "ledger_balance_on_bank_date_minor": 1,
+                "bank_difference_minor": 0,
+                "external_account_id": null,
+                "livemode": null,
+                "fee_accrual_account_code": null,
+                "dispute_account_code": null,
+                "reserve_account_code": null,
+                "customer_party_id": null
+              },
+              {
+                "id": "01J90000000000000000000027",
+                "provider": "provider",
+                "label": "label",
+                "iban": "iban",
+                "bic": "bic",
+                "currency": "EUR",
+                "account_id": "01J90000000000000000000028",
+                "account_code": "account_code",
+                "is_debtor": false,
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "transaction_count": 1,
+                "last_booking_date": "2026-09-01",
+                "ledger_balance_minor": 1,
+                "bank_balance_minor": 1,
+                "bank_balance_on": "2026-09-01",
+                "ledger_balance_on_bank_date_minor": 1,
+                "bank_difference_minor": 0,
+                "external_account_id": null,
+                "livemode": null,
+                "fee_accrual_account_code": null,
+                "dispute_account_code": null,
+                "reserve_account_code": null,
+                "customer_party_id": null
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.bank-transactions.list",
+      "description": "`bank_transactions.list` sends GET /api/companies/cmp0000001/bank-transactions/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "bank_transactions.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "date_from": "2026-09-01",
+          "to_explain": true
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/bank-transactions/",
+            "query": [
+              [
+                "date_from",
+                "2026-09-01"
+              ],
+              [
+                "to_explain",
+                "true"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000029",
+                    "bank_account_id": "01J90000000000000000000030",
+                    "bank_account_label": "bank_account_label",
+                    "currency": "EUR",
+                    "statement_id": "01J90000000000000000000031",
+                    "external_id": "01J90000000000000000000032",
+                    "booking_date": "2026-09-01",
+                    "value_date": "2026-09-01",
+                    "direction": "in",
+                    "method": "method",
+                    "amount_minor": 1,
+                    "fee_minor": 1,
+                    "total_minor": 1,
+                    "orig_currency": "ori",
+                    "orig_minor": 1,
+                    "bank_rate": "bank_rate",
+                    "balance_after_minor": 1,
+                    "counterparty_name": "counterparty_name",
+                    "counterparty_account": "counterparty_account",
+                    "counterparty_bic": "counterparty_bic",
+                    "description": "description",
+                    "reference": "reference",
+                    "card_last4": "card_last4",
+                    "mcc": "mcc",
+                    "is_internal": false,
+                    "party_id": "01J90000000000000000000033",
+                    "party_name": "party_name",
+                    "party_source": "alias",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "suspense_residual_minor": 1,
+                    "status": "unmatched",
+                    "has_document": false,
+                    "file_ids": [
+                      "file_ids"
+                    ]
+                  },
+                  {
+                    "id": "01J90000000000000000000034",
+                    "bank_account_id": "01J90000000000000000000035",
+                    "bank_account_label": "bank_account_label",
+                    "currency": "EUR",
+                    "statement_id": "01J90000000000000000000036",
+                    "external_id": "01J90000000000000000000037",
+                    "booking_date": "2026-09-01",
+                    "value_date": "2026-09-01",
+                    "direction": "in",
+                    "method": "method",
+                    "amount_minor": 1,
+                    "fee_minor": 1,
+                    "total_minor": 1,
+                    "orig_currency": "ori",
+                    "orig_minor": 1,
+                    "bank_rate": "bank_rate",
+                    "balance_after_minor": 1,
+                    "counterparty_name": "counterparty_name",
+                    "counterparty_account": "counterparty_account",
+                    "counterparty_bic": "counterparty_bic",
+                    "description": "description",
+                    "reference": "reference",
+                    "card_last4": "card_last4",
+                    "mcc": "mcc",
+                    "is_internal": false,
+                    "party_id": "01J90000000000000000000038",
+                    "party_name": "party_name",
+                    "party_source": "alias",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "suspense_residual_minor": 1,
+                    "status": "unmatched",
+                    "has_document": false,
+                    "file_ids": [
+                      "file_ids"
+                    ]
+                  },
+                  {
+                    "id": "01J90000000000000000000039",
+                    "bank_account_id": "01J90000000000000000000040",
+                    "bank_account_label": "bank_account_label",
+                    "currency": "EUR",
+                    "statement_id": "01J90000000000000000000041",
+                    "external_id": "01J90000000000000000000042",
+                    "booking_date": "2026-09-01",
+                    "value_date": "2026-09-01",
+                    "direction": "in",
+                    "method": "method",
+                    "amount_minor": 1,
+                    "fee_minor": 1,
+                    "total_minor": 1,
+                    "orig_currency": "ori",
+                    "orig_minor": 1,
+                    "bank_rate": "bank_rate",
+                    "balance_after_minor": 1,
+                    "counterparty_name": "counterparty_name",
+                    "counterparty_account": "counterparty_account",
+                    "counterparty_bic": "counterparty_bic",
+                    "description": "description",
+                    "reference": "reference",
+                    "card_last4": "card_last4",
+                    "mcc": "mcc",
+                    "is_internal": false,
+                    "party_id": "01J90000000000000000000043",
+                    "party_name": "party_name",
+                    "party_source": "alias",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "suspense_residual_minor": 1,
+                    "status": "unmatched",
+                    "has_document": false,
+                    "file_ids": [
+                      "file_ids"
+                    ]
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000029",
+                "bank_account_id": "01J90000000000000000000030",
+                "bank_account_label": "bank_account_label",
+                "currency": "EUR",
+                "statement_id": "01J90000000000000000000031",
+                "external_id": "01J90000000000000000000032",
+                "booking_date": "2026-09-01",
+                "value_date": "2026-09-01",
+                "direction": "in",
+                "method": "method",
+                "amount_minor": 1,
+                "fee_minor": 1,
+                "total_minor": 1,
+                "orig_currency": "ori",
+                "orig_minor": 1,
+                "bank_rate": "bank_rate",
+                "balance_after_minor": 1,
+                "counterparty_name": "counterparty_name",
+                "counterparty_account": "counterparty_account",
+                "counterparty_bic": "counterparty_bic",
+                "description": "description",
+                "reference": "reference",
+                "card_last4": "card_last4",
+                "mcc": "mcc",
+                "is_internal": false,
+                "party_id": "01J90000000000000000000033",
+                "party_name": "party_name",
+                "party_source": "alias",
+                "created_at": "2026-09-27T10:00:00Z",
+                "suspense_residual_minor": 1,
+                "status": "unmatched",
+                "has_document": false,
+                "file_ids": [
+                  "file_ids"
+                ]
+              },
+              {
+                "id": "01J90000000000000000000034",
+                "bank_account_id": "01J90000000000000000000035",
+                "bank_account_label": "bank_account_label",
+                "currency": "EUR",
+                "statement_id": "01J90000000000000000000036",
+                "external_id": "01J90000000000000000000037",
+                "booking_date": "2026-09-01",
+                "value_date": "2026-09-01",
+                "direction": "in",
+                "method": "method",
+                "amount_minor": 1,
+                "fee_minor": 1,
+                "total_minor": 1,
+                "orig_currency": "ori",
+                "orig_minor": 1,
+                "bank_rate": "bank_rate",
+                "balance_after_minor": 1,
+                "counterparty_name": "counterparty_name",
+                "counterparty_account": "counterparty_account",
+                "counterparty_bic": "counterparty_bic",
+                "description": "description",
+                "reference": "reference",
+                "card_last4": "card_last4",
+                "mcc": "mcc",
+                "is_internal": false,
+                "party_id": "01J90000000000000000000038",
+                "party_name": "party_name",
+                "party_source": "alias",
+                "created_at": "2026-09-27T10:00:00Z",
+                "suspense_residual_minor": 1,
+                "status": "unmatched",
+                "has_document": false,
+                "file_ids": [
+                  "file_ids"
+                ]
+              },
+              {
+                "id": "01J90000000000000000000039",
+                "bank_account_id": "01J90000000000000000000040",
+                "bank_account_label": "bank_account_label",
+                "currency": "EUR",
+                "statement_id": "01J90000000000000000000041",
+                "external_id": "01J90000000000000000000042",
+                "booking_date": "2026-09-01",
+                "value_date": "2026-09-01",
+                "direction": "in",
+                "method": "method",
+                "amount_minor": 1,
+                "fee_minor": 1,
+                "total_minor": 1,
+                "orig_currency": "ori",
+                "orig_minor": 1,
+                "bank_rate": "bank_rate",
+                "balance_after_minor": 1,
+                "counterparty_name": "counterparty_name",
+                "counterparty_account": "counterparty_account",
+                "counterparty_bic": "counterparty_bic",
+                "description": "description",
+                "reference": "reference",
+                "card_last4": "card_last4",
+                "mcc": "mcc",
+                "is_internal": false,
+                "party_id": "01J90000000000000000000043",
+                "party_name": "party_name",
+                "party_source": "alias",
+                "created_at": "2026-09-27T10:00:00Z",
+                "suspense_residual_minor": 1,
+                "status": "unmatched",
+                "has_document": false,
+                "file_ids": [
+                  "file_ids"
+                ]
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.dimensions.list",
+      "description": "`dimensions.list` sends GET /api/companies/cmp0000001/dimensions/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "dimensions.list",
+        "path": {
+          "company_id": "cmp0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/dimensions/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000092",
+                    "code": "code",
+                    "name": "name",
+                    "kind": "project",
+                    "basis": "basis",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "values": [
+                      {
+                        "id": "01J90000000000000000000093",
+                        "code": "code",
+                        "name": "name",
+                        "valid_from": "2026-09-01",
+                        "valid_to": "2026-09-01",
+                        "active": false
+                      }
+                    ]
+                  },
+                  {
+                    "id": "01J90000000000000000000094",
+                    "code": "code",
+                    "name": "name",
+                    "kind": "project",
+                    "basis": "basis",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "values": [
+                      {
+                        "id": "01J90000000000000000000095",
+                        "code": "code",
+                        "name": "name",
+                        "valid_from": "2026-09-01",
+                        "valid_to": "2026-09-01",
+                        "active": false
+                      }
+                    ]
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000092",
+                "code": "code",
+                "name": "name",
+                "kind": "project",
+                "basis": "basis",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "values": [
+                  {
+                    "id": "01J90000000000000000000093",
+                    "code": "code",
+                    "name": "name",
+                    "valid_from": "2026-09-01",
+                    "valid_to": "2026-09-01",
+                    "active": false
+                  }
+                ]
+              },
+              {
+                "id": "01J90000000000000000000094",
+                "code": "code",
+                "name": "name",
+                "kind": "project",
+                "basis": "basis",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "values": [
+                  {
+                    "id": "01J90000000000000000000095",
+                    "code": "code",
+                    "name": "name",
+                    "valid_from": "2026-09-01",
+                    "valid_to": "2026-09-01",
+                    "active": false
+                  }
+                ]
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.documents.list",
+      "description": "`documents.list` sends GET /api/companies/cmp0000001/documents/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "documents.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "kind": "invoice",
+          "referenced": false
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/documents/",
+            "query": [
+              [
+                "kind",
+                "invoice"
+              ],
+              [
+                "referenced",
+                "false"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000096",
+                    "sha256": "sha256",
+                    "legacy_sha1": "legacy_sha1",
+                    "kind": "invoice",
+                    "filename": "filename",
+                    "media_type": "media_type",
+                    "size_bytes": 1,
+                    "storage_ref": "storage_ref",
+                    "received_on": "2026-09-01",
+                    "retention_until": "2026-09-01",
+                    "legal_hold": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "referenced": false,
+                    "file_id": "01J90000000000000000000097",
+                    "download_url": "download_url"
+                  },
+                  {
+                    "id": "01J90000000000000000000098",
+                    "sha256": "sha256",
+                    "legacy_sha1": "legacy_sha1",
+                    "kind": "invoice",
+                    "filename": "filename",
+                    "media_type": "media_type",
+                    "size_bytes": 1,
+                    "storage_ref": "storage_ref",
+                    "received_on": "2026-09-01",
+                    "retention_until": "2026-09-01",
+                    "legal_hold": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "referenced": false,
+                    "file_id": "01J90000000000000000000099",
+                    "download_url": "download_url"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000096",
+                "sha256": "sha256",
+                "legacy_sha1": "legacy_sha1",
+                "kind": "invoice",
+                "filename": "filename",
+                "media_type": "media_type",
+                "size_bytes": 1,
+                "storage_ref": "storage_ref",
+                "received_on": "2026-09-01",
+                "retention_until": "2026-09-01",
+                "legal_hold": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "referenced": false,
+                "file_id": "01J90000000000000000000097",
+                "download_url": "download_url"
+              },
+              {
+                "id": "01J90000000000000000000098",
+                "sha256": "sha256",
+                "legacy_sha1": "legacy_sha1",
+                "kind": "invoice",
+                "filename": "filename",
+                "media_type": "media_type",
+                "size_bytes": 1,
+                "storage_ref": "storage_ref",
+                "received_on": "2026-09-01",
+                "retention_until": "2026-09-01",
+                "legal_hold": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "referenced": false,
+                "file_id": "01J90000000000000000000099",
+                "download_url": "download_url"
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.list",
+      "description": "`invoices.list` sends GET /api/companies/cmp0000001/invoices/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "state": "recorded",
+          "limit": 50
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "limit",
+                "50"
+              ],
+              [
+                "state",
+                "recorded"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000116",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000117",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000118",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000119",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  },
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  },
+                  {
+                    "id": "01J90000000000000000000124",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000125",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000126",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000127",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000116",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000117",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000118",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000119",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted"
+              },
+              {
+                "id": "01J90000000000000000000120",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000121",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000122",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000123",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted"
+              },
+              {
+                "id": "01J90000000000000000000124",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000125",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000126",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000127",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted"
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.parties.list",
+      "description": "`parties.list` sends GET /api/companies/cmp0000001/parties/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "parties.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "search": "Mock OÜ"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/parties/",
+            "query": [
+              [
+                "search",
+                "Mock OÜ"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000179",
+                    "name": "name",
+                    "name_key": "name_key",
+                    "kind": "supplier",
+                    "country": "country",
+                    "vat_area": "vat_area",
+                    "vat_area_source": "vat_area_source",
+                    "vat_number": "vat_number",
+                    "vies_checked_at": "2026-09-27T10:00:00Z",
+                    "reg_code": "reg_code",
+                    "expects_document": false,
+                    "is_confirmed": false,
+                    "merged_into_id": "01J90000000000000000000180",
+                    "notes": "notes",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "external_key": null,
+                    "private_persons": false,
+                    "address": null,
+                    "email": null,
+                    "phone": null
+                  },
+                  {
+                    "id": "01J90000000000000000000181",
+                    "name": "name",
+                    "name_key": "name_key",
+                    "kind": "supplier",
+                    "country": "country",
+                    "vat_area": "vat_area",
+                    "vat_area_source": "vat_area_source",
+                    "vat_number": "vat_number",
+                    "vies_checked_at": "2026-09-27T10:00:00Z",
+                    "reg_code": "reg_code",
+                    "expects_document": false,
+                    "is_confirmed": false,
+                    "merged_into_id": "01J90000000000000000000182",
+                    "notes": "notes",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "external_key": null,
+                    "private_persons": false,
+                    "address": null,
+                    "email": null,
+                    "phone": null
+                  },
+                  {
+                    "id": "01J90000000000000000000183",
+                    "name": "name",
+                    "name_key": "name_key",
+                    "kind": "supplier",
+                    "country": "country",
+                    "vat_area": "vat_area",
+                    "vat_area_source": "vat_area_source",
+                    "vat_number": "vat_number",
+                    "vies_checked_at": "2026-09-27T10:00:00Z",
+                    "reg_code": "reg_code",
+                    "expects_document": false,
+                    "is_confirmed": false,
+                    "merged_into_id": "01J90000000000000000000184",
+                    "notes": "notes",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "external_key": null,
+                    "private_persons": false,
+                    "address": null,
+                    "email": null,
+                    "phone": null
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000179",
+                "name": "name",
+                "name_key": "name_key",
+                "kind": "supplier",
+                "country": "country",
+                "vat_area": "vat_area",
+                "vat_area_source": "vat_area_source",
+                "vat_number": "vat_number",
+                "vies_checked_at": "2026-09-27T10:00:00Z",
+                "reg_code": "reg_code",
+                "expects_document": false,
+                "is_confirmed": false,
+                "merged_into_id": "01J90000000000000000000180",
+                "notes": "notes",
+                "created_at": "2026-09-27T10:00:00Z",
+                "external_key": null,
+                "private_persons": false,
+                "address": null,
+                "email": null,
+                "phone": null
+              },
+              {
+                "id": "01J90000000000000000000181",
+                "name": "name",
+                "name_key": "name_key",
+                "kind": "supplier",
+                "country": "country",
+                "vat_area": "vat_area",
+                "vat_area_source": "vat_area_source",
+                "vat_number": "vat_number",
+                "vies_checked_at": "2026-09-27T10:00:00Z",
+                "reg_code": "reg_code",
+                "expects_document": false,
+                "is_confirmed": false,
+                "merged_into_id": "01J90000000000000000000182",
+                "notes": "notes",
+                "created_at": "2026-09-27T10:00:00Z",
+                "external_key": null,
+                "private_persons": false,
+                "address": null,
+                "email": null,
+                "phone": null
+              },
+              {
+                "id": "01J90000000000000000000183",
+                "name": "name",
+                "name_key": "name_key",
+                "kind": "supplier",
+                "country": "country",
+                "vat_area": "vat_area",
+                "vat_area_source": "vat_area_source",
+                "vat_number": "vat_number",
+                "vies_checked_at": "2026-09-27T10:00:00Z",
+                "reg_code": "reg_code",
+                "expects_document": false,
+                "is_confirmed": false,
+                "merged_into_id": "01J90000000000000000000184",
+                "notes": "notes",
+                "created_at": "2026-09-27T10:00:00Z",
+                "external_key": null,
+                "private_persons": false,
+                "address": null,
+                "email": null,
+                "phone": null
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.periods.list",
+      "description": "`periods.list` sends GET /api/companies/cmp0000001/periods/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "periods.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "fiscal_year": "2026"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/periods/",
+            "query": [
+              [
+                "fiscal_year",
+                "2026"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000191",
+                    "fiscal_year_id": "01J90000000000000000000192",
+                    "fiscal_year_label": "fiscal_year_label",
+                    "fiscal_year_state": "open",
+                    "code": "code",
+                    "start_date": "2026-09-01",
+                    "end_date": "2026-09-01",
+                    "state": "open",
+                    "locked_at": "2026-09-27T10:00:00Z",
+                    "locked_reason": "locked_reason",
+                    "close_generation": 1
+                  },
+                  {
+                    "id": "01J90000000000000000000193",
+                    "fiscal_year_id": "01J90000000000000000000194",
+                    "fiscal_year_label": "fiscal_year_label",
+                    "fiscal_year_state": "open",
+                    "code": "code",
+                    "start_date": "2026-09-01",
+                    "end_date": "2026-09-01",
+                    "state": "open",
+                    "locked_at": "2026-09-27T10:00:00Z",
+                    "locked_reason": "locked_reason",
+                    "close_generation": 1
+                  },
+                  {
+                    "id": "01J90000000000000000000195",
+                    "fiscal_year_id": "01J90000000000000000000196",
+                    "fiscal_year_label": "fiscal_year_label",
+                    "fiscal_year_state": "open",
+                    "code": "code",
+                    "start_date": "2026-09-01",
+                    "end_date": "2026-09-01",
+                    "state": "open",
+                    "locked_at": "2026-09-27T10:00:00Z",
+                    "locked_reason": "locked_reason",
+                    "close_generation": 1
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000191",
+                "fiscal_year_id": "01J90000000000000000000192",
+                "fiscal_year_label": "fiscal_year_label",
+                "fiscal_year_state": "open",
+                "code": "code",
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-01",
+                "state": "open",
+                "locked_at": "2026-09-27T10:00:00Z",
+                "locked_reason": "locked_reason",
+                "close_generation": 1
+              },
+              {
+                "id": "01J90000000000000000000193",
+                "fiscal_year_id": "01J90000000000000000000194",
+                "fiscal_year_label": "fiscal_year_label",
+                "fiscal_year_state": "open",
+                "code": "code",
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-01",
+                "state": "open",
+                "locked_at": "2026-09-27T10:00:00Z",
+                "locked_reason": "locked_reason",
+                "close_generation": 1
+              },
+              {
+                "id": "01J90000000000000000000195",
+                "fiscal_year_id": "01J90000000000000000000196",
+                "fiscal_year_label": "fiscal_year_label",
+                "fiscal_year_state": "open",
+                "code": "code",
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-01",
+                "state": "open",
+                "locked_at": "2026-09-27T10:00:00Z",
+                "locked_reason": "locked_reason",
+                "close_generation": 1
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.vat-codes.list",
+      "description": "`vat_codes.list` sends GET /api/companies/cmp0000001/vat-codes/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "vat_codes.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "direction": "sales"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/vat-codes/",
+            "query": [
+              [
+                "direction",
+                "sales"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000197",
+                    "code": "code",
+                    "name": "name",
+                    "name_et": "name_et",
+                    "country": "country",
+                    "direction": "purchase",
+                    "treatment": "standard",
+                    "self_assess": false,
+                    "deductible_bps": 1,
+                    "exigibility": "invoice",
+                    "ec_sales": false,
+                    "requires_party_vat": false,
+                    "review_state": "provisional",
+                    "exempt_category": "exempt_category",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "rates": [
+                      {
+                        "id": "01J90000000000000000000198",
+                        "valid_from": "2026-09-01",
+                        "valid_to": "2026-09-01",
+                        "rate_bps": 1,
+                        "review_state": "provisional"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "01J90000000000000000000199",
+                    "code": "code",
+                    "name": "name",
+                    "name_et": "name_et",
+                    "country": "country",
+                    "direction": "purchase",
+                    "treatment": "standard",
+                    "self_assess": false,
+                    "deductible_bps": 1,
+                    "exigibility": "invoice",
+                    "ec_sales": false,
+                    "requires_party_vat": false,
+                    "review_state": "provisional",
+                    "exempt_category": "exempt_category",
+                    "active": false,
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "rates": [
+                      {
+                        "id": "01J90000000000000000000200",
+                        "valid_from": "2026-09-01",
+                        "valid_to": "2026-09-01",
+                        "rate_bps": 1,
+                        "review_state": "provisional"
+                      }
+                    ]
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000197",
+                "code": "code",
+                "name": "name",
+                "name_et": "name_et",
+                "country": "country",
+                "direction": "purchase",
+                "treatment": "standard",
+                "self_assess": false,
+                "deductible_bps": 1,
+                "exigibility": "invoice",
+                "ec_sales": false,
+                "requires_party_vat": false,
+                "review_state": "provisional",
+                "exempt_category": "exempt_category",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "rates": [
+                  {
+                    "id": "01J90000000000000000000198",
+                    "valid_from": "2026-09-01",
+                    "valid_to": "2026-09-01",
+                    "rate_bps": 1,
+                    "review_state": "provisional"
+                  }
+                ]
+              },
+              {
+                "id": "01J90000000000000000000199",
+                "code": "code",
+                "name": "name",
+                "name_et": "name_et",
+                "country": "country",
+                "direction": "purchase",
+                "treatment": "standard",
+                "self_assess": false,
+                "deductible_bps": 1,
+                "exigibility": "invoice",
+                "ec_sales": false,
+                "requires_party_vat": false,
+                "review_state": "provisional",
+                "exempt_category": "exempt_category",
+                "active": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "rates": [
+                  {
+                    "id": "01J90000000000000000000200",
+                    "valid_from": "2026-09-01",
+                    "valid_to": "2026-09-01",
+                    "rate_bps": 1,
+                    "review_state": "provisional"
+                  }
+                ]
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.organizations.list",
+      "description": "`organizations.list` sends GET /api/organizations/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "organizations.list",
+        "path": {}
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/organizations/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "permissions": [
+                      "permissions"
+                    ],
+                    "companies": [
+                      {
+                        "id": "cmp0000001",
+                        "organization_id": "org0000001",
+                        "name": "Mock Company OÜ",
+                        "registry_code": "12345678",
+                        "vat_number": "EE123456789",
+                        "vat_status": "registered",
+                        "vat_status_from": "2026-09-01",
+                        "legal_form": "ou",
+                        "files_tsd_monthly": false,
+                        "state": "ready",
+                        "core_company_id": "01J90000000000000000000007",
+                        "base_currency": "EUR",
+                        "created_at": "2026-09-27T10:00:00Z",
+                        "updated_at": "2026-09-27T10:00:00Z"
+                      }
+                    ],
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "updated_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "permissions": [
+                  "permissions"
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "vat_status": "registered",
+                    "vat_status_from": "2026-09-01",
+                    "legal_form": "ou",
+                    "files_tsd_monthly": false,
+                    "state": "ready",
+                    "core_company_id": "01J90000000000000000000007",
+                    "base_currency": "EUR",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "updated_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "created_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.companies.list",
+      "description": "`companies.list` sends GET /api/organizations/org0000001/companies/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "companies.list",
+        "path": {
+          "organization_id": "org0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/organizations/org0000001/companies/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "vat_status": "registered",
+                    "vat_status_from": "2026-09-01",
+                    "legal_form": "ou",
+                    "files_tsd_monthly": false,
+                    "state": "ready",
+                    "core_company_id": "01J90000000000000000000007",
+                    "base_currency": "EUR",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "updated_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "vat_status": "registered",
+                "vat_status_from": "2026-09-01",
+                "legal_form": "ou",
+                "files_tsd_monthly": false,
+                "state": "ready",
+                "core_company_id": "01J90000000000000000000007",
+                "base_currency": "EUR",
+                "created_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.bank-transactions.retrieve",
+      "description": "`bank_transactions.retrieve` sends GET /api/companies/cmp0000001/bank-transactions/01J90000000000000000000029/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "bank_transactions.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "bank_transaction_id": "01J90000000000000000000029"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/bank-transactions/01J90000000000000000000029/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000029",
+                "bank_account_id": "01J90000000000000000000030",
+                "bank_account_label": "bank_account_label",
+                "currency": "EUR",
+                "statement_id": "01J90000000000000000000031",
+                "external_id": "01J90000000000000000000032",
+                "booking_date": "2026-09-01",
+                "value_date": "2026-09-01",
+                "direction": "in",
+                "method": "method",
+                "amount_minor": 1,
+                "fee_minor": 1,
+                "total_minor": 1,
+                "orig_currency": "ori",
+                "orig_minor": 1,
+                "bank_rate": "bank_rate",
+                "balance_after_minor": 1,
+                "counterparty_name": "counterparty_name",
+                "counterparty_account": "counterparty_account",
+                "counterparty_bic": "counterparty_bic",
+                "description": "description",
+                "reference": "reference",
+                "card_last4": "card_last4",
+                "mcc": "mcc",
+                "is_internal": false,
+                "party_id": "01J90000000000000000000033",
+                "party_name": "party_name",
+                "party_source": "alias",
+                "created_at": "2026-09-27T10:00:00Z",
+                "suspense_residual_minor": 1,
+                "status": "unmatched",
+                "has_document": false,
+                "file_ids": [
+                  "file_ids"
+                ],
+                "raw": {},
+                "entries": [
+                  {
+                    "id": "01J90000000000000000000049",
+                    "journal": "purchases",
+                    "entry_no": 1,
+                    "economic_date": "2026-09-01",
+                    "source_kind": "invoice_revision",
+                    "source_role": "primary",
+                    "state": "posted"
+                  }
+                ],
+                "allocations": [
+                  {
+                    "id": "01J90000000000000000000050",
+                    "kind": "payment",
+                    "state": "active",
+                    "item_line_id": "01J90000000000000000000051",
+                    "counter_line_id": "01J90000000000000000000052",
+                    "item_currency": "ite",
+                    "item_minor": 1,
+                    "counter_currency": "cou",
+                    "counter_minor": 1,
+                    "effective_date": "2026-09-01",
+                    "entry_id": "01J90000000000000000000053",
+                    "origin": "origin"
+                  }
+                ],
+                "exemption": {
+                  "counter_role": "transfer_transit",
+                  "reason": "reason",
+                  "created_at": "2026-09-27T10:00:00Z"
+                },
+                "money_in": {
+                  "kind": "refund",
+                  "reason": "reason",
+                  "refund_invoice_id": "01J90000000000000000000054",
+                  "refund_bank_transaction_id": "01J90000000000000000000055",
+                  "created_at": "2026-09-27T10:00:00Z"
+                },
+                "transfer_match": {
+                  "id": "01J90000000000000000000056",
+                  "out_transaction_id": "01J90000000000000000000057",
+                  "in_transaction_id": "01J90000000000000000000058",
+                  "residue_base_minor": 1,
+                  "base_currency": "EUR",
+                  "accounting_event_id": "01J90000000000000000000059"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000029",
+            "bank_account_id": "01J90000000000000000000030",
+            "bank_account_label": "bank_account_label",
+            "currency": "EUR",
+            "statement_id": "01J90000000000000000000031",
+            "external_id": "01J90000000000000000000032",
+            "booking_date": "2026-09-01",
+            "value_date": "2026-09-01",
+            "direction": "in",
+            "method": "method",
+            "amount_minor": 1,
+            "fee_minor": 1,
+            "total_minor": 1,
+            "orig_currency": "ori",
+            "orig_minor": 1,
+            "bank_rate": "bank_rate",
+            "balance_after_minor": 1,
+            "counterparty_name": "counterparty_name",
+            "counterparty_account": "counterparty_account",
+            "counterparty_bic": "counterparty_bic",
+            "description": "description",
+            "reference": "reference",
+            "card_last4": "card_last4",
+            "mcc": "mcc",
+            "is_internal": false,
+            "party_id": "01J90000000000000000000033",
+            "party_name": "party_name",
+            "party_source": "alias",
+            "created_at": "2026-09-27T10:00:00Z",
+            "suspense_residual_minor": 1,
+            "status": "unmatched",
+            "has_document": false,
+            "file_ids": [
+              "file_ids"
+            ],
+            "raw": {},
+            "entries": [
+              {
+                "id": "01J90000000000000000000049",
+                "journal": "purchases",
+                "entry_no": 1,
+                "economic_date": "2026-09-01",
+                "source_kind": "invoice_revision",
+                "source_role": "primary",
+                "state": "posted"
+              }
+            ],
+            "allocations": [
+              {
+                "id": "01J90000000000000000000050",
+                "kind": "payment",
+                "state": "active",
+                "item_line_id": "01J90000000000000000000051",
+                "counter_line_id": "01J90000000000000000000052",
+                "item_currency": "ite",
+                "item_minor": 1,
+                "counter_currency": "cou",
+                "counter_minor": 1,
+                "effective_date": "2026-09-01",
+                "entry_id": "01J90000000000000000000053",
+                "origin": "origin"
+              }
+            ],
+            "exemption": {
+              "counter_role": "transfer_transit",
+              "reason": "reason",
+              "created_at": "2026-09-27T10:00:00Z"
+            },
+            "money_in": {
+              "kind": "refund",
+              "reason": "reason",
+              "refund_invoice_id": "01J90000000000000000000054",
+              "refund_bank_transaction_id": "01J90000000000000000000055",
+              "created_at": "2026-09-27T10:00:00Z"
+            },
+            "transfer_match": {
+              "id": "01J90000000000000000000056",
+              "out_transaction_id": "01J90000000000000000000057",
+              "in_transaction_id": "01J90000000000000000000058",
+              "residue_base_minor": 1,
+              "base_currency": "EUR",
+              "accounting_event_id": "01J90000000000000000000059"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.documents.retrieve",
+      "description": "`documents.retrieve` sends GET /api/companies/cmp0000001/documents/01J90000000000000000000096/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "documents.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "document_id": "01J90000000000000000000096"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/documents/01J90000000000000000000096/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000096",
+                "sha256": "sha256",
+                "legacy_sha1": "legacy_sha1",
+                "kind": "invoice",
+                "filename": "filename",
+                "media_type": "media_type",
+                "size_bytes": 1,
+                "storage_ref": "storage_ref",
+                "received_on": "2026-09-01",
+                "retention_until": "2026-09-01",
+                "legal_hold": false,
+                "created_at": "2026-09-27T10:00:00Z",
+                "referenced": false,
+                "file_id": "01J90000000000000000000097",
+                "download_url": "download_url",
+                "invoices": [
+                  {
+                    "invoice_id": "01J90000000000000000000102",
+                    "revision_id": "01J90000000000000000000103",
+                    "revision_no": 1,
+                    "revision_state": "revision_state",
+                    "role": "role"
+                  }
+                ],
+                "bank_statements": [
+                  {
+                    "statement_id": "01J90000000000000000000104",
+                    "bank_account_id": "01J90000000000000000000105"
+                  }
+                ],
+                "accounting_events": [
+                  {
+                    "event_id": "01J90000000000000000000106",
+                    "kind": "kind",
+                    "economic_date": "2026-09-01"
+                  }
+                ],
+                "vat_returns": [
+                  {
+                    "return_id": "01J90000000000000000000107",
+                    "form": "form",
+                    "period_from": "2026-09-01",
+                    "revision_no": 1
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000096",
+            "sha256": "sha256",
+            "legacy_sha1": "legacy_sha1",
+            "kind": "invoice",
+            "filename": "filename",
+            "media_type": "media_type",
+            "size_bytes": 1,
+            "storage_ref": "storage_ref",
+            "received_on": "2026-09-01",
+            "retention_until": "2026-09-01",
+            "legal_hold": false,
+            "created_at": "2026-09-27T10:00:00Z",
+            "referenced": false,
+            "file_id": "01J90000000000000000000097",
+            "download_url": "download_url",
+            "invoices": [
+              {
+                "invoice_id": "01J90000000000000000000102",
+                "revision_id": "01J90000000000000000000103",
+                "revision_no": 1,
+                "revision_state": "revision_state",
+                "role": "role"
+              }
+            ],
+            "bank_statements": [
+              {
+                "statement_id": "01J90000000000000000000104",
+                "bank_account_id": "01J90000000000000000000105"
+              }
+            ],
+            "accounting_events": [
+              {
+                "event_id": "01J90000000000000000000106",
+                "kind": "kind",
+                "economic_date": "2026-09-01"
+              }
+            ],
+            "vat_returns": [
+              {
+                "return_id": "01J90000000000000000000107",
+                "form": "form",
+                "period_from": "2026-09-01",
+                "revision_no": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.retrieve",
+      "description": "`invoices.retrieve` sends GET /api/companies/cmp0000001/invoices/01J90000000000000000000116/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000116",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000117",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000118",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000119",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted",
+                "revision": {
+                  "id": "01J90000000000000000000132",
+                  "revision_no": 1,
+                  "state": "state",
+                  "party_id": "01J90000000000000000000133",
+                  "party_name_raw": "party_name_raw",
+                  "invoice_date": "2026-09-01",
+                  "supply_date": "2026-09-01",
+                  "due_date": "2026-09-01",
+                  "service_from": "2026-09-01",
+                  "service_to": "2026-09-01",
+                  "currency": "EUR",
+                  "net_minor": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "prepaid_minor": 1,
+                  "rounding_minor": 1,
+                  "amount_due_minor": 1,
+                  "base_gross_minor": 1,
+                  "base_currency": "EUR",
+                  "exchange_rate_id": "01J90000000000000000000134",
+                  "fx_rate_source": "fx_rate_source",
+                  "vat_code_source": "vat_code_source",
+                  "supplier_vat_number": "supplier_vat_number",
+                  "buyer_vat_number": "buyer_vat_number",
+                  "seller_snapshot": {},
+                  "buyer_snapshot": {},
+                  "source_payload": {},
+                  "needs_review": false,
+                  "review_note": "review_note",
+                  "reason": "reason",
+                  "customer_note": null,
+                  "prices_include_vat": false,
+                  "language": null,
+                  "base_vat": null,
+                  "created_at": "2026-09-27T10:00:00Z",
+                  "actor_id": "01J90000000000000000000135",
+                  "command_id": "01J90000000000000000000136",
+                  "lines": [
+                    {
+                      "id": "01J90000000000000000000137",
+                      "line_no": 1,
+                      "kind": "kind",
+                      "description": "description",
+                      "quantity": "quantity",
+                      "unit": "unit",
+                      "unit_price_minor": 1,
+                      "allowance_minor": 1,
+                      "charge_minor": 1,
+                      "net_minor": 1,
+                      "vat_code": "vat_code",
+                      "vat_rate_bps": 1,
+                      "tax_minor": 1,
+                      "gross_minor": 1,
+                      "account_id": "01J90000000000000000000138",
+                      "account_code": "account_code",
+                      "expense_role": "expense_role",
+                      "deductible_bps": 1,
+                      "business_use_bps": 1,
+                      "fixed_asset": null,
+                      "fixed_asset_id": null,
+                      "fixed_asset_component_id": null,
+                      "fixed_asset_link": null
+                    }
+                  ],
+                  "documents": [
+                    {
+                      "document_id": "01J90000000000000000000139",
+                      "role": "role",
+                      "filename": "filename",
+                      "kind": "invoice"
+                    }
+                  ]
+                },
+                "revisions": [
+                  {
+                    "id": "01J90000000000000000000140",
+                    "revision_no": 1,
+                    "state": "state",
+                    "invoice_date": "2026-09-01",
+                    "gross_minor": 1,
+                    "reason": "reason",
+                    "created_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "entries": [
+                  {
+                    "id": "01J90000000000000000000141",
+                    "revision_id": "01J90000000000000000000142",
+                    "journal": "purchases",
+                    "entry_no": 1,
+                    "economic_date": "2026-09-01",
+                    "source_role": "primary",
+                    "state": "posted"
+                  }
+                ],
+                "settlement": {
+                  "invoice_id": "01J90000000000000000000143",
+                  "number": "number",
+                  "direction": "purchase",
+                  "kind": "invoice",
+                  "state": "recorded",
+                  "party_id": "01J90000000000000000000144",
+                  "currency": "EUR",
+                  "gross_minor": 1,
+                  "residual_minor": 1,
+                  "status": "open",
+                  "paid": false,
+                  "credited": false,
+                  "written_off": false
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000116",
+            "direction": "purchase",
+            "kind": "invoice",
+            "sign": 1,
+            "state": "recorded",
+            "number": "number",
+            "party_id": "01J90000000000000000000117",
+            "party_name": "party_name",
+            "corrects_invoice_id": "01J90000000000000000000118",
+            "origin": "origin",
+            "issued_at": "2026-09-27T10:00:00Z",
+            "cancelled_at": "2026-09-27T10:00:00Z",
+            "cancel_reason": "cancel_reason",
+            "created_at": "2026-09-27T10:00:00Z",
+            "reference_number": null,
+            "external_source": "external_source",
+            "revision_id": "01J90000000000000000000119",
+            "revision_no": 1,
+            "invoice_date": "2026-09-01",
+            "supply_date": "2026-09-01",
+            "due_date": "2026-09-01",
+            "currency": "EUR",
+            "net_minor": 1,
+            "tax_minor": 1,
+            "gross_minor": 1,
+            "prepaid_minor": 1,
+            "rounding_minor": 1,
+            "amount_due_minor": 1,
+            "base_gross_minor": 1,
+            "base_currency": "EUR",
+            "needs_review": false,
+            "review_note": "review_note",
+            "open_minor": 1,
+            "settlement_state": "unposted",
+            "revision": {
+              "id": "01J90000000000000000000132",
+              "revision_no": 1,
+              "state": "state",
+              "party_id": "01J90000000000000000000133",
+              "party_name_raw": "party_name_raw",
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "service_from": "2026-09-01",
+              "service_to": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "exchange_rate_id": "01J90000000000000000000134",
+              "fx_rate_source": "fx_rate_source",
+              "vat_code_source": "vat_code_source",
+              "supplier_vat_number": "supplier_vat_number",
+              "buyer_vat_number": "buyer_vat_number",
+              "seller_snapshot": {},
+              "buyer_snapshot": {},
+              "source_payload": {},
+              "needs_review": false,
+              "review_note": "review_note",
+              "reason": "reason",
+              "customer_note": null,
+              "prices_include_vat": false,
+              "language": null,
+              "base_vat": null,
+              "created_at": "2026-09-27T10:00:00Z",
+              "actor_id": "01J90000000000000000000135",
+              "command_id": "01J90000000000000000000136",
+              "lines": [
+                {
+                  "id": "01J90000000000000000000137",
+                  "line_no": 1,
+                  "kind": "kind",
+                  "description": "description",
+                  "quantity": "quantity",
+                  "unit": "unit",
+                  "unit_price_minor": 1,
+                  "allowance_minor": 1,
+                  "charge_minor": 1,
+                  "net_minor": 1,
+                  "vat_code": "vat_code",
+                  "vat_rate_bps": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "account_id": "01J90000000000000000000138",
+                  "account_code": "account_code",
+                  "expense_role": "expense_role",
+                  "deductible_bps": 1,
+                  "business_use_bps": 1,
+                  "fixed_asset": null,
+                  "fixed_asset_id": null,
+                  "fixed_asset_component_id": null,
+                  "fixed_asset_link": null
+                }
+              ],
+              "documents": [
+                {
+                  "document_id": "01J90000000000000000000139",
+                  "role": "role",
+                  "filename": "filename",
+                  "kind": "invoice"
+                }
+              ]
+            },
+            "revisions": [
+              {
+                "id": "01J90000000000000000000140",
+                "revision_no": 1,
+                "state": "state",
+                "invoice_date": "2026-09-01",
+                "gross_minor": 1,
+                "reason": "reason",
+                "created_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "entries": [
+              {
+                "id": "01J90000000000000000000141",
+                "revision_id": "01J90000000000000000000142",
+                "journal": "purchases",
+                "entry_no": 1,
+                "economic_date": "2026-09-01",
+                "source_role": "primary",
+                "state": "posted"
+              }
+            ],
+            "settlement": {
+              "invoice_id": "01J90000000000000000000143",
+              "number": "number",
+              "direction": "purchase",
+              "kind": "invoice",
+              "state": "recorded",
+              "party_id": "01J90000000000000000000144",
+              "currency": "EUR",
+              "gross_minor": 1,
+              "residual_minor": 1,
+              "status": "open",
+              "paid": false,
+              "credited": false,
+              "written_off": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.parties.retrieve",
+      "description": "`parties.retrieve` sends GET /api/companies/cmp0000001/parties/01J90000000000000000000179/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "parties.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "party_id": "01J90000000000000000000179"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/parties/01J90000000000000000000179/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000179",
+                "name": "name",
+                "name_key": "name_key",
+                "kind": "supplier",
+                "country": "country",
+                "vat_area": "vat_area",
+                "vat_area_source": "vat_area_source",
+                "vat_number": "vat_number",
+                "vies_checked_at": "2026-09-27T10:00:00Z",
+                "reg_code": "reg_code",
+                "expects_document": false,
+                "is_confirmed": false,
+                "merged_into_id": "01J90000000000000000000180",
+                "notes": "notes",
+                "created_at": "2026-09-27T10:00:00Z",
+                "defaults": {
+                  "expense_role": "expense_role",
+                  "vat_code": "vat_code",
+                  "currency": "EUR",
+                  "payment_days": 1
+                },
+                "external_key": null,
+                "private_persons": false,
+                "address": null,
+                "email": null,
+                "phone": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000179",
+            "name": "name",
+            "name_key": "name_key",
+            "kind": "supplier",
+            "country": "country",
+            "vat_area": "vat_area",
+            "vat_area_source": "vat_area_source",
+            "vat_number": "vat_number",
+            "vies_checked_at": "2026-09-27T10:00:00Z",
+            "reg_code": "reg_code",
+            "expects_document": false,
+            "is_confirmed": false,
+            "merged_into_id": "01J90000000000000000000180",
+            "notes": "notes",
+            "created_at": "2026-09-27T10:00:00Z",
+            "defaults": {
+              "expense_role": "expense_role",
+              "vat_code": "vat_code",
+              "currency": "EUR",
+              "payment_days": 1
+            },
+            "external_key": null,
+            "private_persons": false,
+            "address": null,
+            "email": null,
+            "phone": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.companies.retrieve",
+      "description": "`companies.retrieve` sends GET /api/companies/cmp0000001/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "companies.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "vat_status": "registered",
+                "vat_status_from": "2026-09-01",
+                "legal_form": "ou",
+                "files_tsd_monthly": false,
+                "state": "ready",
+                "core_company_id": "01J90000000000000000000007",
+                "base_currency": "EUR",
+                "created_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:00:00Z",
+                "role": "owner",
+                "permissions": [
+                  "organization.read"
+                ],
+                "view_as": "owner",
+                "status": {
+                  "bank_lines_to_classify": 1,
+                  "payments_to_explain": 1,
+                  "documents_to_book": 1,
+                  "pending_proposals": 1,
+                  "open_periods": 1,
+                  "vat_returns_due": 1,
+                  "next_vat_due_date": "2026-09-01",
+                  "last_bank_import_at": "2026-09-27T10:00:00Z",
+                  "overdue_receivables": 1,
+                  "overdue_receivables_minor": 1,
+                  "refreshed_at": "2026-09-27T10:00:00Z",
+                  "refresh_error": "refresh_error"
+                },
+                "refresh_pending": false
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "cmp0000001",
+            "organization_id": "org0000001",
+            "name": "Mock Company OÜ",
+            "registry_code": "12345678",
+            "vat_number": "EE123456789",
+            "vat_status": "registered",
+            "vat_status_from": "2026-09-01",
+            "legal_form": "ou",
+            "files_tsd_monthly": false,
+            "state": "ready",
+            "core_company_id": "01J90000000000000000000007",
+            "base_currency": "EUR",
+            "created_at": "2026-09-27T10:00:00Z",
+            "updated_at": "2026-09-27T10:00:00Z",
+            "role": "owner",
+            "permissions": [
+              "organization.read"
+            ],
+            "view_as": "owner",
+            "status": {
+              "bank_lines_to_classify": 1,
+              "payments_to_explain": 1,
+              "documents_to_book": 1,
+              "pending_proposals": 1,
+              "open_periods": 1,
+              "vat_returns_due": 1,
+              "next_vat_due_date": "2026-09-01",
+              "last_bank_import_at": "2026-09-27T10:00:00Z",
+              "overdue_receivables": 1,
+              "overdue_receivables_minor": 1,
+              "refreshed_at": "2026-09-27T10:00:00Z",
+              "refresh_error": "refresh_error"
+            },
+            "refresh_pending": false
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.organizations.retrieve",
+      "description": "`organizations.retrieve` sends GET /api/organizations/org0000001/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "organizations.retrieve",
+        "path": {
+          "organization_id": "org0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/organizations/org0000001/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "permissions": [
+                  "permissions"
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "vat_status": "registered",
+                    "vat_status_from": "2026-09-01",
+                    "legal_form": "ou",
+                    "files_tsd_monthly": false,
+                    "state": "ready",
+                    "core_company_id": "01J90000000000000000000007",
+                    "base_currency": "EUR",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "updated_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "created_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:00:00Z"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "org0000001",
+            "name": "Mock Organization OÜ",
+            "role": "owner",
+            "permissions": [
+              "permissions"
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "vat_status": "registered",
+                "vat_status_from": "2026-09-01",
+                "legal_form": "ou",
+                "files_tsd_monthly": false,
+                "state": "ready",
+                "core_company_id": "01J90000000000000000000007",
+                "base_currency": "EUR",
+                "created_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "created_at": "2026-09-27T10:00:00Z",
+            "updated_at": "2026-09-27T10:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.me.retrieve",
+      "description": "`me.retrieve` sends GET /api/me/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.general-ledger.retrieve",
+      "description": "`general_ledger.retrieve` sends GET /api/companies/cmp0000001/general-ledger/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "general_ledger.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "account_code": "1000",
+          "date_from": "2026-01-01",
+          "date_to": "2026-09-30"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/general-ledger/",
+            "query": [
+              [
+                "account_code",
+                "1000"
+              ],
+              [
+                "date_from",
+                "2026-01-01"
+              ],
+              [
+                "date_to",
+                "2026-09-30"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "base_currency": "EUR",
+                "accounts": [
+                  {
+                    "account_code": "account_code",
+                    "account_name": "account_name",
+                    "account_name_en": "account_name_en",
+                    "opening_base_minor": 1,
+                    "closing_base_minor": 1,
+                    "lines": [
+                      {
+                        "account_code": "account_code",
+                        "economic_date": "2026-09-01",
+                        "journal": "purchases",
+                        "entry_no": 1,
+                        "entry_id": "01J90000000000000000000201",
+                        "entry_state": "posted",
+                        "line_no": 1,
+                        "party_id": "01J90000000000000000000202",
+                        "currency": "EUR",
+                        "amount_minor": 1,
+                        "base_minor": 1,
+                        "running_base_minor": 1,
+                        "memo": "memo"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "base_currency": "EUR",
+            "accounts": [
+              {
+                "account_code": "account_code",
+                "account_name": "account_name",
+                "account_name_en": "account_name_en",
+                "opening_base_minor": 1,
+                "closing_base_minor": 1,
+                "lines": [
+                  {
+                    "account_code": "account_code",
+                    "economic_date": "2026-09-01",
+                    "journal": "purchases",
+                    "entry_no": 1,
+                    "entry_id": "01J90000000000000000000201",
+                    "entry_state": "posted",
+                    "line_no": 1,
+                    "party_id": "01J90000000000000000000202",
+                    "currency": "EUR",
+                    "amount_minor": 1,
+                    "base_minor": 1,
+                    "running_base_minor": 1,
+                    "memo": "memo"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.open-items.retrieve",
+      "description": "`open_items.retrieve` sends GET /api/companies/cmp0000001/open-items/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "open_items.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "as_of": "2026-09-30"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/open-items/",
+            "query": [
+              [
+                "as_of",
+                "2026-09-30"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "as_of": "2026-09-01",
+                "base_currency": "EUR",
+                "items": [
+                  {
+                    "line_id": "01J90000000000000000000203",
+                    "entry_id": "01J90000000000000000000204",
+                    "account_code": "account_code",
+                    "control_kind": "payable",
+                    "party_id": "01J90000000000000000000205",
+                    "party_name": "party_name",
+                    "currency": "EUR",
+                    "side": "side",
+                    "amount_minor": 1,
+                    "base_minor": 1,
+                    "residual_minor": 1,
+                    "residual_base_minor": 1,
+                    "due_date": "2026-09-01",
+                    "economic_date": "2026-09-01",
+                    "invoice_id": "01J90000000000000000000206",
+                    "invoice_number": "invoice_number",
+                    "bank_transaction_id": "01J90000000000000000000207",
+                    "days_overdue": 1,
+                    "aging_bucket": "no_due_date"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "as_of": "2026-09-01",
+            "base_currency": "EUR",
+            "items": [
+              {
+                "line_id": "01J90000000000000000000203",
+                "entry_id": "01J90000000000000000000204",
+                "account_code": "account_code",
+                "control_kind": "payable",
+                "party_id": "01J90000000000000000000205",
+                "party_name": "party_name",
+                "currency": "EUR",
+                "side": "side",
+                "amount_minor": 1,
+                "base_minor": 1,
+                "residual_minor": 1,
+                "residual_base_minor": 1,
+                "due_date": "2026-09-01",
+                "economic_date": "2026-09-01",
+                "invoice_id": "01J90000000000000000000206",
+                "invoice_number": "invoice_number",
+                "bank_transaction_id": "01J90000000000000000000207",
+                "days_overdue": 1,
+                "aging_bucket": "no_due_date"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.reports.balance-sheet",
+      "description": "`reports.balance_sheet` sends GET /api/companies/cmp0000001/reports/balance-sheet/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "reports.balance_sheet",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "date": "2026-09-30",
+          "simplified": true
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/reports/balance-sheet/",
+            "query": [
+              [
+                "date",
+                "2026-09-30"
+              ],
+              [
+                "simplified",
+                "true"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "schema": {
+                  "key": "key",
+                  "version": "version",
+                  "jurisdiction": "jurisdiction",
+                  "kind": "kind",
+                  "name": "name",
+                  "content_hash": "content_hash"
+                },
+                "currency": "EUR",
+                "compare_date": "2026-09-01",
+                "simplified": false,
+                "rows": [
+                  {
+                    "code": "code",
+                    "label": "label",
+                    "label_et": "label_et",
+                    "level": 1,
+                    "kind": "heading",
+                    "amount_minor": 1,
+                    "compare_minor": 1,
+                    "accounts": [
+                      {
+                        "account_code": "account_code",
+                        "account_name": "account_name",
+                        "account_name_en": "account_name_en",
+                        "amount_minor": 1,
+                        "compare_minor": 1
+                      }
+                    ]
+                  }
+                ],
+                "total_assets_minor": 1,
+                "total_liabilities_and_equity_minor": 1,
+                "balanced": false,
+                "compare_balanced": false,
+                "unmapped_accounts": [
+                  "unmapped_accounts"
+                ],
+                "date": "2026-09-01"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "schema": {
+              "key": "key",
+              "version": "version",
+              "jurisdiction": "jurisdiction",
+              "kind": "kind",
+              "name": "name",
+              "content_hash": "content_hash"
+            },
+            "currency": "EUR",
+            "compare_date": "2026-09-01",
+            "simplified": false,
+            "rows": [
+              {
+                "code": "code",
+                "label": "label",
+                "label_et": "label_et",
+                "level": 1,
+                "kind": "heading",
+                "amount_minor": 1,
+                "compare_minor": 1,
+                "accounts": [
+                  {
+                    "account_code": "account_code",
+                    "account_name": "account_name",
+                    "account_name_en": "account_name_en",
+                    "amount_minor": 1,
+                    "compare_minor": 1
+                  }
+                ]
+              }
+            ],
+            "total_assets_minor": 1,
+            "total_liabilities_and_equity_minor": 1,
+            "balanced": false,
+            "compare_balanced": false,
+            "unmapped_accounts": [
+              "unmapped_accounts"
+            ],
+            "date": "2026-09-01"
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.reports.profit-and-loss",
+      "description": "`reports.profit_and_loss` sends GET /api/companies/cmp0000001/reports/profit-and-loss/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "reports.profit_and_loss",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "date_from": "2026-01-01",
+          "date_to": "2026-09-30"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/reports/profit-and-loss/",
+            "query": [
+              [
+                "date_from",
+                "2026-01-01"
+              ],
+              [
+                "date_to",
+                "2026-09-30"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "schema": {
+                  "key": "key",
+                  "version": "version",
+                  "jurisdiction": "jurisdiction",
+                  "kind": "kind",
+                  "name": "name",
+                  "content_hash": "content_hash"
+                },
+                "currency": "EUR",
+                "compare_from": "2026-09-01",
+                "compare_to": "2026-09-01",
+                "simplified": false,
+                "rows": [
+                  {
+                    "code": "code",
+                    "label": "label",
+                    "label_et": "label_et",
+                    "level": 1,
+                    "kind": "heading",
+                    "amount_minor": 1,
+                    "compare_minor": 1,
+                    "accounts": [
+                      {
+                        "account_code": "account_code",
+                        "account_name": "account_name",
+                        "account_name_en": "account_name_en",
+                        "amount_minor": 1,
+                        "compare_minor": 1
+                      }
+                    ]
+                  }
+                ],
+                "result_minor": 1,
+                "compare_result_minor": 1,
+                "unmapped_accounts": [
+                  "unmapped_accounts"
+                ],
+                "from": "2026-09-01",
+                "to": "2026-09-01"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "schema": {
+              "key": "key",
+              "version": "version",
+              "jurisdiction": "jurisdiction",
+              "kind": "kind",
+              "name": "name",
+              "content_hash": "content_hash"
+            },
+            "currency": "EUR",
+            "compare_from": "2026-09-01",
+            "compare_to": "2026-09-01",
+            "simplified": false,
+            "rows": [
+              {
+                "code": "code",
+                "label": "label",
+                "label_et": "label_et",
+                "level": 1,
+                "kind": "heading",
+                "amount_minor": 1,
+                "compare_minor": 1,
+                "accounts": [
+                  {
+                    "account_code": "account_code",
+                    "account_name": "account_name",
+                    "account_name_en": "account_name_en",
+                    "amount_minor": 1,
+                    "compare_minor": 1
+                  }
+                ]
+              }
+            ],
+            "result_minor": 1,
+            "compare_result_minor": 1,
+            "unmapped_accounts": [
+              "unmapped_accounts"
+            ],
+            "from": "2026-09-01",
+            "to": "2026-09-01"
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.trial-balance.retrieve",
+      "description": "`trial_balance.retrieve` sends GET /api/companies/cmp0000001/trial-balance/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "trial_balance.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "period": "2026-09"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/trial-balance/",
+            "query": [
+              [
+                "period",
+                "2026-09"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "base_currency": "EUR",
+                "rows": [
+                  {
+                    "account_code": "account_code",
+                    "account_name": "account_name",
+                    "account_name_en": "account_name_en",
+                    "account_type": "asset",
+                    "opening_base_minor": 1,
+                    "debit_base_minor": 1,
+                    "credit_base_minor": 1,
+                    "closing_base_minor": 1
+                  }
+                ],
+                "total_debit_base_minor": 1,
+                "total_credit_base_minor": 1,
+                "balanced": false,
+                "from": "2026-09-01",
+                "to": "2026-09-01"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "base_currency": "EUR",
+            "rows": [
+              {
+                "account_code": "account_code",
+                "account_name": "account_name",
+                "account_name_en": "account_name_en",
+                "account_type": "asset",
+                "opening_base_minor": 1,
+                "debit_base_minor": 1,
+                "credit_base_minor": 1,
+                "closing_base_minor": 1
+              }
+            ],
+            "total_debit_base_minor": 1,
+            "total_credit_base_minor": 1,
+            "balanced": false,
+            "from": "2026-09-01",
+            "to": "2026-09-01"
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.vat-preview.retrieve",
+      "description": "`vat_preview.retrieve` sends GET /api/companies/cmp0000001/vat-preview/ with its query and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "vat_preview.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "period_from": "2026-09-01",
+          "period_to": "2026-09-30"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/vat-preview/",
+            "query": [
+              [
+                "period_from",
+                "2026-09-01"
+              ],
+              [
+                "period_to",
+                "2026-09-30"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "form": "form",
+                "form_version": "form_version",
+                "period_from": "2026-09-01",
+                "period_to": "2026-09-01",
+                "boxes": {},
+                "base_currency": "EUR",
+                "recognitions": 1
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "form": "form",
+            "form_version": "form_version",
+            "period_from": "2026-09-01",
+            "period_to": "2026-09-01",
+            "boxes": {},
+            "base_currency": "EUR",
+            "recognitions": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.inbox.retrieve",
+      "description": "`inbox.retrieve` sends GET /api/companies/cmp0000001/inbox/ and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "inbox.retrieve",
+        "path": {
+          "company_id": "cmp0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/inbox/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "address": "mock-company-ou-7k2m9q@inbox.oscaraccountant.com",
+                "address_created_at": "2026-09-27T10:00:00Z",
+                "counts": {
+                  "received": 3,
+                  "documents": 1,
+                  "not_an_invoice": 1,
+                  "failed": 0
+                },
+                "gmail_filter_query": "(has:attachment (invoice OR arve OR receipt OR kviitung OR \"tax invoice\" OR Rechnung OR facture OR lasku OR \"sąskaita\")) -from:me",
+                "gmail_filter_query_broad": "has:attachment filename:pdf -from:me",
+                "forwarding_confirmation": {
+                  "requesting_address": "mock@example.com",
+                  "status": "sent",
+                  "sent_at": "2026-09-27T10:00:00Z",
+                  "forwarding_works": true
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "address": "mock-company-ou-7k2m9q@inbox.oscaraccountant.com",
+            "address_created_at": "2026-09-27T10:00:00Z",
+            "counts": {
+              "received": 3,
+              "documents": 1,
+              "not_an_invoice": 1,
+              "failed": 0
+            },
+            "gmail_filter_query": "(has:attachment (invoice OR arve OR receipt OR kviitung OR \"tax invoice\" OR Rechnung OR facture OR lasku OR \"sąskaita\")) -from:me",
+            "gmail_filter_query_broad": "has:attachment filename:pdf -from:me",
+            "forwarding_confirmation": {
+              "requesting_address": "mock@example.com",
+              "status": "sent",
+              "sent_at": "2026-09-27T10:00:00Z",
+              "forwarding_works": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.inbox.list-emails",
+      "description": "`inbox.list_emails` sends GET /api/companies/cmp0000001/inbox/emails/ with its query and returns the first page.",
+      "spec": [
+        "3.2",
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "inbox.list_emails",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 3
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/inbox/emails/",
+            "query": [
+              [
+                "limit",
+                "3"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "eml0000001",
+                    "received_at": "2026-09-27T10:00:00Z",
+                    "sender": "billing@supplier.example",
+                    "forwarded_by": "mock@example.com",
+                    "subject": "Invoice 2026-118",
+                    "status": "done",
+                    "outcome": "documents",
+                    "unknown_sender": false,
+                    "not_authenticated": false,
+                    "files": [
+                      {
+                        "id": "fil0000002",
+                        "filename": "invoice-2026-118.pdf",
+                        "draft_id": "drf0000001"
+                      }
+                    ],
+                    "raw_message_id": "fil0000003",
+                    "skipped_attachments": []
+                  },
+                  {
+                    "id": "eml0000002",
+                    "received_at": "2026-09-26T10:00:00Z",
+                    "sender": "news@shop.example",
+                    "forwarded_by": "",
+                    "subject": "Terms of service",
+                    "status": "done",
+                    "outcome": "not_an_invoice",
+                    "unknown_sender": true,
+                    "not_authenticated": false,
+                    "files": [],
+                    "raw_message_id": null,
+                    "skipped_attachments": [
+                      {
+                        "filename": "terms.pdf",
+                        "size": 48213,
+                        "reason": "not_an_invoice"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "eml0000003",
+                    "received_at": "2026-09-25T10:00:00Z",
+                    "sender": "unknown@spoof.example",
+                    "forwarded_by": "",
+                    "subject": "Your receipt",
+                    "status": "received",
+                    "outcome": "",
+                    "unknown_sender": true,
+                    "not_authenticated": true,
+                    "files": [],
+                    "raw_message_id": null,
+                    "skipped_attachments": []
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "eml0000001",
+                "received_at": "2026-09-27T10:00:00Z",
+                "sender": "billing@supplier.example",
+                "forwarded_by": "mock@example.com",
+                "subject": "Invoice 2026-118",
+                "status": "done",
+                "outcome": "documents",
+                "unknown_sender": false,
+                "not_authenticated": false,
+                "files": [
+                  {
+                    "id": "fil0000002",
+                    "filename": "invoice-2026-118.pdf",
+                    "draft_id": "drf0000001"
+                  }
+                ],
+                "raw_message_id": "fil0000003",
+                "skipped_attachments": []
+              },
+              {
+                "id": "eml0000002",
+                "received_at": "2026-09-26T10:00:00Z",
+                "sender": "news@shop.example",
+                "forwarded_by": "",
+                "subject": "Terms of service",
+                "status": "done",
+                "outcome": "not_an_invoice",
+                "unknown_sender": true,
+                "not_authenticated": false,
+                "files": [],
+                "raw_message_id": null,
+                "skipped_attachments": [
+                  {
+                    "filename": "terms.pdf",
+                    "size": 48213,
+                    "reason": "not_an_invoice"
+                  }
+                ]
+              },
+              {
+                "id": "eml0000003",
+                "received_at": "2026-09-25T10:00:00Z",
+                "sender": "unknown@spoof.example",
+                "forwarded_by": "",
+                "subject": "Your receipt",
+                "status": "received",
+                "outcome": "",
+                "unknown_sender": true,
+                "not_authenticated": true,
+                "files": [],
+                "raw_message_id": null,
+                "skipped_attachments": []
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.inbox.rotate",
+      "description": "`inbox.rotate` sends POST /api/companies/cmp0000001/inbox/rotate/ with no body and no Idempotency-Key, and returns the object.",
+      "spec": [
+        "3.2",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "inbox.rotate",
+        "path": {
+          "company_id": "cmp0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/inbox/rotate/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "address": "mock-company-ou-3h8w5x@inbox.oscaraccountant.com",
+                "address_created_at": "2026-09-28T10:00:00Z",
+                "counts": {
+                  "received": 0,
+                  "documents": 0,
+                  "not_an_invoice": 0,
+                  "failed": 0
+                },
+                "gmail_filter_query": "(has:attachment (invoice OR arve OR receipt OR kviitung OR \"tax invoice\" OR Rechnung OR facture OR lasku OR \"sąskaita\")) -from:me",
+                "gmail_filter_query_broad": "has:attachment filename:pdf -from:me",
+                "forwarding_confirmation": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "address": "mock-company-ou-3h8w5x@inbox.oscaraccountant.com",
+            "address_created_at": "2026-09-28T10:00:00Z",
+            "counts": {
+              "received": 0,
+              "documents": 0,
+              "not_an_invoice": 0,
+              "failed": 0
+            },
+            "gmail_filter_query": "(has:attachment (invoice OR arve OR receipt OR kviitung OR \"tax invoice\" OR Rechnung OR facture OR lasku OR \"sąskaita\")) -from:me",
+            "gmail_filter_query_broad": "has:attachment filename:pdf -from:me",
+            "forwarding_confirmation": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.record",
+      "description": "`invoices.record` sends POST /api/companies/cmp0000001/invoices with the JSON body and an automatic Idempotency-Key, and returns the outcome.",
+      "spec": [
+        "3.3",
+        "3.5",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.record",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "body": {
+          "direction": "purchase",
+          "party_id": "01J90000000000000000000179",
+          "number": "INV-2026-001",
+          "revision": {
+            "invoice_date": "2026-09-01",
+            "due_date": "2026-09-15",
+            "currency": "EUR",
+            "lines": [
+              {
+                "description": "Consulting",
+                "net_minor": 10000,
+                "vat_code": "VAT24",
+                "tax_minor": 2400
+              }
+            ]
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000208",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "line_ids": [
+                    "line_ids"
+                  ],
+                  "invoice_id": "01J90000000000000000000209",
+                  "revision_id": "01J90000000000000000000210"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000208",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "line_ids": [
+                "line_ids"
+              ],
+              "invoice_id": "01J90000000000000000000209",
+              "revision_id": "01J90000000000000000000210"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.cancel",
+      "description": "`invoices.cancel` sends POST /api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel with the JSON body and an automatic Idempotency-Key, and returns the outcome.",
+      "spec": [
+        "3.3",
+        "3.5",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.issue",
+      "description": "`invoices.issue` sends POST /api/companies/cmp0000001/invoices/01J90000000000000000000116/issue with the JSON body and an automatic Idempotency-Key, and returns the outcome.",
+      "spec": [
+        "3.3",
+        "3.5",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.issue",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "number": "S-2026-001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/issue",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "number": "S-2026-001"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000213",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "number": "number",
+                  "reference_number": "20260011",
+                  "invoice_id": "01J90000000000000000000214"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000213",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "number": "number",
+              "reference_number": "20260011",
+              "invoice_id": "01J90000000000000000000214"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.invoices.revise",
+      "description": "`invoices.revise` sends POST /api/companies/cmp0000001/invoices/01J90000000000000000000116/revise with the JSON body and an automatic Idempotency-Key, and returns the outcome.",
+      "spec": [
+        "3.3",
+        "3.5",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.revise",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Wrong due date",
+          "revision": {
+            "invoice_date": "2026-09-01",
+            "due_date": "2026-09-30",
+            "currency": "EUR",
+            "lines": [
+              {
+                "description": "Consulting",
+                "net_minor": 10000,
+                "vat_code": "VAT24",
+                "tax_minor": 2400
+              }
+            ]
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/revise",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Wrong due date",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-30",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000216",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000216",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.parties.create",
+      "description": "`parties.create` sends POST /api/companies/cmp0000001/parties with the JSON body and an automatic Idempotency-Key, and returns the outcome.",
+      "spec": [
+        "3.3",
+        "3.5",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "parties.create",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "body": {
+          "name": "Mock Supplier OÜ",
+          "kind": "supplier",
+          "country": "EE",
+          "reg_code": "87654321"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/parties",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "name": "Mock Supplier OÜ",
+                "kind": "supplier",
+                "country": "EE",
+                "reg_code": "87654321"
+              }
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000211",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "vat_area": "vat_area",
+                  "party_id": "01J90000000000000000000212",
+                  "name_key": "name_key"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000211",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "vat_area": "vat_area",
+              "party_id": "01J90000000000000000000212",
+              "name_key": "name_key"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.files.list",
+      "description": "`files.list` sends GET /api/companies/{company_id}/files/ and returns the first page.",
+      "spec": [
+        "3.6",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "kind": "invoice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [
+              [
+                "kind",
+                "invoice"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "fil0000001",
+                    "kind": "invoice",
+                    "name": "invoice.pdf",
+                    "content_type": "application/pdf",
+                    "size_bytes": 24,
+                    "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+                    "received_on": "2026-09-01",
+                    "core_document_id": "01J90000000000000000000218",
+                    "bank_transaction_ids": [
+                      "bank_transaction_ids"
+                    ],
+                    "uploaded_by": "uploaded_by",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "origin": null
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "fil0000001",
+                "kind": "invoice",
+                "name": "invoice.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 24,
+                "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+                "received_on": "2026-09-01",
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "bank_transaction_ids"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            ],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.files.retrieve",
+      "description": "`files.retrieve` sends GET /api/companies/{company_id}/files/{file_id}/.",
+      "spec": [
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "file_id": "fil0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/fil0000001/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "fil0000001",
+                "kind": "invoice",
+                "name": "invoice.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 24,
+                "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+                "received_on": "2026-09-01",
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "bank_transaction_ids"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "fil0000001",
+            "kind": "invoice",
+            "name": "invoice.pdf",
+            "content_type": "application/pdf",
+            "size_bytes": 24,
+            "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+            "received_on": "2026-09-01",
+            "core_document_id": "01J90000000000000000000218",
+            "bank_transaction_ids": [
+              "bank_transaction_ids"
+            ],
+            "uploaded_by": "uploaded_by",
+            "created_at": "2026-09-27T10:00:00Z",
+            "origin": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.files.upload",
+      "description": "`files.upload` sends a multipart body with the file and the fields the caller set.",
+      "spec": [
+        "3.8",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.upload",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "multipart": {
+          "fields": {
+            "kind": "receipt",
+            "received_on": "2026-09-20"
+          },
+          "file": {
+            "field": "file",
+            "filename": "receipt.pdf",
+            "content_type": "application/pdf",
+            "content_base64": "JVBERi0xLjQKJSBjb25mb3JtYW5jZSB1cGxvYWQK"
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": {
+                "pattern": "^multipart/form-data; ?boundary="
+              },
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "multipart",
+              "parts": [
+                {
+                  "name": "file",
+                  "filename": "receipt.pdf",
+                  "content_type": "application/pdf",
+                  "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51"
+                },
+                {
+                  "name": "kind",
+                  "value": "receipt"
+                },
+                {
+                  "name": "received_on",
+                  "value": "2026-09-20"
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "fil0000002",
+                "kind": "receipt",
+                "name": "receipt.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 30,
+                "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+                "received_on": "2026-09-20",
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "bank_transaction_ids"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "fil0000002",
+            "kind": "receipt",
+            "name": "receipt.pdf",
+            "content_type": "application/pdf",
+            "size_bytes": 30,
+            "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+            "received_on": "2026-09-20",
+            "core_document_id": "01J90000000000000000000218",
+            "bank_transaction_ids": [
+              "bank_transaction_ids"
+            ],
+            "uploaded_by": "uploaded_by",
+            "created_at": "2026-09-27T10:00:00Z",
+            "origin": null
+          }
+        }
+      }
+    },
+    {
+      "id": "operations.files.download",
+      "description": "`files.download` sends GET .../content/ with Accept */* and no format parameter, and gives the bytes.",
+      "spec": [
+        "3.3",
+        "3.8",
+        "5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.download",
+        "path": {
+          "company_id": "cmp0000001",
+          "file_id": "fil0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/fil0000001/content/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "*/*",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "headers": {
+              "content-type": "application/pdf",
+              "content-disposition": "inline; filename=\"invoice.pdf\""
+            },
+            "body": {
+              "kind": "base64",
+              "value": "JVBERi0xLjQKJSBtb2NrIGludm9pY2UK"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "binary",
+          "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+          "size": 24,
+          "content_type": "application/pdf",
+          "filename": "invoice.pdf"
+        }
+      }
+    }
+  ]
+}

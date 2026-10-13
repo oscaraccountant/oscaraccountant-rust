@@ -1,0 +1,40 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: inbox --company cmp0000001
+---
+=== 80 columns
+[1mmock-company-ou-7k2m9q@inbox.oscaraccountant.com[0m
+
+[90mAddress created at[0m        2026-09-27
+[90mGmail filter query[0m        (has:attachment (invoice OR arve OR receipt OR kviitung OR "tax invoice" OR Rechnung OR facture OR lasku OR "sąskaita")) -from:me
+[90mGmail filter query broad[0m  has:attachment filename:pdf -from:me
+
+[1mCounts[0m
+  [90mReceived[0m        3
+  [90mDocuments[0m       1
+  [90mNot an invoice[0m  1
+  [90mFailed[0m          0
+
+[1mForwarding confirmation[0m
+  [90mRequesting address[0m  mock@example.com
+  [90mStatus[0m              [33m● [0m[33msent[0m
+  [90mSent at[0m             2026-09-27
+  [90mForwarding works[0m    yes
+=== 120 columns
+[1mmock-company-ou-7k2m9q@inbox.oscaraccountant.com[0m
+
+[90mAddress created at[0m        2026-09-27
+[90mGmail filter query[0m        (has:attachment (invoice OR arve OR receipt OR kviitung OR "tax invoice" OR Rechnung OR facture OR lasku OR "sąskaita")) -from:me
+[90mGmail filter query broad[0m  has:attachment filename:pdf -from:me
+
+[1mCounts[0m
+  [90mReceived[0m        3
+  [90mDocuments[0m       1
+  [90mNot an invoice[0m  1
+  [90mFailed[0m          0
+
+[1mForwarding confirmation[0m
+  [90mRequesting address[0m  mock@example.com
+  [90mStatus[0m              [33m● [0m[33msent[0m
+  [90mSent at[0m             2026-09-27
+  [90mForwarding works[0m    yes

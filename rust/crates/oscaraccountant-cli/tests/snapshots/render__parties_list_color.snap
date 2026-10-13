@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: parties list --company cmp0000001
+---
+=== 80 columns
+[1mNAME[0m  [1mKIND[0m      [1mREG CODE[0m  [1mVAT NUMBER[0m  [1mCOUNTRY[0m
+name  supplier  reg_code  vat_number  country
+name  supplier  reg_code  vat_number  country
+name  supplier  reg_code  vat_number  country
+=== 120 columns
+[1mNAME[0m  [1mKIND[0m      [1mREG CODE[0m  [1mVAT NUMBER[0m  [1mCOUNTRY[0m
+name  supplier  reg_code  vat_number  country
+name  supplier  reg_code  vat_number  country
+name  supplier  reg_code  vat_number  country

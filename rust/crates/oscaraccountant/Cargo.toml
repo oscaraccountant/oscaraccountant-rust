@@ -1,0 +1,45 @@
+[package]
+name = "oscaraccountant"
+description = "The Rust SDK of the Oscar accounting API."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["accounting", "bookkeeping", "api", "sdk", "oscar"]
+categories = ["api-bindings", "web-programming::http-client"]
+
+[lints]
+workspace = true
+
+[dependencies]
+bytes = "1"
+futures = { version = "0.3", default-features = false, features = ["std", "async-await"] }
+httpdate = "1"
+percent-encoding = "2"
+# rustls with ring, and never OpenSSL: no `native-tls`, and no aws-lc-rs (it needs a C toolchain
+# for the musl build of the CLI). `rustls-no-provider` leaves the choice of the provider to us:
+# the client builds its own rustls configuration with ring (src/transport.rs).
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "http2", "stream"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+rustls-platform-verifier = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["time", "process", "fs", "io-util", "sync"] }
+url = "2"
+uuid = { version = "1", features = ["v4"] }
+webpki-roots = "1"
+
+[dev-dependencies]
+# base64, regex and ring: the conformance runner (src/conformance), which decodes the bodies of
+# the cases, matches header patterns and compares SHA-256 digests. All three are already in the tree.
+base64 = "0.22"
+regex = "1"
+ring = "0.17"
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
+wiremock = "0.6"

@@ -1,0 +1,1425 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Pagination",
+  "description": "One page, and the iterator over every page (clients/spec/README.md, section 3.6).",
+  "cases": [
+    {
+      "id": "pagination.all-pages",
+      "description": "The iterator walks three pages: the same query each time, with cursor set to the last next_cursor, until next_cursor is null.",
+      "spec": [
+        "3.6"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 1,
+          "state": "recorded"
+        },
+        "mode": "all"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "limit",
+                "1"
+              ],
+              [
+                "state",
+                "recorded"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000116",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000117",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000118",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000119",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "1"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "1"
+              ],
+              [
+                "limit",
+                "1"
+              ],
+              [
+                "state",
+                "recorded"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "2"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "2"
+              ],
+              [
+                "limit",
+                "1"
+              ],
+              [
+                "state",
+                "recorded"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000124",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000125",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000126",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000127",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "items",
+          "value": [
+            {
+              "id": "01J90000000000000000000116",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000117",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000118",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000119",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            },
+            {
+              "id": "01J90000000000000000000120",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000121",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000122",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000123",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            },
+            {
+              "id": "01J90000000000000000000124",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000125",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000126",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000127",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pagination.one-page",
+      "description": "The list method gives one page and sends one request, even when next_cursor is set.",
+      "spec": [
+        "3.6"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 2
+        },
+        "mode": "page"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000116",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000117",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000118",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000119",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  },
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "2"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [
+              {
+                "id": "01J90000000000000000000116",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000117",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000118",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000119",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted"
+              },
+              {
+                "id": "01J90000000000000000000120",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "recorded",
+                "number": "number",
+                "party_id": "01J90000000000000000000121",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000122",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000123",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted"
+              }
+            ],
+            "next_cursor": "2"
+          }
+        }
+      }
+    },
+    {
+      "id": "pagination.empty",
+      "description": "The iterator over an empty list sends one request and gives no item.",
+      "spec": [
+        "3.6"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "parties.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "search": "nobody"
+        },
+        "mode": "all"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/parties/",
+            "query": [
+              [
+                "search",
+                "nobody"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "items",
+          "value": []
+        }
+      }
+    },
+    {
+      "id": "pagination.caller-cursor",
+      "description": "A cursor the caller gives is sent on the first request, and the iterator goes on from there.",
+      "spec": [
+        "3.6"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "cursor": "1"
+        },
+        "mode": "all"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "1"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "2"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000124",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000125",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000126",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000127",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "items",
+          "value": [
+            {
+              "id": "01J90000000000000000000120",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000121",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000122",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000123",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            },
+            {
+              "id": "01J90000000000000000000124",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000125",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000126",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000127",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pagination.retry-on-a-page",
+      "description": "Each page is a separate GET with its own retries: a 503 on the second page is retried.",
+      "spec": [
+        "3.4",
+        "3.6"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 2
+        },
+        "mode": "all"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000116",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000117",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000118",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000119",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  },
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "2"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "2"
+              ],
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "2"
+              ],
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000124",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000125",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000126",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000127",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "items",
+          "value": [
+            {
+              "id": "01J90000000000000000000116",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000117",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000118",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000119",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            },
+            {
+              "id": "01J90000000000000000000120",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000121",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000122",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000123",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            },
+            {
+              "id": "01J90000000000000000000124",
+              "direction": "purchase",
+              "kind": "invoice",
+              "sign": 1,
+              "state": "recorded",
+              "number": "number",
+              "party_id": "01J90000000000000000000125",
+              "party_name": "party_name",
+              "corrects_invoice_id": "01J90000000000000000000126",
+              "origin": "origin",
+              "issued_at": "2026-09-27T10:00:00Z",
+              "cancelled_at": "2026-09-27T10:00:00Z",
+              "cancel_reason": "cancel_reason",
+              "created_at": "2026-09-27T10:00:00Z",
+              "reference_number": null,
+              "external_source": "external_source",
+              "revision_id": "01J90000000000000000000127",
+              "revision_no": 1,
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "needs_review": false,
+              "review_note": "review_note",
+              "open_minor": 1,
+              "settlement_state": "unposted"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pagination.error-on-a-page",
+      "description": "An error on a later page ends the iterator with that error.",
+      "spec": [
+        "3.6",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "limit": 2
+        },
+        "mode": "all"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [
+                  {
+                    "id": "01J90000000000000000000116",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000117",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000118",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000119",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  },
+                  {
+                    "id": "01J90000000000000000000120",
+                    "direction": "purchase",
+                    "kind": "invoice",
+                    "sign": 1,
+                    "state": "recorded",
+                    "number": "number",
+                    "party_id": "01J90000000000000000000121",
+                    "party_name": "party_name",
+                    "corrects_invoice_id": "01J90000000000000000000122",
+                    "origin": "origin",
+                    "issued_at": "2026-09-27T10:00:00Z",
+                    "cancelled_at": "2026-09-27T10:00:00Z",
+                    "cancel_reason": "cancel_reason",
+                    "created_at": "2026-09-27T10:00:00Z",
+                    "reference_number": null,
+                    "external_source": "external_source",
+                    "revision_id": "01J90000000000000000000123",
+                    "revision_no": 1,
+                    "invoice_date": "2026-09-01",
+                    "supply_date": "2026-09-01",
+                    "due_date": "2026-09-01",
+                    "currency": "EUR",
+                    "net_minor": 1,
+                    "tax_minor": 1,
+                    "gross_minor": 1,
+                    "prepaid_minor": 1,
+                    "rounding_minor": 1,
+                    "amount_due_minor": 1,
+                    "base_gross_minor": 1,
+                    "base_currency": "EUR",
+                    "needs_review": false,
+                    "review_note": "review_note",
+                    "open_minor": 1,
+                    "settlement_state": "unposted"
+                  }
+                ],
+                "next_cursor": "2"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/",
+            "query": [
+              [
+                "cursor",
+                "2"
+              ],
+              [
+                "limit",
+                "2"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 400,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/validation_error",
+                "title": "The request is not valid",
+                "status": 400,
+                "code": "validation_error",
+                "detail": "The cursor is not valid.",
+                "errors": [
+                  {
+                    "field": "cursor",
+                    "code": "invalid",
+                    "detail": "The cursor is not valid."
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "BadRequestError",
+          "status": 400,
+          "code": "validation_error",
+          "title": "The request is not valid",
+          "detail": "The cursor is not valid.",
+          "errors": [
+            {
+              "field": "cursor",
+              "code": "invalid",
+              "detail": "The cursor is not valid."
+            }
+          ],
+          "request_id": "req_conformance_1",
+          "message": "400 validation_error: The cursor is not valid. (request req_conformance_1)"
+        }
+      }
+    }
+  ]
+}

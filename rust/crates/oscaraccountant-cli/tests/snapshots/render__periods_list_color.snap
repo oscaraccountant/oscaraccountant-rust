@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: periods list --company cmp0000001
+---
+=== 80 columns
+[1mCODE[0m  [1mSTART DATE[0m  [1mEND DATE[0m    [1mSTATE[0m   [1mFISCAL YEAR LABEL[0m
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label
+=== 120 columns
+[1mCODE[0m  [1mSTART DATE[0m  [1mEND DATE[0m    [1mSTATE[0m   [1mFISCAL YEAR LABEL[0m
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label
+code  2026-09-01  2026-09-01  [32m● [0m[32mopen[0m  fiscal_year_label

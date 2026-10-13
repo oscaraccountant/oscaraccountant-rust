@@ -1,0 +1,18 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: open-items --as-of 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+As of          2026-09-01
+Base currency  EUR
+
+Items (1)
+  INVOICE NUMBER  PARTY NAME  DUE DATE    RESIDUAL  DAYS OVERDUE  AGING BUCKET
+  invoice_number  party_name  2026-09-01  0.01 EUR             1  ● no due date
+=== 120 columns
+As of          2026-09-01
+Base currency  EUR
+
+Items (1)
+  INVOICE NUMBER  PARTY NAME  DUE DATE    RESIDUAL  DAYS OVERDUE  AGING BUCKET
+  invoice_number  party_name  2026-09-01  0.01 EUR             1  ● no due date

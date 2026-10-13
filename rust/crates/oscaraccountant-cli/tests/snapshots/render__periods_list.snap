@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: periods list --company cmp0000001
+---
+=== 80 columns
+CODE  START DATE  END DATE    STATE   FISCAL YEAR LABEL
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label
+=== 120 columns
+CODE  START DATE  END DATE    STATE   FISCAL YEAR LABEL
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label
+code  2026-09-01  2026-09-01  ● open  fiscal_year_label

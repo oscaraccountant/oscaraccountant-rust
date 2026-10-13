@@ -1,0 +1,11 @@
+{
+  "$comment": "The platform packages of @oscaraccountant/cli: one binary each. `key` is `${process.platform}-${process.arch}` of Node; `target` is the Rust target that builds it.",
+  "platforms": [
+    { "key": "darwin-arm64", "os": "darwin", "cpu": "arm64", "target": "aarch64-apple-darwin", "binary": "oscar", "label": "macOS arm64" },
+    { "key": "darwin-x64", "os": "darwin", "cpu": "x64", "target": "x86_64-apple-darwin", "binary": "oscar", "label": "macOS x64" },
+    { "key": "linux-x64", "os": "linux", "cpu": "x64", "target": "x86_64-unknown-linux-musl", "binary": "oscar", "label": "Linux x64 (static, musl)" },
+    { "key": "linux-arm64", "os": "linux", "cpu": "arm64", "target": "aarch64-unknown-linux-musl", "binary": "oscar", "label": "Linux arm64 (static, musl)" },
+    { "key": "win32-x64", "os": "win32", "cpu": "x64", "target": "x86_64-pc-windows-msvc", "binary": "oscar.exe", "label": "Windows x64" },
+    { "key": "win32-arm64", "os": "win32", "cpu": "arm64", "target": "aarch64-pc-windows-msvc", "binary": "oscar.exe", "label": "Windows arm64" }
+  ]
+}

@@ -1,0 +1,74 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: companies get --company cmp0000001
+---
+=== 80 columns
+Mock Company OÜ  ● ready
+
+Registry code      12345678
+VAT number         EE123456789
+VAT status         registered
+VAT status from    2026-09-01
+Legal form         OÜ
+Files TSD monthly  no
+Base currency      EUR
+Role               owner
+Permissions        organization.read
+View as            owner
+Refresh pending    no
+
+Status
+  Bank lines to classify      1
+  Payments to explain         1
+  Documents to book           1
+  Pending proposals           1
+  Open periods                1
+  VAT returns due             1
+  Next VAT due date           2026-09-01
+  Last bank import at         2026-09-27
+  Overdue receivables         1
+  Overdue receivables amount  0.01 EUR
+  Refreshed at                2026-09-27
+  Refresh error               refresh_error
+
+Meta
+  ID               cmp0000001
+  Organization ID  org0000001
+  Core company ID  01J90000000000000000000007
+  Created at       2026-09-27T10:00:00Z
+  Updated at       2026-09-27T10:00:00Z
+=== 120 columns
+Mock Company OÜ  ● ready
+
+Registry code      12345678
+VAT number         EE123456789
+VAT status         registered
+VAT status from    2026-09-01
+Legal form         OÜ
+Files TSD monthly  no
+Base currency      EUR
+Role               owner
+Permissions        organization.read
+View as            owner
+Refresh pending    no
+
+Status
+  Bank lines to classify      1
+  Payments to explain         1
+  Documents to book           1
+  Pending proposals           1
+  Open periods                1
+  VAT returns due             1
+  Next VAT due date           2026-09-01
+  Last bank import at         2026-09-27
+  Overdue receivables         1
+  Overdue receivables amount  0.01 EUR
+  Refreshed at                2026-09-27
+  Refresh error               refresh_error
+
+Meta
+  ID               cmp0000001
+  Organization ID  org0000001
+  Core company ID  01J90000000000000000000007
+  Created at       2026-09-27T10:00:00Z
+  Updated at       2026-09-27T10:00:00Z

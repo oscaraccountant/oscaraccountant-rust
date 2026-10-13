@@ -1,0 +1,20 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: general-ledger --account-code 1000 --date-from 2026-01-01 --date-to 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+Base currency  EUR
+
+Accounts (1)
+  ACCOUNT CODE  ACCOUNT NAME     OPENING BASE  CLOSING BASE
+  account_code  account_name_en      0.01 EUR      0.01 EUR
+    ECONOMIC DATE  JOURNAL    ENTRY NO  MEMO    AMOUNT  RUNNING BASE
+    2026-09-01     purchases         1  memo  0.01 EUR      0.01 EUR
+=== 120 columns
+Base currency  EUR
+
+Accounts (1)
+  ACCOUNT CODE  ACCOUNT NAME     OPENING BASE  CLOSING BASE
+  account_code  account_name_en      0.01 EUR      0.01 EUR
+    ECONOMIC DATE  JOURNAL    ENTRY NO  MEMO    AMOUNT  RUNNING BASE
+    2026-09-01     purchases         1  memo  0.01 EUR      0.01 EUR

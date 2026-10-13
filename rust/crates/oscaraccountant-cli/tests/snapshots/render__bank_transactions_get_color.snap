@@ -1,0 +1,114 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: bank-transactions get 01J90000000000000000000029 --company cmp0000001
+---
+=== 80 columns
+[1mcounterparty_name[0m  [33m● [0m[33munmatched[0m  [1m0.01 EUR[0m
+
+[90mBank account label[0m    bank_account_label
+[90mCurrency[0m              EUR
+[90mBooking date[0m          2026-09-01
+[90mValue date[0m            2026-09-01
+[90mDirection[0m             in
+[90mMethod[0m                method
+[90mAmount[0m                0.01 EUR
+[90mFee[0m                   0.01 EUR
+[90mOrig currency[0m         ori
+[90mOrig[0m                  0.01 ori
+[90mBank rate[0m             bank_rate
+[90mBalance after[0m         0.01 EUR
+[90mCounterparty account[0m  counterparty_account
+[90mCounterparty BIC[0m      counterparty_bic
+[90mDescription[0m           description
+[90mReference[0m             reference
+[90mCard last4[0m            card_last4
+[90mMCC[0m                   mcc
+[90mIs internal[0m           [90mno[0m
+[90mParty name[0m            party_name
+[90mParty source[0m          alias
+[90mSuspense residual[0m     0.01 EUR
+[90mHas document[0m          [90mno[0m
+[90mFile IDs[0m              file_ids
+
+[1mEntries[0m [2m(1)[0m
+  [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE KIND[0m
+         1  [32m● [0m[32mposted[0m  2026-09-01     purchases  invoice revision
+
+[1mAllocations[0m [2m(1)[0m
+  [1mSTATE[0m         [1mITEM[0m  [1mEFFECTIVE DATE[0m   [1mCOUNTER[0m  [1mKIND[0m
+  [32m● [0m[32mactive[0m  0.01 ite  2026-09-01      0.01 cou  payment
+
+[1mExemption[0m
+  [90mCounter role[0m  transfer transit
+  [90mReason[0m        reason
+
+[1mMoney in[0m
+  [90mKind[0m    refund
+  [90mReason[0m  reason
+
+[1mTransfer match[0m
+  [90mResidue base[0m   0.01 EUR
+  [90mBase currency[0m  EUR
+
+[2mMeta[0m
+  [2mID               01J90000000000000000000029[0m
+  [2mBank account ID  01J90000000000000000000030[0m
+  [2mStatement ID     01J90000000000000000000031[0m
+  [2mExternal ID      01J90000000000000000000032[0m
+  [2mParty ID         01J90000000000000000000033[0m
+  [2mCreated at       2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1mcounterparty_name[0m  [33m● [0m[33munmatched[0m  [1m0.01 EUR[0m
+
+[90mBank account label[0m    bank_account_label
+[90mCurrency[0m              EUR
+[90mBooking date[0m          2026-09-01
+[90mValue date[0m            2026-09-01
+[90mDirection[0m             in
+[90mMethod[0m                method
+[90mAmount[0m                0.01 EUR
+[90mFee[0m                   0.01 EUR
+[90mOrig currency[0m         ori
+[90mOrig[0m                  0.01 ori
+[90mBank rate[0m             bank_rate
+[90mBalance after[0m         0.01 EUR
+[90mCounterparty account[0m  counterparty_account
+[90mCounterparty BIC[0m      counterparty_bic
+[90mDescription[0m           description
+[90mReference[0m             reference
+[90mCard last4[0m            card_last4
+[90mMCC[0m                   mcc
+[90mIs internal[0m           [90mno[0m
+[90mParty name[0m            party_name
+[90mParty source[0m          alias
+[90mSuspense residual[0m     0.01 EUR
+[90mHas document[0m          [90mno[0m
+[90mFile IDs[0m              file_ids
+
+[1mEntries[0m [2m(1)[0m
+  [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE KIND[0m
+         1  [32m● [0m[32mposted[0m  2026-09-01     purchases  invoice revision
+
+[1mAllocations[0m [2m(1)[0m
+  [1mSTATE[0m         [1mITEM[0m  [1mEFFECTIVE DATE[0m   [1mCOUNTER[0m  [1mKIND[0m
+  [32m● [0m[32mactive[0m  0.01 ite  2026-09-01      0.01 cou  payment
+
+[1mExemption[0m
+  [90mCounter role[0m  transfer transit
+  [90mReason[0m        reason
+
+[1mMoney in[0m
+  [90mKind[0m    refund
+  [90mReason[0m  reason
+
+[1mTransfer match[0m
+  [90mResidue base[0m   0.01 EUR
+  [90mBase currency[0m  EUR
+
+[2mMeta[0m
+  [2mID               01J90000000000000000000029[0m
+  [2mBank account ID  01J90000000000000000000030[0m
+  [2mStatement ID     01J90000000000000000000031[0m
+  [2mExternal ID      01J90000000000000000000032[0m
+  [2mParty ID         01J90000000000000000000033[0m
+  [2mCreated at       2026-09-27T10:00:00Z[0m

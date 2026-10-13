@@ -1,0 +1,56 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: parties get 01J90000000000000000000179 --company cmp0000001
+---
+=== 80 columns
+[1mname[0m
+
+[90mName key[0m          name_key
+[90mKind[0m              supplier
+[90mCountry[0m           country
+[90mVAT area[0m          vat_area
+[90mVAT area source[0m   vat_area_source
+[90mVAT number[0m        vat_number
+[90mVies checked at[0m   2026-09-27
+[90mReg code[0m          reg_code
+[90mExpects document[0m  [90mno[0m
+[90mIs confirmed[0m      [90mno[0m
+[90mNotes[0m             notes
+[90mPrivate persons[0m   [90mno[0m
+
+[1mDefaults[0m
+  [90mExpense role[0m  expense_role
+  [90mVAT code[0m      vat_code
+  [90mCurrency[0m      EUR
+  [90mPayment days[0m  1
+
+[2mMeta[0m
+  [2mID              01J90000000000000000000179[0m
+  [2mMerged into ID  01J90000000000000000000180[0m
+  [2mCreated at      2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1mname[0m
+
+[90mName key[0m          name_key
+[90mKind[0m              supplier
+[90mCountry[0m           country
+[90mVAT area[0m          vat_area
+[90mVAT area source[0m   vat_area_source
+[90mVAT number[0m        vat_number
+[90mVies checked at[0m   2026-09-27
+[90mReg code[0m          reg_code
+[90mExpects document[0m  [90mno[0m
+[90mIs confirmed[0m      [90mno[0m
+[90mNotes[0m             notes
+[90mPrivate persons[0m   [90mno[0m
+
+[1mDefaults[0m
+  [90mExpense role[0m  expense_role
+  [90mVAT code[0m      vat_code
+  [90mCurrency[0m      EUR
+  [90mPayment days[0m  1
+
+[2mMeta[0m
+  [2mID              01J90000000000000000000179[0m
+  [2mMerged into ID  01J90000000000000000000180[0m
+  [2mCreated at      2026-09-27T10:00:00Z[0m

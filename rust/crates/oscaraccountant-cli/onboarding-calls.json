@@ -1,0 +1,382 @@
+{
+  "description": "The hand-written calls of `oscar onboard`. Written by the test `the_manifest_is_fresh` of the CLI crate; checked against the internal schema of the server.",
+  "calls": [
+    {
+      "name": "me",
+      "method": "GET",
+      "path": "/api/me/",
+      "query": [],
+      "request": [],
+      "response": [
+        "user.email",
+        "organizations[].id",
+        "organizations[].name",
+        "companies[].id",
+        "companies[].name",
+        "cli_min_version"
+      ]
+    },
+    {
+      "name": "onboarding state",
+      "method": "GET",
+      "path": "/api/onboarding/",
+      "query": [],
+      "request": [],
+      "response": [
+        "current_step",
+        "steps[].key",
+        "steps[].status",
+        "company.id",
+        "company.name",
+        "company.registry_code",
+        "company.organization.name",
+        "blocked_reason",
+        "draft.registry_code"
+      ]
+    },
+    {
+      "name": "save the company step",
+      "method": "PATCH",
+      "path": "/api/onboarding/",
+      "query": [],
+      "request": [
+        "registry_code",
+        "books_today",
+        "books_no_reason",
+        "books_software",
+        "books_software_other",
+        "website",
+        "no_website"
+      ],
+      "response": [
+        "draft.registry_code",
+        "draft.books_today",
+        "draft.website",
+        "draft.prefill.registry_code",
+        "draft.prefill.values.legal_name",
+        "draft.prefill.values.address",
+        "draft.prefill.legal_form_text",
+        "draft.prefill.registration_date",
+        "draft.prefill.status",
+        "draft.prefill.status_text",
+        "draft.prefill.values.legal_form",
+        "draft.prefill.board_members[].name",
+        "draft.prefill.shareholders[].name",
+        "draft.prefill.shareholders[].share_percent",
+        "draft.prefill.proposed_owners[].name",
+        "draft.prefill.proposed_owners[].share_percent",
+        "draft.prefill.legal_shareholders_to_explain[].name",
+        "draft.prefill.ownership_chain.resolved",
+        "draft.prefill.books_today_default",
+        "draft.prefill.guard",
+        "draft.beneficial_owners[].name"
+      ]
+    },
+    {
+      "name": "confirm the company",
+      "method": "POST",
+      "path": "/api/onboarding/confirm/",
+      "query": [],
+      "request": [
+        "beneficial_owners_confirmed"
+      ],
+      "response": [
+        "company.id",
+        "company.name",
+        "current_step"
+      ]
+    },
+    {
+      "name": "search the register",
+      "method": "GET",
+      "path": "/api/business-register/companies/",
+      "query": [
+        "q",
+        "limit"
+      ],
+      "request": [],
+      "response": [
+        "results[].registry_code",
+        "results[].name",
+        "results[].legal_form",
+        "results[].status",
+        "results[].status_text",
+        "results[].address"
+      ]
+    },
+    {
+      "name": "company onboarding",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/onboarding/",
+      "query": [],
+      "request": [],
+      "response": [
+        "id",
+        "registry_code",
+        "current_step",
+        "steps[].key",
+        "steps[].status",
+        "steps[].minutes",
+        "blocked_reason"
+      ]
+    },
+    {
+      "name": "questionnaire",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/compliance/questionnaire/",
+      "query": [],
+      "request": [],
+      "response": [
+        "activity_description",
+        "customer_countries",
+        "supplier_countries",
+        "expected_turnover",
+        "cash_usage",
+        "uses_crypto_assets",
+        "needs_licence",
+        "licence_description",
+        "residence",
+        "residence_countries",
+        "e_resident",
+        "estonia_reason",
+        "startup_funds_source",
+        "acts_for_others",
+        "acts_for_others_reason",
+        "field_experience",
+        "website",
+        "no_website",
+        "register_website",
+        "asked.estonia_reason",
+        "asked.startup_funds_source",
+        "register_activity",
+        "register_activity_names.code",
+        "register_activity_names.en",
+        "done",
+        "submitted_at"
+      ]
+    },
+    {
+      "name": "save the questionnaire",
+      "method": "PATCH",
+      "path": "/api/companies/{company_id}/compliance/questionnaire/",
+      "query": [],
+      "request": [
+        "website",
+        "no_website",
+        "activity_description",
+        "customer_countries",
+        "supplier_countries",
+        "expected_turnover",
+        "cash_usage",
+        "uses_crypto_assets",
+        "needs_licence",
+        "licence_description",
+        "residence",
+        "residence_countries",
+        "e_resident",
+        "estonia_reason",
+        "startup_funds_source",
+        "acts_for_others",
+        "acts_for_others_reason",
+        "field_experience"
+      ],
+      "response": [
+        "asked.estonia_reason",
+        "asked.startup_funds_source"
+      ]
+    },
+    {
+      "name": "submit the questionnaire",
+      "method": "POST",
+      "path": "/api/companies/{company_id}/compliance/questionnaire/submit/",
+      "query": [],
+      "request": [
+        "website",
+        "no_website",
+        "activity_description",
+        "customer_countries",
+        "supplier_countries",
+        "expected_turnover",
+        "cash_usage",
+        "uses_crypto_assets",
+        "needs_licence",
+        "licence_description",
+        "residence",
+        "residence_countries",
+        "e_resident",
+        "estonia_reason",
+        "startup_funds_source",
+        "acts_for_others",
+        "acts_for_others_reason",
+        "field_experience"
+      ],
+      "response": [
+        "done",
+        "support_reason"
+      ]
+    },
+    {
+      "name": "identity requirements",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/kyc/requirements/",
+      "query": [
+        "limit"
+      ],
+      "request": [],
+      "response": [
+        "items[].id",
+        "items[].person.first_name",
+        "items[].person.last_name",
+        "items[].role",
+        "items[].role_ended",
+        "items[].status",
+        "items[].verification_status",
+        "items[].can_start",
+        "items[].pep_answered"
+      ]
+    },
+    {
+      "name": "identity step",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/compliance/identity/",
+      "query": [],
+      "request": [],
+      "response": [
+        "state",
+        "pep_answered",
+        "requirement_id",
+        "board_member",
+        "done"
+      ]
+    },
+    {
+      "name": "start the identity check",
+      "method": "POST",
+      "path": "/api/companies/{company_id}/compliance/identity/start/",
+      "query": [],
+      "request": [
+        "language",
+        "consent",
+        "is_pep",
+        "is_pep_related",
+        "pep_details"
+      ],
+      "response": [
+        "url",
+        "verification_id"
+      ]
+    },
+    {
+      "name": "invite link",
+      "method": "POST",
+      "path": "/api/companies/{company_id}/kyc/requirements/{requirement_id}/link/",
+      "query": [],
+      "request": [],
+      "response": [
+        "url",
+        "expires_at"
+      ]
+    },
+    {
+      "name": "client agreement",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/onboarding/agreement/",
+      "query": [
+        "language"
+      ],
+      "request": [],
+      "response": [
+        "version",
+        "language",
+        "text",
+        "text_sha256",
+        "acceptance.version",
+        "acceptance.language",
+        "acceptance.accepted_at",
+        "acceptance.person_name",
+        "can_accept",
+        "problem"
+      ]
+    },
+    {
+      "name": "accept the client agreement",
+      "method": "POST",
+      "path": "/api/companies/{company_id}/onboarding/agreement/accept/",
+      "query": [],
+      "request": [
+        "version",
+        "language",
+        "text_sha256"
+      ],
+      "response": [
+        "acceptance.version",
+        "acceptance.language",
+        "acceptance.accepted_at",
+        "acceptance.channel"
+      ]
+    },
+    {
+      "name": "agreement evidence PDF",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/onboarding/agreement/document/",
+      "query": [],
+      "request": [],
+      "response": []
+    },
+    {
+      "name": "billing",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/billing/",
+      "query": [],
+      "request": [],
+      "response": [
+        "service_status",
+        "subscription_active",
+        "prices[].plan",
+        "prices[].amount_minor",
+        "prices[].total_minor",
+        "prices[].currency"
+      ]
+    },
+    {
+      "name": "start checkout",
+      "method": "POST",
+      "path": "/api/companies/{company_id}/billing/checkout/",
+      "query": [],
+      "request": [
+        "plan",
+        "return_path"
+      ],
+      "response": [
+        "checkout_id",
+        "checkout_url"
+      ]
+    },
+    {
+      "name": "checkout result",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/billing/checkout/{checkout_id}/",
+      "query": [],
+      "request": [],
+      "response": [
+        "status",
+        "service_status",
+        "subscription_active"
+      ]
+    },
+    {
+      "name": "setup checklist",
+      "method": "GET",
+      "path": "/api/companies/{company_id}/setup/",
+      "query": [],
+      "request": [],
+      "response": [
+        "items[].key",
+        "items[].requirement",
+        "items[].status",
+        "items[].deadline",
+        "complete"
+      ]
+    }
+  ]
+}

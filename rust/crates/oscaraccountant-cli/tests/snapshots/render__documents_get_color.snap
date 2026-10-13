@@ -1,0 +1,74 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: documents get 01J90000000000000000000096 --company cmp0000001
+---
+=== 80 columns
+[1mfilename[0m
+
+[90mSHA-256[0m          sha256
+[90mLegacy SHA-1[0m     legacy_sha1
+[90mKind[0m             invoice
+[90mMedia type[0m       media_type
+[90mSize[0m             1 B
+[90mStorage ref[0m      storage_ref
+[90mReceived on[0m      2026-09-01
+[90mRetention until[0m  2026-09-01
+[90mLegal hold[0m       [90mno[0m
+[90mReferenced[0m       [90mno[0m
+[90mDownload URL[0m     download_url
+
+[1mInvoices[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mROLE[0m
+            1  role
+
+[1mBank statements[0m [2m(1)[0m
+  [1mSTATEMENT ID[0m                [1mBANK ACCOUNT ID[0m
+  01J90000000000000000000104  01J90000000000000000000105
+
+[1mAccounting events[0m [2m(1)[0m
+  [1mECONOMIC DATE[0m  [1mKIND[0m
+  2026-09-01     kind
+
+[1mVAT returns[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mPERIOD FROM[0m  [1mFORM[0m
+            1  2026-09-01   form
+
+[2mMeta[0m
+  [2mID          01J90000000000000000000096[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m
+  [2mFile ID     01J90000000000000000000097[0m
+=== 120 columns
+[1mfilename[0m
+
+[90mSHA-256[0m          sha256
+[90mLegacy SHA-1[0m     legacy_sha1
+[90mKind[0m             invoice
+[90mMedia type[0m       media_type
+[90mSize[0m             1 B
+[90mStorage ref[0m      storage_ref
+[90mReceived on[0m      2026-09-01
+[90mRetention until[0m  2026-09-01
+[90mLegal hold[0m       [90mno[0m
+[90mReferenced[0m       [90mno[0m
+[90mDownload URL[0m     download_url
+
+[1mInvoices[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mROLE[0m
+            1  role
+
+[1mBank statements[0m [2m(1)[0m
+  [1mSTATEMENT ID[0m                [1mBANK ACCOUNT ID[0m
+  01J90000000000000000000104  01J90000000000000000000105
+
+[1mAccounting events[0m [2m(1)[0m
+  [1mECONOMIC DATE[0m  [1mKIND[0m
+  2026-09-01     kind
+
+[1mVAT returns[0m [2m(1)[0m
+  [1mREVISION NO[0m  [1mPERIOD FROM[0m  [1mFORM[0m
+            1  2026-09-01   form
+
+[2mMeta[0m
+  [2mID          01J90000000000000000000096[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m
+  [2mFile ID     01J90000000000000000000097[0m

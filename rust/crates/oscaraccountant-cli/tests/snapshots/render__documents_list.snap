@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: documents list --company cmp0000001
+---
+=== 80 columns
+FILENAME  KIND     RECEIVED ON  SIZE  REFERENCED
+filename  invoice  2026-09-01    1 B  no
+filename  invoice  2026-09-01    1 B  no
+=== 120 columns
+FILENAME  KIND     RECEIVED ON  SIZE  REFERENCED
+filename  invoice  2026-09-01    1 B  no
+filename  invoice  2026-09-01    1 B  no

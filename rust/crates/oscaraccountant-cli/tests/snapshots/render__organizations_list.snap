@@ -1,0 +1,10 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: organizations list
+---
+=== 80 columns
+NAME                  ROLE
+Mock Organization OÜ  owner
+=== 120 columns
+NAME                  ROLE
+Mock Organization OÜ  owner

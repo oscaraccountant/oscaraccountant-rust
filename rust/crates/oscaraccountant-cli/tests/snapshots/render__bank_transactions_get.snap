@@ -1,0 +1,114 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: bank-transactions get 01J90000000000000000000029 --company cmp0000001
+---
+=== 80 columns
+counterparty_name  ● unmatched  0.01 EUR
+
+Bank account label    bank_account_label
+Currency              EUR
+Booking date          2026-09-01
+Value date            2026-09-01
+Direction             in
+Method                method
+Amount                0.01 EUR
+Fee                   0.01 EUR
+Orig currency         ori
+Orig                  0.01 ori
+Bank rate             bank_rate
+Balance after         0.01 EUR
+Counterparty account  counterparty_account
+Counterparty BIC      counterparty_bic
+Description           description
+Reference             reference
+Card last4            card_last4
+MCC                   mcc
+Is internal           no
+Party name            party_name
+Party source          alias
+Suspense residual     0.01 EUR
+Has document          no
+File IDs              file_ids
+
+Entries (1)
+  ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE KIND
+         1  ● posted  2026-09-01     purchases  invoice revision
+
+Allocations (1)
+  STATE         ITEM  EFFECTIVE DATE   COUNTER  KIND
+  ● active  0.01 ite  2026-09-01      0.01 cou  payment
+
+Exemption
+  Counter role  transfer transit
+  Reason        reason
+
+Money in
+  Kind    refund
+  Reason  reason
+
+Transfer match
+  Residue base   0.01 EUR
+  Base currency  EUR
+
+Meta
+  ID               01J90000000000000000000029
+  Bank account ID  01J90000000000000000000030
+  Statement ID     01J90000000000000000000031
+  External ID      01J90000000000000000000032
+  Party ID         01J90000000000000000000033
+  Created at       2026-09-27T10:00:00Z
+=== 120 columns
+counterparty_name  ● unmatched  0.01 EUR
+
+Bank account label    bank_account_label
+Currency              EUR
+Booking date          2026-09-01
+Value date            2026-09-01
+Direction             in
+Method                method
+Amount                0.01 EUR
+Fee                   0.01 EUR
+Orig currency         ori
+Orig                  0.01 ori
+Bank rate             bank_rate
+Balance after         0.01 EUR
+Counterparty account  counterparty_account
+Counterparty BIC      counterparty_bic
+Description           description
+Reference             reference
+Card last4            card_last4
+MCC                   mcc
+Is internal           no
+Party name            party_name
+Party source          alias
+Suspense residual     0.01 EUR
+Has document          no
+File IDs              file_ids
+
+Entries (1)
+  ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE KIND
+         1  ● posted  2026-09-01     purchases  invoice revision
+
+Allocations (1)
+  STATE         ITEM  EFFECTIVE DATE   COUNTER  KIND
+  ● active  0.01 ite  2026-09-01      0.01 cou  payment
+
+Exemption
+  Counter role  transfer transit
+  Reason        reason
+
+Money in
+  Kind    refund
+  Reason  reason
+
+Transfer match
+  Residue base   0.01 EUR
+  Base currency  EUR
+
+Meta
+  ID               01J90000000000000000000029
+  Bank account ID  01J90000000000000000000030
+  Statement ID     01J90000000000000000000031
+  External ID      01J90000000000000000000032
+  Party ID         01J90000000000000000000033
+  Created at       2026-09-27T10:00:00Z

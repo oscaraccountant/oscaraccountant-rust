@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: inbox list-emails --company cmp0000001
+---
+=== 80 columns
+SUBJECT           STATUS      SENDER                 RECEIVED AT  OUTCOME
+Invoice 2026-118  ● done      billing@supplier.exa…  2026-09-27   documents
+Terms of service  ● done      news@shop.example      2026-09-26   not an invoice
+Your receipt      ● received  unknown@spoof.example  2026-09-25
+=== 120 columns
+SUBJECT           STATUS      SENDER                    RECEIVED AT  OUTCOME
+Invoice 2026-118  ● done      billing@supplier.example  2026-09-27   documents
+Terms of service  ● done      news@shop.example         2026-09-26   not an invoice
+Your receipt      ● received  unknown@spoof.example     2026-09-25

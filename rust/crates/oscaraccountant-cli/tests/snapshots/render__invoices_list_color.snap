@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: invoices list --company cmp0000001
+---
+=== 80 columns
+[1mNUMBER[0m  [1mPARTY NAME[0m  [1mINVOICE DATE[0m  [1mDUE DATE[0m       [1mGROSS[0m  [1mSTATUS[0m
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded
+=== 120 columns
+[1mNUMBER[0m  [1mPARTY NAME[0m  [1mINVOICE DATE[0m  [1mDUE DATE[0m       [1mGROSS[0m  [1mSTATUS[0m
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded
+number  party_name  2026-09-01    2026-09-01  0.01 EUR  [2m● [0mrecorded

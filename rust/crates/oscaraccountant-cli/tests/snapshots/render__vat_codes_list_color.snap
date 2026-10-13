@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: vat-codes list --company cmp0000001
+---
+=== 80 columns
+[1mCODE[0m  [1mNAME[0m  [1mDIRECTION[0m  [1mTREATMENT[0m  [1mDEDUCTIBLE[0m  [1mACTIVE[0m
+code  name  purchase   standard        0.01%  [90mno[0m
+code  name  purchase   standard        0.01%  [90mno[0m
+=== 120 columns
+[1mCODE[0m  [1mNAME[0m  [1mDIRECTION[0m  [1mTREATMENT[0m  [1mDEDUCTIBLE[0m  [1mACTIVE[0m
+code  name  purchase   standard        0.01%  [90mno[0m
+code  name  purchase   standard        0.01%  [90mno[0m

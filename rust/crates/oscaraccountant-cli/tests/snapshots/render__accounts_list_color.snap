@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: accounts list --company cmp0000001
+---
+=== 80 columns
+[1mCODE[0m  [1mNAME[0m     [1mTYPE[0m   [1mNORMAL SIDE[0m  [1mCURRENCY[0m  [1mACTIVE[0m
+code  name_en  asset  debit        EUR       [90mno[0m
+code  name_en  asset  debit        EUR       [90mno[0m
+code  name_en  asset  debit        EUR       [90mno[0m
+=== 120 columns
+[1mCODE[0m  [1mNAME[0m     [1mTYPE[0m   [1mNORMAL SIDE[0m  [1mCURRENCY[0m  [1mACTIVE[0m
+code  name_en  asset  debit        EUR       [90mno[0m
+code  name_en  asset  debit        EUR       [90mno[0m
+code  name_en  asset  debit        EUR       [90mno[0m

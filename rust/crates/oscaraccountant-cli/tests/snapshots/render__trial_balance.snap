@@ -1,0 +1,26 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: trial-balance --period 2026-09 --company cmp0000001
+---
+=== 80 columns
+Base currency      EUR
+Total debit base   0.01 EUR
+Total credit base  0.01 EUR
+Balanced           no
+From               2026-09-01
+To                 2026-09-01
+
+Rows (1)
+  ACCOUNT CODE  ACCOUNT NAME     DEBIT BASE  CREDIT BASE  CLOSING BASE
+  account_code  account_name_en    0.01 EUR     0.01 EUR      0.01 EUR
+=== 120 columns
+Base currency      EUR
+Total debit base   0.01 EUR
+Total credit base  0.01 EUR
+Balanced           no
+From               2026-09-01
+To                 2026-09-01
+
+Rows (1)
+  ACCOUNT CODE  ACCOUNT NAME     OPENING BASE  DEBIT BASE  CREDIT BASE  CLOSING BASE
+  account_code  account_name_en      0.01 EUR    0.01 EUR     0.01 EUR      0.01 EUR

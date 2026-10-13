@@ -1,0 +1,29 @@
+# The Cargo workspace of the Rust clients: the SDK and the `oscar` CLI.
+[workspace]
+members = [
+    "crates/oscaraccountant",
+    "crates/oscaraccountant-cli",
+]
+resolver = "3"
+
+[workspace.package]
+# Equal to the file VERSION of the clients. A test of the SDK checks it.
+version = "0.1.0"
+edition = "2024"
+# A MINIMUM, not a pin. The SDK builds with 1.87 on the locked tree (the
+# transitive yoke-derive 0.8 needs 1.87); the tests need 1.88 (wiremock).
+# Checked with `cargo +1.87 check --lib` and `cargo +1.88 test` on 27.09.2026.
+# CI builds with the current stable.
+rust-version = "1.87"
+license = "MIT"
+authors = ["OscarAI OÜ"]
+repository = "https://github.com/oscaraccountant/oscaraccountant-rust"
+homepage = "https://oscaraccountant.com/docs"
+
+[workspace.lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"

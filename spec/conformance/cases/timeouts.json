@@ -1,0 +1,692 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Timeouts",
+  "description": "The timeout of each attempt, and a timeout as a retry reason (clients/spec/README.md, section 3.4).",
+  "cases": [
+    {
+      "id": "timeouts.default",
+      "description": "Each attempt has a timeout of 60 seconds by default.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            },
+            "timeout_ms": 60000
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "timeouts.client-option",
+      "description": "The timeout of the client applies to every attempt.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance",
+        "timeout_ms": 5000
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            },
+            "timeout_ms": 5000
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "timeouts.call-option",
+      "description": "The timeout of one call wins over the client.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance",
+        "timeout_ms": 5000
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "timeout_ms": 1500
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            },
+            "timeout_ms": 1500
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "timeouts.retried",
+      "description": "An attempt that times out is retried.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "timeout"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "timeouts.exhausted",
+      "description": "After the last attempt a timeout becomes TimeoutError.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "timeout"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "timeout"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "timeout"
+        }
+      ],
+      "sleeps": [
+        0.5,
+        1.0
+      ],
+      "expect": {
+        "error": {
+          "type": "TimeoutError"
+        }
+      }
+    },
+    {
+      "id": "timeouts.post-without-retries",
+      "description": "A POST whose retries are off gets TimeoutError after one attempt.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        },
+        "options": {
+          "max_retries": 0
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "fault": "timeout"
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "TimeoutError"
+        }
+      }
+    }
+  ]
+}

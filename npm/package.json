@@ -1,0 +1,13 @@
+{
+  "name": "oscaraccountant-cli-npm",
+  "private": true,
+  "description": "The npm packaging of the oscar CLI: the shim, the assembly of the seven packages, and their tests. Not published.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/shim.test.js test/assemble.test.mjs",
+    "assemble": "node scripts/assemble.mjs"
+  }
+}

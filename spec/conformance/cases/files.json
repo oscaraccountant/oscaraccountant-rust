@@ -1,0 +1,551 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Files",
+  "description": "Upload and download (clients/spec/README.md, section 3.8).",
+  "cases": [
+    {
+      "id": "files.upload-every-field",
+      "description": "An upload sends every field of UploadRequest the caller set: file, kind, received_on, bank_transaction_id.",
+      "spec": [
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.upload",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "multipart": {
+          "fields": {
+            "kind": "receipt",
+            "received_on": "2026-09-20",
+            "bank_transaction_id": "01J8Z3K9Q2V4X6Y8A0B2C4D6E8"
+          },
+          "file": {
+            "field": "file",
+            "filename": "receipt.pdf",
+            "content_type": "application/pdf",
+            "content_base64": "JVBERi0xLjQKJSBjb25mb3JtYW5jZSB1cGxvYWQK"
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": {
+                "pattern": "^multipart/form-data; ?boundary="
+              },
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "multipart",
+              "parts": [
+                {
+                  "name": "file",
+                  "filename": "receipt.pdf",
+                  "content_type": "application/pdf",
+                  "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51"
+                },
+                {
+                  "name": "kind",
+                  "value": "receipt"
+                },
+                {
+                  "name": "received_on",
+                  "value": "2026-09-20"
+                },
+                {
+                  "name": "bank_transaction_id",
+                  "value": "01J8Z3K9Q2V4X6Y8A0B2C4D6E8"
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "fil0000002",
+                "kind": "receipt",
+                "name": "receipt.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 30,
+                "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+                "received_on": "2026-09-20",
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "01J8Z3K9Q2V4X6Y8A0B2C4D6E8"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "fil0000002",
+            "kind": "receipt",
+            "name": "receipt.pdf",
+            "content_type": "application/pdf",
+            "size_bytes": 30,
+            "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+            "received_on": "2026-09-20",
+            "core_document_id": "01J90000000000000000000218",
+            "bank_transaction_ids": [
+              "01J8Z3K9Q2V4X6Y8A0B2C4D6E8"
+            ],
+            "uploaded_by": "uploaded_by",
+            "created_at": "2026-09-27T10:00:00Z",
+            "origin": null
+          }
+        }
+      }
+    },
+    {
+      "id": "files.upload-defaults",
+      "description": "Bytes with no name are sent with the file name upload and the content type application/octet-stream; unset fields are not sent.",
+      "spec": [
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.upload",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "multipart": {
+          "file": {
+            "field": "file",
+            "content_base64": "cGxhaW4gYnl0ZXM="
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": {
+                "pattern": "^multipart/form-data; ?boundary="
+              },
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "multipart",
+              "parts": [
+                {
+                  "name": "file",
+                  "filename": "upload",
+                  "content_type": "application/octet-stream",
+                  "sha256": "4ce7efd629239a14f2add95bdf617675cf59e3aeb2b67e21a07a52274c097eea"
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "fil0000003",
+                "kind": "other",
+                "name": "upload",
+                "content_type": "application/octet-stream",
+                "size_bytes": 11,
+                "sha256": "4ce7efd629239a14f2add95bdf617675cf59e3aeb2b67e21a07a52274c097eea",
+                "received_on": null,
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "bank_transaction_ids"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "fil0000003",
+            "kind": "other",
+            "name": "upload",
+            "content_type": "application/octet-stream",
+            "size_bytes": 11,
+            "sha256": "4ce7efd629239a14f2add95bdf617675cf59e3aeb2b67e21a07a52274c097eea",
+            "received_on": null,
+            "core_document_id": "01J90000000000000000000218",
+            "bank_transaction_ids": [
+              "bank_transaction_ids"
+            ],
+            "uploaded_by": "uploaded_by",
+            "created_at": "2026-09-27T10:00:00Z",
+            "origin": null
+          }
+        }
+      }
+    },
+    {
+      "id": "files.upload-retry-same-bytes",
+      "description": "A retried upload sends the same bytes and the same Idempotency-Key.",
+      "spec": [
+        "3.4",
+        "3.5",
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.upload",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "multipart": {
+          "file": {
+            "field": "file",
+            "filename": "receipt.pdf",
+            "content_type": "application/pdf",
+            "content_base64": "JVBERi0xLjQKJSBjb25mb3JtYW5jZSB1cGxvYWQK"
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": {
+                "pattern": "^multipart/form-data; ?boundary="
+              },
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "multipart",
+              "parts": [
+                {
+                  "name": "file",
+                  "filename": "receipt.pdf",
+                  "content_type": "application/pdf",
+                  "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51"
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/files/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": {
+                "pattern": "^multipart/form-data; ?boundary="
+              },
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "multipart",
+              "parts": [
+                {
+                  "name": "file",
+                  "filename": "receipt.pdf",
+                  "content_type": "application/pdf",
+                  "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51"
+                }
+              ]
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "fil0000002",
+                "kind": "receipt",
+                "name": "receipt.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 30,
+                "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+                "received_on": "2026-09-20",
+                "core_document_id": "01J90000000000000000000218",
+                "bank_transaction_ids": [
+                  "bank_transaction_ids"
+                ],
+                "uploaded_by": "uploaded_by",
+                "created_at": "2026-09-27T10:00:00Z",
+                "origin": null
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "fil0000002",
+            "kind": "receipt",
+            "name": "receipt.pdf",
+            "content_type": "application/pdf",
+            "size_bytes": 30,
+            "sha256": "9c5d598aaf59cbb6251e3702b55eca51d18b818ea5046c2aad6919f7dd49bd51",
+            "received_on": "2026-09-20",
+            "core_document_id": "01J90000000000000000000218",
+            "bank_transaction_ids": [
+              "bank_transaction_ids"
+            ],
+            "uploaded_by": "uploaded_by",
+            "created_at": "2026-09-27T10:00:00Z",
+            "origin": null
+          }
+        }
+      }
+    },
+    {
+      "id": "files.download-bytes",
+      "description": "A download gives the bytes, the content type and the file name of Content-Disposition.",
+      "spec": [
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.download",
+        "path": {
+          "company_id": "cmp0000001",
+          "file_id": "fil0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/fil0000001/content/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "*/*",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "headers": {
+              "content-type": "application/pdf",
+              "content-disposition": "inline; filename=\"invoice.pdf\""
+            },
+            "body": {
+              "kind": "base64",
+              "value": "JVBERi0xLjQKJSBtb2NrIGludm9pY2UK"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "binary",
+          "sha256": "c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72",
+          "size": 24,
+          "content_type": "application/pdf",
+          "filename": "invoice.pdf"
+        }
+      }
+    },
+    {
+      "id": "files.download-no-name",
+      "description": "Without Content-Disposition the file name is null.",
+      "spec": [
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.download",
+        "path": {
+          "company_id": "cmp0000001",
+          "file_id": "fil0000001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/fil0000001/content/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "*/*"
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "headers": {
+              "content-type": "image/png"
+            },
+            "body": {
+              "kind": "base64",
+              "value": "iVBORw0KGgo="
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "binary",
+          "sha256": "4c4b6a3be1314ab86138bef4314dde022e600960d8689a2c8f8631802d20dab6",
+          "size": 8,
+          "content_type": "image/png",
+          "filename": null
+        }
+      }
+    },
+    {
+      "id": "files.download-error",
+      "description": "A download that fails gives the error of its problem body, not bytes.",
+      "spec": [
+        "3.7",
+        "3.8"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "files.download",
+        "path": {
+          "company_id": "cmp0000001",
+          "file_id": "missing0001"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/files/missing0001/content/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "*/*"
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 404,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/not_found",
+                "title": "Not found",
+                "status": 404,
+                "code": "not_found",
+                "detail": "Not found.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "NotFoundError",
+          "status": 404,
+          "code": "not_found",
+          "title": "Not found",
+          "detail": "Not found.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "404 not_found: Not found. (request req_conformance_1)"
+        }
+      }
+    }
+  ]
+}

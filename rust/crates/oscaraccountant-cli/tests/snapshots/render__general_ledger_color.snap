@@ -1,0 +1,20 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: general-ledger --account-code 1000 --date-from 2026-01-01 --date-to 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+[90mBase currency[0m  EUR
+
+[1mAccounts[0m [2m(1)[0m
+  [1mACCOUNT CODE[0m  [1mACCOUNT NAME[0m     [1mOPENING BASE[0m  [1mCLOSING BASE[0m
+  account_code  account_name_en      0.01 EUR      0.01 EUR
+    [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mENTRY NO[0m  [1mMEMO[0m    [1mAMOUNT[0m  [1mRUNNING BASE[0m
+    2026-09-01     purchases         1  memo  0.01 EUR      0.01 EUR
+=== 120 columns
+[90mBase currency[0m  EUR
+
+[1mAccounts[0m [2m(1)[0m
+  [1mACCOUNT CODE[0m  [1mACCOUNT NAME[0m     [1mOPENING BASE[0m  [1mCLOSING BASE[0m
+  account_code  account_name_en      0.01 EUR      0.01 EUR
+    [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mENTRY NO[0m  [1mMEMO[0m    [1mAMOUNT[0m  [1mRUNNING BASE[0m
+    2026-09-01     purchases         1  memo  0.01 EUR      0.01 EUR

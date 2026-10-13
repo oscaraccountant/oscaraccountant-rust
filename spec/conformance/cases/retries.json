@@ -1,0 +1,3154 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Retries",
+  "description": "Which requests and statuses are retried, the backoff, Retry-After, and the limits (clients/spec/README.md, section 3.4).",
+  "cases": [
+    {
+      "id": "retries.get-408-then-ok",
+      "description": "A GET that gets 408 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 408,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/request_timeout",
+                "title": "Request Timeout",
+                "status": 408,
+                "code": "request_timeout",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.get-429-then-ok",
+      "description": "A GET that gets 429 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 429,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/throttled",
+                "title": "Too Many Requests",
+                "status": 429,
+                "code": "throttled",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.get-500-then-ok",
+      "description": "A GET that gets 500 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 500,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/server_error",
+                "title": "Internal Server Error",
+                "status": 500,
+                "code": "server_error",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.get-502-then-ok",
+      "description": "A GET that gets 502 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 502,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/bad_gateway",
+                "title": "Bad Gateway",
+                "status": 502,
+                "code": "bad_gateway",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.get-503-then-ok",
+      "description": "A GET that gets 503 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.get-504-then-ok",
+      "description": "A GET that gets 504 is sent again after 0.5 seconds (jitter 0), and the second answer is the result.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 504,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/gateway_timeout",
+                "title": "Gateway Timeout",
+                "status": 504,
+                "code": "gateway_timeout",
+                "detail": "Try again.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.exhausted",
+      "description": "Two retries by default, so three attempts, with the delays 0.5 and 1 seconds; then the last error goes to the caller.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5,
+        1.0
+      ],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 503,
+          "code": "service_unavailable",
+          "title": "Service Unavailable",
+          "detail": "The books are busy.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "503 service_unavailable: The books are busy. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.jitter",
+      "description": "The delay is min(8, 0.5 * 2^(n-1)) * (1 - 0.25 * jitter): with jitter 0.5, 0.4375 and 0.875 seconds.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "jitter": 0.5
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.4375,
+        0.875
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.backoff-cap",
+      "description": "With max_retries 6 the delays double up to the cap of 8 seconds: 0.5, 1, 2, 4, 8, 8.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance",
+        "max_retries": 6
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5,
+        1.0,
+        2.0,
+        4.0,
+        8.0,
+        8.0
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.client-max-retries-zero",
+      "description": "max_retries 0 on the client turns the retries off.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance",
+        "max_retries": 0
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 503,
+          "code": "service_unavailable",
+          "title": "Service Unavailable",
+          "detail": "The books are busy.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "503 service_unavailable: The books are busy. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.call-max-retries",
+      "description": "max_retries of one call wins over the client: 1 retry, so two attempts.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance",
+        "max_retries": 5
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "max_retries": 1
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 503,
+          "code": "service_unavailable",
+          "title": "Service Unavailable",
+          "detail": "The books are busy.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "503 service_unavailable: The books are busy. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.retry-after-seconds",
+      "description": "Retry-After in whole seconds wins over the backoff delay.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 429,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/throttled",
+                "title": "Too Many Requests",
+                "status": 429,
+                "code": "throttled",
+                "detail": "Slow down.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1",
+              "retry-after": "3"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        3.0
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.retry-after-date",
+      "description": "Retry-After as an HTTP date is read against the injected clock: 7 seconds after now.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "now": "2026-09-27T10:00:00Z"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "Maintenance.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1",
+              "retry-after": "Sun, 27 Sep 2026 10:00:07 GMT"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        7.0
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.retry-after-too-long",
+      "description": "A Retry-After above 60 seconds ends the retries: the error goes to the caller at once.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 429,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/throttled",
+                "title": "Too Many Requests",
+                "status": 429,
+                "code": "throttled",
+                "detail": "Come back later.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1",
+              "retry-after": "120"
+            }
+          }
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "RateLimitError",
+          "status": 429,
+          "code": "throttled",
+          "title": "Too Many Requests",
+          "detail": "Come back later.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "429 throttled: Come back later. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.connection-error-then-ok",
+      "description": "A connection error (no response) is retried.",
+      "spec": [
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "connection_error"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.connection-error-exhausted",
+      "description": "After the last attempt a connection error becomes ConnectionError.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "connection_error"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "connection_error"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "fault": "connection_error"
+        }
+      ],
+      "sleeps": [
+        0.5,
+        1.0
+      ],
+      "expect": {
+        "error": {
+          "type": "ConnectionError"
+        }
+      }
+    },
+    {
+      "id": "retries.post-with-key-503",
+      "description": "A POST that carries an Idempotency-Key is retried, with the same key.",
+      "spec": [
+        "3.4",
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.record",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "body": {
+          "direction": "purchase",
+          "party_id": "01J90000000000000000000179",
+          "number": "INV-2026-001",
+          "revision": {
+            "invoice_date": "2026-09-01",
+            "due_date": "2026-09-15",
+            "currency": "EUR",
+            "lines": [
+              {
+                "description": "Consulting",
+                "net_minor": 10000,
+                "vat_code": "VAT24",
+                "tax_minor": 2400
+              }
+            ]
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000208",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "line_ids": [
+                    "line_ids"
+                  ],
+                  "invoice_id": "01J90000000000000000000209",
+                  "revision_id": "01J90000000000000000000210"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000208",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "line_ids": [
+                "line_ids"
+              ],
+              "invoice_id": "01J90000000000000000000209",
+              "revision_id": "01J90000000000000000000210"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.post-409-in-progress",
+      "description": "409 idempotency_in_progress is retried with the same key.",
+      "spec": [
+        "3.4",
+        "3.5"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.record",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "body": {
+          "direction": "purchase",
+          "party_id": "01J90000000000000000000179",
+          "number": "INV-2026-001",
+          "revision": {
+            "invoice_date": "2026-09-01",
+            "due_date": "2026-09-15",
+            "currency": "EUR",
+            "lines": [
+              {
+                "description": "Consulting",
+                "net_minor": 10000,
+                "vat_code": "VAT24",
+                "tax_minor": 2400
+              }
+            ]
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 409,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/idempotency_in_progress",
+                "title": "Conflict",
+                "status": 409,
+                "code": "idempotency_in_progress",
+                "detail": "The first request is still running.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 201,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000208",
+                "commit_seq": 1,
+                "replayed": true,
+                "result": {
+                  "line_ids": [
+                    "line_ids"
+                  ],
+                  "invoice_id": "01J90000000000000000000209",
+                  "revision_id": "01J90000000000000000000210"
+                }
+              }
+            },
+            "headers": {
+              "idempotent-replayed": "true"
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000208",
+            "commit_seq": 1,
+            "replayed": true,
+            "result": {
+              "line_ids": [
+                "line_ids"
+              ],
+              "invoice_id": "01J90000000000000000000209",
+              "revision_id": "01J90000000000000000000210"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "retries.post-409-conflict",
+      "description": "Another 409 (idempotency_conflict) is not retried: ConflictError.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.record",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "body": {
+          "direction": "purchase",
+          "party_id": "01J90000000000000000000179",
+          "number": "INV-2026-001",
+          "revision": {
+            "invoice_date": "2026-09-01",
+            "due_date": "2026-09-15",
+            "currency": "EUR",
+            "lines": [
+              {
+                "description": "Consulting",
+                "net_minor": 10000,
+                "vat_code": "VAT24",
+                "tax_minor": 2400
+              }
+            ]
+          }
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "direction": "purchase",
+                "party_id": "01J90000000000000000000179",
+                "number": "INV-2026-001",
+                "revision": {
+                  "invoice_date": "2026-09-01",
+                  "due_date": "2026-09-15",
+                  "currency": "EUR",
+                  "lines": [
+                    {
+                      "description": "Consulting",
+                      "net_minor": 10000,
+                      "vat_code": "VAT24",
+                      "tax_minor": 2400
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "response": {
+            "status": 409,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/idempotency_conflict",
+                "title": "Conflict",
+                "status": 409,
+                "code": "idempotency_conflict",
+                "detail": "The Idempotency-Key was used with another request body.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "ConflictError",
+          "status": 409,
+          "code": "idempotency_conflict",
+          "title": "Conflict",
+          "detail": "The Idempotency-Key was used with another request body.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "409 idempotency_conflict: The Idempotency-Key was used with another request body. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.post-without-key-not-retried",
+      "description": "A POST without an Idempotency-Key is never sent twice, even on 503. Every public POST accepts a key, so the case hands a request spec to the runtime.",
+      "spec": [
+        "3.4",
+        "3.5"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "spec": {
+          "operation_id": "conformance_create_thing",
+          "method": "POST",
+          "path": "/api/companies/{company_id}/things",
+          "path_params": {
+            "company_id": "cmp0000001"
+          },
+          "query": {},
+          "body": {
+            "name": "thing"
+          },
+          "idempotent": false,
+          "response": "json"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/things",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "name": "thing"
+              }
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 503,
+          "code": "service_unavailable",
+          "title": "Service Unavailable",
+          "detail": "The books are busy.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "503 service_unavailable: The books are busy. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "retries.token-provider-each-attempt",
+      "description": "The token provider is called before each attempt.",
+      "spec": [
+        "1.1",
+        "3.4"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "token_provider": [
+          "tok_first",
+          "tok_second"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer tok_first",
+              "accept": "application/json"
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/service_unavailable",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "service_unavailable",
+                "detail": "The books are busy.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer tok_second",
+              "accept": "application/json"
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "sleeps": [
+        0.5
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    }
+  ]
+}

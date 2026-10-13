@@ -1,0 +1,1803 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Requests",
+  "description": "The base URL, the path and query encoding, the headers and the body (clients/spec/README.md, sections 3.1 to 3.3 and 3.9).",
+  "cases": [
+    {
+      "id": "requests.headers",
+      "description": "A GET carries Authorization, Accept application/json, the User-Agent of section 3.9, and no Content-Type or Idempotency-Key.",
+      "spec": [
+        "3.3",
+        "3.9"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "user-agent": {
+                "pattern": "^oscaraccountant-(node|python|rust)/\\d+\\.\\d+\\.\\d+\\S* \\((linux|macos|windows|unknown); [^;()]+; ((node|deno|bun|python)/[^;()]+|rust)\\)$"
+              },
+              "content-type": null,
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.post-headers",
+      "description": "A POST with a JSON body carries Content-Type application/json and the User-Agent too.",
+      "spec": [
+        "3.3",
+        "3.9"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.cancel",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "reason": "Entered twice"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/cancel",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "user-agent": {
+                "pattern": "^oscaraccountant-(node|python|rust)/\\d+\\.\\d+\\.\\d+\\S* \\((linux|macos|windows|unknown); [^;()]+; ((node|deno|bun|python)/[^;()]+|rust)\\)$"
+              },
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "reason": "Entered twice"
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000215",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {}
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000215",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.base-url-normalized",
+      "description": "The base URL loses its trailing slash, and its scheme and host go to lower case.",
+      "spec": [
+        "3.1"
+      ],
+      "client": {
+        "base_url": "HTTPS://API.Example.TEST/",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.base-url-env",
+      "description": "Without an option the client reads OSCAR_BASE_URL.",
+      "spec": [
+        "3.1"
+      ],
+      "client": {
+        "api_key": "osk_test_conformance"
+      },
+      "env": {
+        "OSCAR_BASE_URL": "https://env.example.test"
+      },
+      "origin": "https://env.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.base-url-option-over-env",
+      "description": "The base_url option wins over OSCAR_BASE_URL.",
+      "spec": [
+        "3.1"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "env": {
+        "OSCAR_BASE_URL": "https://env.example.test"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.base-url-default",
+      "description": "With no option and no variable the client uses DEFAULT_BASE_URL, the production origin https://oscaraccountant.com.",
+      "spec": [
+        "3.1"
+      ],
+      "client": {
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://oscaraccountant.com",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.base-url-loopback-http",
+      "description": "http is accepted for a loopback host, with its port.",
+      "spec": [
+        "3.1"
+      ],
+      "client": {
+        "base_url": "http://127.0.0.1:8300",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "http://127.0.0.1:8300",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.path-encoding",
+      "description": "Each path value is percent-encoded: every byte except A-Z a-z 0-9 - . _ ~.",
+      "spec": [
+        "3.2"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "a b/c?d",
+          "invoice_id": "x~y.z_ä"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/a%20b%2Fc%3Fd/invoices/x~y.z_%C3%A4/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 404,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/not_found",
+                "title": "Not found",
+                "status": 404,
+                "code": "not_found",
+                "detail": "Not found.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "NotFoundError",
+          "status": 404,
+          "code": "not_found",
+          "title": "Not found",
+          "detail": "Not found.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "404 not_found: Not found. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "requests.path-dot-segment",
+      "description": "A path value `..` is a UsageError and nothing is sent: a URL parser would take it as a move up and reach another path.",
+      "spec": [
+        "3.2",
+        "3.7"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": ".."
+        }
+      },
+      "exchanges": [],
+      "expect": {
+        "error": {
+          "type": "UsageError"
+        }
+      }
+    },
+    {
+      "id": "requests.path-dot-value",
+      "description": "A path value `.` is a UsageError and nothing is sent: a URL parser would drop the segment.",
+      "spec": [
+        "3.2",
+        "3.7"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": ".",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [],
+      "expect": {
+        "error": {
+          "type": "UsageError"
+        }
+      }
+    },
+    {
+      "id": "requests.path-empty-value",
+      "description": "An empty path value is a UsageError and nothing is sent.",
+      "spec": [
+        "3.2",
+        "3.7"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": ""
+        }
+      },
+      "exchanges": [],
+      "expect": {
+        "error": {
+          "type": "UsageError"
+        }
+      }
+    },
+    {
+      "id": "requests.query-values",
+      "description": "Booleans are true and false, numbers are decimal, dates are YYYY-MM-DD, text is sent as given; a null value is left out.",
+      "spec": [
+        "3.2"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "bank_transactions.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "has_document": false,
+          "to_explain": true,
+          "limit": 25,
+          "date_from": "2026-09-01",
+          "status": null,
+          "ordering": "-booking_date"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/bank-transactions/",
+            "query": [
+              [
+                "date_from",
+                "2026-09-01"
+              ],
+              [
+                "has_document",
+                "false"
+              ],
+              [
+                "limit",
+                "25"
+              ],
+              [
+                "ordering",
+                "-booking_date"
+              ],
+              [
+                "to_explain",
+                "true"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.query-reserved-characters",
+      "description": "Query text with reserved characters is encoded so the server reads it back unchanged.",
+      "spec": [
+        "3.2"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "parties.list",
+        "path": {
+          "company_id": "cmp0000001"
+        },
+        "query": {
+          "search": "A&B = 100% OÜ+co"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/parties/",
+            "query": [
+              [
+                "search",
+                "A&B = 100% OÜ+co"
+              ]
+            ],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "items": [],
+                "next_cursor": null
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "items": [],
+            "next_cursor": null
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.json-body-set-fields-only",
+      "description": "A JSON body holds only the fields the caller set; a field set to null is sent as null.",
+      "spec": [
+        "3.3"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.issue",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        },
+        "body": {
+          "number": null
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/issue",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": "application/json",
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "number": null
+              }
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000213",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "number": "number",
+                  "reference_number": "20260011",
+                  "invoice_id": "01J90000000000000000000214"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000213",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "number": "number",
+              "reference_number": "20260011",
+              "invoice_id": "01J90000000000000000000214"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.optional-body-left-out",
+      "description": "An optional body the caller does not give is not sent: no body and no Content-Type.",
+      "spec": [
+        "3.3"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "inject": {
+        "uuids": [
+          "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+        ]
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.issue",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/issue",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "content-type": null,
+              "idempotency-key": "3f1c2b7e-9d4a-4c1e-8b2f-5a6d7e8f9a01"
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "command": "command",
+                "command_id": "01J90000000000000000000213",
+                "commit_seq": 1,
+                "replayed": false,
+                "result": {
+                  "number": "number",
+                  "reference_number": "20260011",
+                  "invoice_id": "01J90000000000000000000214"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "command": "command",
+            "command_id": "01J90000000000000000000213",
+            "commit_seq": 1,
+            "replayed": false,
+            "result": {
+              "number": "number",
+              "reference_number": "20260011",
+              "invoice_id": "01J90000000000000000000214"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.unknown-field-kept",
+      "description": "A response field the client does not know does not break it; the JSON result keeps what the models keep.",
+      "spec": [
+        "3.3"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "user": {
+                  "id": "01J90000000000000000000014",
+                  "email": "mock@example.com",
+                  "name": "Mock User",
+                  "is_staff": false,
+                  "ui_mode": "simple"
+                },
+                "has_totp": false,
+                "staff_mfa_required": false,
+                "email_verified": true,
+                "credential": {
+                  "kind": "api_key",
+                  "scopes": [
+                    "read",
+                    "write"
+                  ],
+                  "staff_key": false
+                },
+                "organizations": [
+                  {
+                    "id": "org0000001",
+                    "name": "Mock Organization OÜ",
+                    "role": "owner",
+                    "is_member": true
+                  }
+                ],
+                "companies": [
+                  {
+                    "id": "cmp0000001",
+                    "organization_id": "org0000001",
+                    "name": "Mock Company OÜ",
+                    "registry_code": "12345678",
+                    "vat_number": "EE123456789",
+                    "legal_form": "ou",
+                    "state": "ready"
+                  }
+                ],
+                "features": {
+                  "agent": false,
+                  "inbox": false
+                },
+                "added_later": {
+                  "flag": true
+                },
+                "cli_min_version": "0.1.0"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "user": {
+              "id": "01J90000000000000000000014",
+              "email": "mock@example.com",
+              "name": "Mock User",
+              "is_staff": false,
+              "ui_mode": "simple"
+            },
+            "has_totp": false,
+            "staff_mfa_required": false,
+            "email_verified": true,
+            "credential": {
+              "kind": "api_key",
+              "scopes": [
+                "read",
+                "write"
+              ],
+              "staff_key": false
+            },
+            "organizations": [
+              {
+                "id": "org0000001",
+                "name": "Mock Organization OÜ",
+                "role": "owner",
+                "is_member": true
+              }
+            ],
+            "companies": [
+              {
+                "id": "cmp0000001",
+                "organization_id": "org0000001",
+                "name": "Mock Company OÜ",
+                "registry_code": "12345678",
+                "vat_number": "EE123456789",
+                "legal_form": "ou",
+                "state": "ready"
+              }
+            ],
+            "features": {
+              "agent": false,
+              "inbox": false
+            },
+            "cli_min_version": "0.1.0"
+          }
+        }
+      }
+    },
+    {
+      "id": "requests.unknown-enum-value",
+      "description": "An enum value the client does not know does not break it (the unknown value fallback).",
+      "spec": [
+        "5"
+      ],
+      "schema_valid": false,
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "kind": "json",
+              "value": {
+                "id": "01J90000000000000000000116",
+                "direction": "purchase",
+                "kind": "invoice",
+                "sign": 1,
+                "state": "archived_later",
+                "number": "number",
+                "party_id": "01J90000000000000000000117",
+                "party_name": "party_name",
+                "corrects_invoice_id": "01J90000000000000000000118",
+                "origin": "origin",
+                "issued_at": "2026-09-27T10:00:00Z",
+                "cancelled_at": "2026-09-27T10:00:00Z",
+                "cancel_reason": "cancel_reason",
+                "created_at": "2026-09-27T10:00:00Z",
+                "reference_number": null,
+                "external_source": "external_source",
+                "revision_id": "01J90000000000000000000119",
+                "revision_no": 1,
+                "invoice_date": "2026-09-01",
+                "supply_date": "2026-09-01",
+                "due_date": "2026-09-01",
+                "currency": "EUR",
+                "net_minor": 1,
+                "tax_minor": 1,
+                "gross_minor": 1,
+                "prepaid_minor": 1,
+                "rounding_minor": 1,
+                "amount_due_minor": 1,
+                "base_gross_minor": 1,
+                "base_currency": "EUR",
+                "needs_review": false,
+                "review_note": "review_note",
+                "open_minor": 1,
+                "settlement_state": "unposted",
+                "revision": {
+                  "id": "01J90000000000000000000132",
+                  "revision_no": 1,
+                  "state": "state",
+                  "party_id": "01J90000000000000000000133",
+                  "party_name_raw": "party_name_raw",
+                  "invoice_date": "2026-09-01",
+                  "supply_date": "2026-09-01",
+                  "due_date": "2026-09-01",
+                  "service_from": "2026-09-01",
+                  "service_to": "2026-09-01",
+                  "currency": "EUR",
+                  "net_minor": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "prepaid_minor": 1,
+                  "rounding_minor": 1,
+                  "amount_due_minor": 1,
+                  "base_gross_minor": 1,
+                  "base_currency": "EUR",
+                  "exchange_rate_id": "01J90000000000000000000134",
+                  "fx_rate_source": "fx_rate_source",
+                  "vat_code_source": "vat_code_source",
+                  "supplier_vat_number": "supplier_vat_number",
+                  "buyer_vat_number": "buyer_vat_number",
+                  "seller_snapshot": {},
+                  "buyer_snapshot": {},
+                  "source_payload": {},
+                  "needs_review": false,
+                  "review_note": "review_note",
+                  "reason": "reason",
+                  "customer_note": null,
+                  "prices_include_vat": false,
+                  "language": null,
+                  "base_vat": null,
+                  "created_at": "2026-09-27T10:00:00Z",
+                  "actor_id": "01J90000000000000000000135",
+                  "command_id": "01J90000000000000000000136",
+                  "lines": [
+                    {
+                      "id": "01J90000000000000000000137",
+                      "line_no": 1,
+                      "kind": "kind",
+                      "description": "description",
+                      "quantity": "quantity",
+                      "unit": "unit",
+                      "unit_price_minor": 1,
+                      "allowance_minor": 1,
+                      "charge_minor": 1,
+                      "net_minor": 1,
+                      "vat_code": "vat_code",
+                      "vat_rate_bps": 1,
+                      "tax_minor": 1,
+                      "gross_minor": 1,
+                      "account_id": "01J90000000000000000000138",
+                      "account_code": "account_code",
+                      "expense_role": "expense_role",
+                      "deductible_bps": 1,
+                      "business_use_bps": 1,
+                      "fixed_asset": null,
+                      "fixed_asset_id": null,
+                      "fixed_asset_component_id": null,
+                      "fixed_asset_link": null
+                    }
+                  ],
+                  "documents": [
+                    {
+                      "document_id": "01J90000000000000000000139",
+                      "role": "role",
+                      "filename": "filename",
+                      "kind": "invoice"
+                    }
+                  ]
+                },
+                "revisions": [
+                  {
+                    "id": "01J90000000000000000000140",
+                    "revision_no": 1,
+                    "state": "state",
+                    "invoice_date": "2026-09-01",
+                    "gross_minor": 1,
+                    "reason": "reason",
+                    "created_at": "2026-09-27T10:00:00Z"
+                  }
+                ],
+                "entries": [
+                  {
+                    "id": "01J90000000000000000000141",
+                    "revision_id": "01J90000000000000000000142",
+                    "journal": "purchases",
+                    "entry_no": 1,
+                    "economic_date": "2026-09-01",
+                    "source_role": "primary",
+                    "state": "posted"
+                  }
+                ],
+                "settlement": {
+                  "invoice_id": "01J90000000000000000000143",
+                  "number": "number",
+                  "direction": "purchase",
+                  "kind": "invoice",
+                  "state": "recorded",
+                  "party_id": "01J90000000000000000000144",
+                  "currency": "EUR",
+                  "gross_minor": 1,
+                  "residual_minor": 1,
+                  "status": "open",
+                  "paid": false,
+                  "credited": false,
+                  "written_off": false
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "result": {
+          "kind": "json",
+          "value": {
+            "id": "01J90000000000000000000116",
+            "direction": "purchase",
+            "kind": "invoice",
+            "sign": 1,
+            "state": "archived_later",
+            "number": "number",
+            "party_id": "01J90000000000000000000117",
+            "party_name": "party_name",
+            "corrects_invoice_id": "01J90000000000000000000118",
+            "origin": "origin",
+            "issued_at": "2026-09-27T10:00:00Z",
+            "cancelled_at": "2026-09-27T10:00:00Z",
+            "cancel_reason": "cancel_reason",
+            "created_at": "2026-09-27T10:00:00Z",
+            "reference_number": null,
+            "external_source": "external_source",
+            "revision_id": "01J90000000000000000000119",
+            "revision_no": 1,
+            "invoice_date": "2026-09-01",
+            "supply_date": "2026-09-01",
+            "due_date": "2026-09-01",
+            "currency": "EUR",
+            "net_minor": 1,
+            "tax_minor": 1,
+            "gross_minor": 1,
+            "prepaid_minor": 1,
+            "rounding_minor": 1,
+            "amount_due_minor": 1,
+            "base_gross_minor": 1,
+            "base_currency": "EUR",
+            "needs_review": false,
+            "review_note": "review_note",
+            "open_minor": 1,
+            "settlement_state": "unposted",
+            "revision": {
+              "id": "01J90000000000000000000132",
+              "revision_no": 1,
+              "state": "state",
+              "party_id": "01J90000000000000000000133",
+              "party_name_raw": "party_name_raw",
+              "invoice_date": "2026-09-01",
+              "supply_date": "2026-09-01",
+              "due_date": "2026-09-01",
+              "service_from": "2026-09-01",
+              "service_to": "2026-09-01",
+              "currency": "EUR",
+              "net_minor": 1,
+              "tax_minor": 1,
+              "gross_minor": 1,
+              "prepaid_minor": 1,
+              "rounding_minor": 1,
+              "amount_due_minor": 1,
+              "base_gross_minor": 1,
+              "base_currency": "EUR",
+              "exchange_rate_id": "01J90000000000000000000134",
+              "fx_rate_source": "fx_rate_source",
+              "vat_code_source": "vat_code_source",
+              "supplier_vat_number": "supplier_vat_number",
+              "buyer_vat_number": "buyer_vat_number",
+              "seller_snapshot": {},
+              "buyer_snapshot": {},
+              "source_payload": {},
+              "needs_review": false,
+              "review_note": "review_note",
+              "reason": "reason",
+              "customer_note": null,
+              "prices_include_vat": false,
+              "language": null,
+              "base_vat": null,
+              "created_at": "2026-09-27T10:00:00Z",
+              "actor_id": "01J90000000000000000000135",
+              "command_id": "01J90000000000000000000136",
+              "lines": [
+                {
+                  "id": "01J90000000000000000000137",
+                  "line_no": 1,
+                  "kind": "kind",
+                  "description": "description",
+                  "quantity": "quantity",
+                  "unit": "unit",
+                  "unit_price_minor": 1,
+                  "allowance_minor": 1,
+                  "charge_minor": 1,
+                  "net_minor": 1,
+                  "vat_code": "vat_code",
+                  "vat_rate_bps": 1,
+                  "tax_minor": 1,
+                  "gross_minor": 1,
+                  "account_id": "01J90000000000000000000138",
+                  "account_code": "account_code",
+                  "expense_role": "expense_role",
+                  "deductible_bps": 1,
+                  "business_use_bps": 1,
+                  "fixed_asset": null,
+                  "fixed_asset_id": null,
+                  "fixed_asset_component_id": null,
+                  "fixed_asset_link": null
+                }
+              ],
+              "documents": [
+                {
+                  "document_id": "01J90000000000000000000139",
+                  "role": "role",
+                  "filename": "filename",
+                  "kind": "invoice"
+                }
+              ]
+            },
+            "revisions": [
+              {
+                "id": "01J90000000000000000000140",
+                "revision_no": 1,
+                "state": "state",
+                "invoice_date": "2026-09-01",
+                "gross_minor": 1,
+                "reason": "reason",
+                "created_at": "2026-09-27T10:00:00Z"
+              }
+            ],
+            "entries": [
+              {
+                "id": "01J90000000000000000000141",
+                "revision_id": "01J90000000000000000000142",
+                "journal": "purchases",
+                "entry_no": 1,
+                "economic_date": "2026-09-01",
+                "source_role": "primary",
+                "state": "posted"
+              }
+            ],
+            "settlement": {
+              "invoice_id": "01J90000000000000000000143",
+              "number": "number",
+              "direction": "purchase",
+              "kind": "invoice",
+              "state": "recorded",
+              "party_id": "01J90000000000000000000144",
+              "currency": "EUR",
+              "gross_minor": 1,
+              "residual_minor": 1,
+              "status": "open",
+              "paid": false,
+              "credited": false,
+              "written_off": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

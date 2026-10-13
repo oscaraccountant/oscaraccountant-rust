@@ -1,0 +1,34 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: files get fil0000001 --company cmp0000001
+---
+=== 80 columns
+[1minvoice.pdf[0m
+
+[90mKind[0m                  invoice
+[90mContent type[0m          application/pdf
+[90mSize[0m                  24 B
+[90mSHA-256[0m               c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72
+[90mReceived on[0m           2026-09-01
+[90mBank transaction IDs[0m  bank_transaction_ids
+[90mUploaded by[0m           uploaded_by
+
+[2mMeta[0m
+  [2mID                fil0000001[0m
+  [2mCore document ID  01J90000000000000000000218[0m
+  [2mCreated at        2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1minvoice.pdf[0m
+
+[90mKind[0m                  invoice
+[90mContent type[0m          application/pdf
+[90mSize[0m                  24 B
+[90mSHA-256[0m               c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72
+[90mReceived on[0m           2026-09-01
+[90mBank transaction IDs[0m  bank_transaction_ids
+[90mUploaded by[0m           uploaded_by
+
+[2mMeta[0m
+  [2mID                fil0000001[0m
+  [2mCore document ID  01J90000000000000000000218[0m
+  [2mCreated at        2026-09-27T10:00:00Z[0m

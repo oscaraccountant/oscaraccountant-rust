@@ -1,0 +1,948 @@
+{
+  "$schema": "../case.schema.json",
+  "title": "Errors",
+  "description": "Each status mapped to its error type, with the parsed problem details (clients/spec/README.md, section 3.7).",
+  "cases": [
+    {
+      "id": "errors.status-400",
+      "description": "A 400 with a problem body becomes BadRequestError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 400,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/validation_error",
+                "title": "The request is not valid",
+                "status": 400,
+                "code": "validation_error",
+                "detail": "The request is not valid.",
+                "errors": [
+                  {
+                    "field": "date",
+                    "code": "invalid",
+                    "detail": "Enter a valid date."
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "BadRequestError",
+          "status": 400,
+          "code": "validation_error",
+          "title": "The request is not valid",
+          "detail": "The request is not valid.",
+          "errors": [
+            {
+              "field": "date",
+              "code": "invalid",
+              "detail": "Enter a valid date."
+            }
+          ],
+          "request_id": "req_conformance_1",
+          "message": "400 validation_error: The request is not valid. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-401",
+      "description": "A 401 with a problem body becomes AuthenticationError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 401,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/authentication_failed",
+                "title": "The credentials are not valid",
+                "status": 401,
+                "code": "authentication_failed",
+                "detail": "The credential is not valid.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "AuthenticationError",
+          "status": 401,
+          "code": "authentication_failed",
+          "title": "The credentials are not valid",
+          "detail": "The credential is not valid.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "401 authentication_failed: The credential is not valid. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-403",
+      "description": "A 403 with a problem body becomes PermissionDeniedError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 403,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/insufficient_scope",
+                "title": "The action is not allowed",
+                "status": 403,
+                "code": "insufficient_scope",
+                "detail": "The credential lacks the write scope.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "PermissionDeniedError",
+          "status": 403,
+          "code": "insufficient_scope",
+          "title": "The action is not allowed",
+          "detail": "The credential lacks the write scope.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "403 insufficient_scope: The credential lacks the write scope. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-404",
+      "description": "A 404 with a problem body becomes NotFoundError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 404,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/not_found",
+                "title": "Not found",
+                "status": 404,
+                "code": "not_found",
+                "detail": "Not found.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "NotFoundError",
+          "status": 404,
+          "code": "not_found",
+          "title": "Not found",
+          "detail": "Not found.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "404 not_found: Not found. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-409",
+      "description": "A 409 with a problem body becomes ConflictError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 409,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/period_locked",
+                "title": "The period is locked",
+                "status": 409,
+                "code": "period_locked",
+                "detail": "The period 2026-08 is locked.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "ConflictError",
+          "status": 409,
+          "code": "period_locked",
+          "title": "The period is locked",
+          "detail": "The period 2026-08 is locked.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "409 period_locked: The period 2026-08 is locked. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-422",
+      "description": "A 422 with a problem body becomes UnprocessableEntityError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 422,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/unprocessable",
+                "title": "Unprocessable Content",
+                "status": 422,
+                "code": "unprocessable",
+                "detail": "The invoice cannot be read.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "UnprocessableEntityError",
+          "status": 422,
+          "code": "unprocessable",
+          "title": "Unprocessable Content",
+          "detail": "The invoice cannot be read.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "422 unprocessable: The invoice cannot be read. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-418",
+      "description": "A 418 with a problem body becomes ApiError with every field of the problem and the request id. It is not retried.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "invoices.retrieve",
+        "path": {
+          "company_id": "cmp0000001",
+          "invoice_id": "01J90000000000000000000116"
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/companies/cmp0000001/invoices/01J90000000000000000000116/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 418,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/teapot",
+                "title": "I'm a Teapot",
+                "status": 418,
+                "code": "teapot",
+                "detail": "Another status of 400 and above.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "ApiError",
+          "status": 418,
+          "code": "teapot",
+          "title": "I'm a Teapot",
+          "detail": "Another status of 400 and above.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "418 teapot: Another status of 400 and above. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-429",
+      "description": "A 429 becomes RateLimitError. The call has no retry here (max_retries 0).",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "max_retries": 0
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 429,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/throttled",
+                "title": "Too Many Requests",
+                "status": 429,
+                "code": "throttled",
+                "detail": "Try again later.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "RateLimitError",
+          "status": 429,
+          "code": "throttled",
+          "title": "Too Many Requests",
+          "detail": "Try again later.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "429 throttled: Try again later. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-500",
+      "description": "A 500 becomes InternalServerError. The call has no retry here (max_retries 0).",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "max_retries": 0
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 500,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/server_error",
+                "title": "Internal Server Error",
+                "status": 500,
+                "code": "server_error",
+                "detail": "Try again later.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 500,
+          "code": "server_error",
+          "title": "Internal Server Error",
+          "detail": "Try again later.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "500 server_error: Try again later. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-503",
+      "description": "A 503 becomes InternalServerError. The call has no retry here (max_retries 0).",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "max_retries": 0
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 503,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/server_error",
+                "title": "Service Unavailable",
+                "status": 503,
+                "code": "server_error",
+                "detail": "Try again later.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 503,
+          "code": "server_error",
+          "title": "Service Unavailable",
+          "detail": "Try again later.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "503 server_error: Try again later. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.status-501-not-retried",
+      "description": "A 501 becomes InternalServerError and is never retried: 501 is not a retry status.",
+      "spec": [
+        "3.4",
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 501,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/not_implemented",
+                "title": "Not Implemented",
+                "status": 501,
+                "code": "not_implemented",
+                "detail": "Not there yet.",
+                "errors": []
+              }
+            },
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            }
+          }
+        }
+      ],
+      "sleeps": [],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 501,
+          "code": "not_implemented",
+          "title": "Not Implemented",
+          "detail": "Not there yet.",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "501 not_implemented: Not there yet. (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.no-request-id",
+      "description": "Without X-Request-Id the request id is null, and the message has no request part.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 404,
+            "body": {
+              "kind": "json",
+              "value": {
+                "type": "https://api.example.test/errors/not_found",
+                "title": "Not found",
+                "status": 404,
+                "code": "not_found",
+                "detail": "Not found.",
+                "errors": []
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "NotFoundError",
+          "status": 404,
+          "code": "not_found",
+          "title": "Not found",
+          "detail": "Not found.",
+          "errors": [],
+          "request_id": null,
+          "message": "404 not_found: Not found."
+        }
+      }
+    },
+    {
+      "id": "errors.not-a-problem",
+      "description": "A body that is not a problem gives code unknown, the reason phrase as title, and the body as detail.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve",
+        "options": {
+          "max_retries": 0
+        }
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 502,
+            "headers": {
+              "x-request-id": "req_conformance_1"
+            },
+            "body": {
+              "kind": "text",
+              "value": "upstream connect error"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "InternalServerError",
+          "status": 502,
+          "code": "unknown",
+          "title": "Bad Gateway",
+          "detail": "upstream connect error",
+          "errors": [],
+          "request_id": "req_conformance_1",
+          "message": "502 unknown: upstream connect error (request req_conformance_1)"
+        }
+      }
+    },
+    {
+      "id": "errors.long-body-cut",
+      "description": "The detail of a body that is not a problem is its first 2000 characters.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 404,
+            "body": {
+              "kind": "text",
+              "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "NotFoundError",
+          "status": 404,
+          "code": "unknown",
+          "title": "Not Found",
+          "detail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "errors": [],
+          "request_id": null,
+          "message": "404 unknown: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      }
+    },
+    {
+      "id": "errors.json-without-code",
+      "description": "A JSON body without `code` is not a problem: code unknown.",
+      "spec": [
+        "3.7"
+      ],
+      "client": {
+        "base_url": "https://api.example.test",
+        "api_key": "osk_test_conformance"
+      },
+      "origin": "https://api.example.test",
+      "call": {
+        "operation": "me.retrieve"
+      },
+      "exchanges": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/me/",
+            "query": [],
+            "headers": {
+              "authorization": "Bearer osk_test_conformance",
+              "accept": "application/json",
+              "idempotency-key": null
+            },
+            "body": {
+              "kind": "none"
+            }
+          },
+          "response": {
+            "status": 403,
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": {
+              "kind": "json",
+              "value": {
+                "message": "nope"
+              }
+            }
+          }
+        }
+      ],
+      "expect": {
+        "error": {
+          "type": "PermissionDeniedError",
+          "status": 403,
+          "code": "unknown",
+          "title": "Forbidden",
+          "request_id": null
+        }
+      }
+    }
+  ]
+}

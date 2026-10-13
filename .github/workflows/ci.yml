@@ -1,0 +1,58 @@
+# The CI of the public repository oscaraccountant/oscaraccountant-rust. It is
+# exported from the private source repository of Oscar: a change made here
+# is overwritten by the next export.
+#
+# The source repository also runs the CLI suite against its mock server, the
+# npx test and the release builds. This repository has no mock server, so it runs the
+# unit tests, the SDK tests and the conformance cases of spec/.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      # The SDK: unit tests, the conformance cases of ../spec, the HTTP tests.
+      - run: cargo test -p oscaraccountant
+      # The CLI: its unit tests. The CLI suite (tests/cli.rs) needs the mock server of the source repository.
+      - run: cargo test -p oscaraccountant-cli --bins
+
+  npm:
+    name: npm packaging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: node --test test/shim.test.js test/assemble.test.mjs
+        working-directory: npm

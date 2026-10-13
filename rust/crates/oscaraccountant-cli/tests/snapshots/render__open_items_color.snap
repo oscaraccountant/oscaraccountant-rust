@@ -1,0 +1,18 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: open-items --as-of 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+[90mAs of[0m          2026-09-01
+[90mBase currency[0m  EUR
+
+[1mItems[0m [2m(1)[0m
+  [1mINVOICE NUMBER[0m  [1mPARTY NAME[0m  [1mDUE DATE[0m    [1mRESIDUAL[0m  [1mDAYS OVERDUE[0m  [1mAGING BUCKET[0m
+  invoice_number  party_name  2026-09-01  0.01 EUR             [31m1[0m  [90m● [0m[90mno due date[0m
+=== 120 columns
+[90mAs of[0m          2026-09-01
+[90mBase currency[0m  EUR
+
+[1mItems[0m [2m(1)[0m
+  [1mINVOICE NUMBER[0m  [1mPARTY NAME[0m  [1mDUE DATE[0m    [1mRESIDUAL[0m  [1mDAYS OVERDUE[0m  [1mAGING BUCKET[0m
+  invoice_number  party_name  2026-09-01  0.01 EUR             [31m1[0m  [90m● [0m[90mno due date[0m

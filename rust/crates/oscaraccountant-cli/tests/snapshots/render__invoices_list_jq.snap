@@ -1,0 +1,7 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: jq
+---
+number
+number
+number

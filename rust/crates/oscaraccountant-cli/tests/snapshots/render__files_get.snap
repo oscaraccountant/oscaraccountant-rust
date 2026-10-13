@@ -1,0 +1,34 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: files get fil0000001 --company cmp0000001
+---
+=== 80 columns
+invoice.pdf
+
+Kind                  invoice
+Content type          application/pdf
+Size                  24 B
+SHA-256               c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72
+Received on           2026-09-01
+Bank transaction IDs  bank_transaction_ids
+Uploaded by           uploaded_by
+
+Meta
+  ID                fil0000001
+  Core document ID  01J90000000000000000000218
+  Created at        2026-09-27T10:00:00Z
+=== 120 columns
+invoice.pdf
+
+Kind                  invoice
+Content type          application/pdf
+Size                  24 B
+SHA-256               c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d3dee72
+Received on           2026-09-01
+Bank transaction IDs  bank_transaction_ids
+Uploaded by           uploaded_by
+
+Meta
+  ID                fil0000001
+  Core document ID  01J90000000000000000000218
+  Created at        2026-09-27T10:00:00Z

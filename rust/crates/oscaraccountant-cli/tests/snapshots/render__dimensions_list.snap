@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: dimensions list --company cmp0000001
+---
+=== 80 columns
+CODE  NAME  KIND     ACTIVE
+code  name  project  no
+code  name  project  no
+=== 120 columns
+CODE  NAME  KIND     ACTIVE
+code  name  project  no
+code  name  project  no

@@ -1,0 +1,10 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: organizations list
+---
+=== 80 columns
+[1mNAME[0m                  [1mROLE[0m
+Mock Organization OÜ  owner
+=== 120 columns
+[1mNAME[0m                  [1mROLE[0m
+Mock Organization OÜ  owner

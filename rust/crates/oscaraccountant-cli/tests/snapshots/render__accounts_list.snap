@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: accounts list --company cmp0000001
+---
+=== 80 columns
+CODE  NAME     TYPE   NORMAL SIDE  CURRENCY  ACTIVE
+code  name_en  asset  debit        EUR       no
+code  name_en  asset  debit        EUR       no
+code  name_en  asset  debit        EUR       no
+=== 120 columns
+CODE  NAME     TYPE   NORMAL SIDE  CURRENCY  ACTIVE
+code  name_en  asset  debit        EUR       no
+code  name_en  asset  debit        EUR       no
+code  name_en  asset  debit        EUR       no

@@ -1,0 +1,40 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: inbox --company cmp0000001
+---
+=== 80 columns
+mock-company-ou-7k2m9q@inbox.oscaraccountant.com
+
+Address created at        2026-09-27
+Gmail filter query        (has:attachment (invoice OR arve OR receipt OR kviitung OR "tax invoice" OR Rechnung OR facture OR lasku OR "sąskaita")) -from:me
+Gmail filter query broad  has:attachment filename:pdf -from:me
+
+Counts
+  Received        3
+  Documents       1
+  Not an invoice  1
+  Failed          0
+
+Forwarding confirmation
+  Requesting address  mock@example.com
+  Status              ● sent
+  Sent at             2026-09-27
+  Forwarding works    yes
+=== 120 columns
+mock-company-ou-7k2m9q@inbox.oscaraccountant.com
+
+Address created at        2026-09-27
+Gmail filter query        (has:attachment (invoice OR arve OR receipt OR kviitung OR "tax invoice" OR Rechnung OR facture OR lasku OR "sąskaita")) -from:me
+Gmail filter query broad  has:attachment filename:pdf -from:me
+
+Counts
+  Received        3
+  Documents       1
+  Not an invoice  1
+  Failed          0
+
+Forwarding confirmation
+  Requesting address  mock@example.com
+  Status              ● sent
+  Sent at             2026-09-27
+  Forwarding works    yes

@@ -1,0 +1,72 @@
+[package]
+name = "oscaraccountant-cli"
+description = "oscar, the command-line tool of the Oscar accounting API."
+version.workspace = true
+edition.workspace = true
+# Above the workspace minimum: the lock of a profile across processes uses `File::lock` (1.89).
+rust-version = "1.89"
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["accounting", "bookkeeping", "api", "cli", "oscar"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "oscar"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+# The output of a person: the theme, the width, links, `--jq`
+# and `--template`. Pure Rust, like the rest of the tree.
+anstream = "1"
+anstyle = "1"
+jaq-core = "3.1"
+jaq-json = "2.0"
+jaq-std = "3.0"
+minijinja = { version = "2.24", features = ["json", "preserve_order"] }
+supports-hyperlinks = "3.2"
+terminal_size = "0.4"
+unicode-width = "0.2"
+# The prompts of the login and the onboarding, their spinner, and the QR code of a device login.
+# Pure Rust; inquire and indicatif write to
+# standard error.
+indicatif = "0.18.6"
+inquire = { version = "0.9.4", default-features = false, features = ["crossterm", "fuzzy"] }
+qrcode = { version = "0.14.1", default-features = false }
+# The pager of the client agreement in `oscar onboard`: a full-screen view on
+# crossterm, and the Markdown of the text. Pure Rust.
+pulldown-cmark = { version = "0.13.4", default-features = false }
+ratatui = { version = "0.30.2", default-features = false, features = ["crossterm"] }
+base64 = "0.22"
+bytes = "1"
+clap = { version = "4", default-features = false, features = ["std", "color", "help", "usage", "error-context", "suggestions", "wrap_help", "string"] }
+clap_complete = "4"
+dirs = "6"
+open = "5"
+futures = { version = "0.3", default-features = false, features = ["std"] }
+getrandom = "0.3"
+# Pure-Rust backends only (spec/README.md, section 2.3): no libdbus, no OpenSSL, so the
+# Linux binary is a static musl build.
+keyring = { version = "3.6", default-features = false, features = ["apple-native", "windows-native", "async-secret-service", "crypto-rust", "tokio"] }
+oscaraccountant = { path = "../oscaraccountant", version = "0.1.0" }
+percent-encoding = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sha2 = "0.10"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "io-util", "io-std", "fs", "sync", "signal"] }
+url = "2"
+
+[dev-dependencies]
+insta = "1.48"
+tempfile = "3"
+tokio = { version = "1", features = ["process", "macros", "rt-multi-thread", "io-util", "time"] }
+
+# The CLI suite drives the agreement pager in a pseudo terminal. Pure Rust; the
+# Unix PTY only, so the Windows lane builds and runs the rest of the suite.
+[target.'cfg(unix)'.dev-dependencies]
+portable-pty = "0.9.0"

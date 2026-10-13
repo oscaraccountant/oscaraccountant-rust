@@ -1,0 +1,21 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: fields
+---
+{
+  "items": [
+    {
+      "number": "number",
+      "state": "recorded"
+    },
+    {
+      "number": "number",
+      "state": "recorded"
+    },
+    {
+      "number": "number",
+      "state": "recorded"
+    }
+  ],
+  "next_cursor": null
+}

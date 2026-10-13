@@ -1,0 +1,74 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: documents get 01J90000000000000000000096 --company cmp0000001
+---
+=== 80 columns
+filename
+
+SHA-256          sha256
+Legacy SHA-1     legacy_sha1
+Kind             invoice
+Media type       media_type
+Size             1 B
+Storage ref      storage_ref
+Received on      2026-09-01
+Retention until  2026-09-01
+Legal hold       no
+Referenced       no
+Download URL     download_url
+
+Invoices (1)
+  REVISION NO  ROLE
+            1  role
+
+Bank statements (1)
+  STATEMENT ID                BANK ACCOUNT ID
+  01J90000000000000000000104  01J90000000000000000000105
+
+Accounting events (1)
+  ECONOMIC DATE  KIND
+  2026-09-01     kind
+
+VAT returns (1)
+  REVISION NO  PERIOD FROM  FORM
+            1  2026-09-01   form
+
+Meta
+  ID          01J90000000000000000000096
+  Created at  2026-09-27T10:00:00Z
+  File ID     01J90000000000000000000097
+=== 120 columns
+filename
+
+SHA-256          sha256
+Legacy SHA-1     legacy_sha1
+Kind             invoice
+Media type       media_type
+Size             1 B
+Storage ref      storage_ref
+Received on      2026-09-01
+Retention until  2026-09-01
+Legal hold       no
+Referenced       no
+Download URL     download_url
+
+Invoices (1)
+  REVISION NO  ROLE
+            1  role
+
+Bank statements (1)
+  STATEMENT ID                BANK ACCOUNT ID
+  01J90000000000000000000104  01J90000000000000000000105
+
+Accounting events (1)
+  ECONOMIC DATE  KIND
+  2026-09-01     kind
+
+VAT returns (1)
+  REVISION NO  PERIOD FROM  FORM
+            1  2026-09-01   form
+
+Meta
+  ID          01J90000000000000000000096
+  Created at  2026-09-27T10:00:00Z
+  File ID     01J90000000000000000000097

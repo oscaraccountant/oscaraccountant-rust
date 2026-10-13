@@ -1,0 +1,32 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: organizations get --organization org0000001
+---
+=== 80 columns
+[1mMock Organization OÜ[0m
+
+[90mRole[0m         owner
+[90mPermissions[0m  permissions
+
+[1mCompanies[0m [2m(1)[0m
+  [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mVAT STATUS[0m  [1mSTATE[0m
+  Mock Company OÜ  12345678       OÜ          registered  [32m● [0m[32mready[0m
+
+[2mMeta[0m
+  [2mID          org0000001[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m
+  [2mUpdated at  2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1mMock Organization OÜ[0m
+
+[90mRole[0m         owner
+[90mPermissions[0m  permissions
+
+[1mCompanies[0m [2m(1)[0m
+  [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mVAT STATUS[0m  [1mSTATE[0m
+  Mock Company OÜ  12345678       OÜ          registered  [32m● [0m[32mready[0m
+
+[2mMeta[0m
+  [2mID          org0000001[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m
+  [2mUpdated at  2026-09-27T10:00:00Z[0m

@@ -1,0 +1,32 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: organizations get --organization org0000001
+---
+=== 80 columns
+Mock Organization OÜ
+
+Role         owner
+Permissions  permissions
+
+Companies (1)
+  NAME             REGISTRY CODE  LEGAL FORM  VAT STATUS  STATE
+  Mock Company OÜ  12345678       OÜ          registered  ● ready
+
+Meta
+  ID          org0000001
+  Created at  2026-09-27T10:00:00Z
+  Updated at  2026-09-27T10:00:00Z
+=== 120 columns
+Mock Organization OÜ
+
+Role         owner
+Permissions  permissions
+
+Companies (1)
+  NAME             REGISTRY CODE  LEGAL FORM  VAT STATUS  STATE
+  Mock Company OÜ  12345678       OÜ          registered  ● ready
+
+Meta
+  ID          org0000001
+  Created at  2026-09-27T10:00:00Z
+  Updated at  2026-09-27T10:00:00Z

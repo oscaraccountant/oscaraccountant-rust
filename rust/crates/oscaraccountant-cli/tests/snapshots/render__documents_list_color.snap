@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: documents list --company cmp0000001
+---
+=== 80 columns
+[1mFILENAME[0m  [1mKIND[0m     [1mRECEIVED ON[0m  [1mSIZE[0m  [1mREFERENCED[0m
+filename  invoice  2026-09-01    1 B  [90mno[0m
+filename  invoice  2026-09-01    1 B  [90mno[0m
+=== 120 columns
+[1mFILENAME[0m  [1mKIND[0m     [1mRECEIVED ON[0m  [1mSIZE[0m  [1mREFERENCED[0m
+filename  invoice  2026-09-01    1 B  [90mno[0m
+filename  invoice  2026-09-01    1 B  [90mno[0m

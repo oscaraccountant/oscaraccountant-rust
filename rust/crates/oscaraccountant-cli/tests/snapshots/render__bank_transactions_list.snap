@@ -1,0 +1,14 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: bank-transactions list --company cmp0000001
+---
+=== 80 columns
+BOOKING DATE  COUNTERPARTY NAME  DESCRIPTION     TOTAL  STATUS
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched
+=== 120 columns
+BOOKING DATE  COUNTERPARTY NAME  DESCRIPTION     TOTAL  STATUS       BANK ACCOUNT LABEL
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched  bank_account_label
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched  bank_account_label
+2026-09-01    counterparty_name  description  0.01 EUR  ● unmatched  bank_account_label

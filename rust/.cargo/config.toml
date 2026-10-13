@@ -1,0 +1,19 @@
+[alias]
+# The coverage gate of the hand-written code: `cargo coverage`. The generated code (the setters and
+# the types of every operation) is left out; the generator has its own tests.
+coverage = [
+    "llvm-cov",
+    "--summary-only",
+    "--ignore-filename-regex",
+    "[/\\\\]generated[/\\\\]",
+    "--fail-under-lines",
+    "90",
+]
+
+# A Windows binary links the C runtime statically, so it runs on a machine with no Visual C++
+# redistributable.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

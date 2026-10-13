@@ -1,0 +1,60 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: me
+---
+=== 80 columns
+[90mHas TOTP[0m            [90mno[0m
+[90mStaff MFA required[0m  [90mno[0m
+[90mEmail verified[0m      yes
+[90mCLI min version[0m     0.1.0
+
+[1mUser[0m
+  [90mEmail[0m     mock@example.com
+  [90mName[0m      Mock User
+  [90mIs staff[0m  [90mno[0m
+  [90mUI mode[0m   simple
+
+[1mCredential[0m
+  [90mKind[0m       API key
+  [90mScopes[0m     read, write
+  [90mStaff key[0m  [90mno[0m
+
+[1mOrganizations[0m [2m(1)[0m
+  [1mNAME[0m                  [1mROLE[0m
+  Mock Organization OÜ  owner
+
+[1mCompanies[0m [2m(1)[0m
+  [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mSTATE[0m
+  Mock Company OÜ  12345678       OÜ          [32m● [0m[32mready[0m
+
+[1mFeatures[0m
+  [90mAgent[0m  [90mno[0m
+  [90mInbox[0m  [90mno[0m
+=== 120 columns
+[90mHas TOTP[0m            [90mno[0m
+[90mStaff MFA required[0m  [90mno[0m
+[90mEmail verified[0m      yes
+[90mCLI min version[0m     0.1.0
+
+[1mUser[0m
+  [90mEmail[0m     mock@example.com
+  [90mName[0m      Mock User
+  [90mIs staff[0m  [90mno[0m
+  [90mUI mode[0m   simple
+
+[1mCredential[0m
+  [90mKind[0m       API key
+  [90mScopes[0m     read, write
+  [90mStaff key[0m  [90mno[0m
+
+[1mOrganizations[0m [2m(1)[0m
+  [1mNAME[0m                  [1mROLE[0m
+  Mock Organization OÜ  owner
+
+[1mCompanies[0m [2m(1)[0m
+  [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mSTATE[0m
+  Mock Company OÜ  12345678       OÜ          [32m● [0m[32mready[0m
+
+[1mFeatures[0m
+  [90mAgent[0m  [90mno[0m
+  [90mInbox[0m  [90mno[0m

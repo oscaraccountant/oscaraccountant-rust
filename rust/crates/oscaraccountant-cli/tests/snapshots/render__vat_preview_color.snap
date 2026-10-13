@@ -1,0 +1,18 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: vat-preview --period-from 2026-09-01 --period-to 2026-09-30 --company cmp0000001
+---
+=== 80 columns
+[90mForm[0m           form
+[90mForm version[0m   form_version
+[90mPeriod from[0m    2026-09-01
+[90mPeriod to[0m      2026-09-01
+[90mBase currency[0m  EUR
+[90mRecognitions[0m   1
+=== 120 columns
+[90mForm[0m           form
+[90mForm version[0m   form_version
+[90mPeriod from[0m    2026-09-01
+[90mPeriod to[0m      2026-09-01
+[90mBase currency[0m  EUR
+[90mRecognitions[0m   1

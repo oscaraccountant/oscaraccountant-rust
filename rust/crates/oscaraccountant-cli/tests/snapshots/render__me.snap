@@ -1,0 +1,60 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: me
+---
+=== 80 columns
+Has TOTP            no
+Staff MFA required  no
+Email verified      yes
+CLI min version     0.1.0
+
+User
+  Email     mock@example.com
+  Name      Mock User
+  Is staff  no
+  UI mode   simple
+
+Credential
+  Kind       API key
+  Scopes     read, write
+  Staff key  no
+
+Organizations (1)
+  NAME                  ROLE
+  Mock Organization OÜ  owner
+
+Companies (1)
+  NAME             REGISTRY CODE  LEGAL FORM  STATE
+  Mock Company OÜ  12345678       OÜ          ● ready
+
+Features
+  Agent  no
+  Inbox  no
+=== 120 columns
+Has TOTP            no
+Staff MFA required  no
+Email verified      yes
+CLI min version     0.1.0
+
+User
+  Email     mock@example.com
+  Name      Mock User
+  Is staff  no
+  UI mode   simple
+
+Credential
+  Kind       API key
+  Scopes     read, write
+  Staff key  no
+
+Organizations (1)
+  NAME                  ROLE
+  Mock Organization OÜ  owner
+
+Companies (1)
+  NAME             REGISTRY CODE  LEGAL FORM  STATE
+  Mock Company OÜ  12345678       OÜ          ● ready
+
+Features
+  Agent  no
+  Inbox  no

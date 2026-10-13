@@ -1,0 +1,8 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: columns
+---
+NUMBER  DUE DATE
+number  2026-09-01
+number  2026-09-01
+number  2026-09-01

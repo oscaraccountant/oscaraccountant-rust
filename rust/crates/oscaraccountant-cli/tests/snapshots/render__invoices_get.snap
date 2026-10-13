@@ -1,0 +1,138 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: invoices get 01J90000000000000000000116 --company cmp0000001
+---
+=== 80 columns
+number  ● recorded  0.01 EUR
+
+Direction        purchase
+Kind             invoice
+State            recorded
+Party name       party_name
+Issued at        2026-09-27
+Cancelled at     2026-09-27
+Cancel reason    cancel_reason
+External source  external_source
+Revision no      1
+Invoice date     2026-09-01
+Supply date      2026-09-01
+Due date         2026-09-01
+Currency         EUR
+Net              0.01 EUR
+Tax              0.01 EUR
+Prepaid          0.01 EUR
+Rounding         0.01 EUR
+Amount due       0.01 EUR
+Base gross       0.01 EUR
+Base currency    EUR
+Needs review     no
+Review note      review_note
+Open             0.01 EUR
+
+Revision
+  Party name raw       party_name_raw
+  Service from         2026-09-01
+  Service to           2026-09-01
+  FX rate source       fx_rate_source
+  VAT code source      vat_code_source
+  Supplier VAT number  supplier_vat_number
+  Buyer VAT number     buyer_vat_number
+  Reason               reason
+  Prices include VAT   no
+
+  Lines (1)
+    DESCRIPTION  VAT CODE       NET       TAX     GROSS  ACCOUNT CODE
+    description  vat_code  0.01 EUR  0.01 EUR  0.01 EUR  account_code
+
+  Documents (1)
+    FILENAME  ROLE  KIND
+    filename  role  invoice
+
+Revisions (1)
+  REVISION NO  STATE       GROSS  INVOICE DATE
+            1  ● state  0.01 EUR  2026-09-01
+
+Entries (1)
+  ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE ROLE
+         1  ● posted  2026-09-01     purchases  primary
+
+Settlement
+  Residual     0.01 EUR
+  Status       ● open
+  Paid         no
+  Credited     no
+  Written off  no
+
+Meta
+  ID                   01J90000000000000000000116
+  Party ID             01J90000000000000000000117
+  Corrects invoice ID  01J90000000000000000000118
+  Created at           2026-09-27T10:00:00Z
+  Revision ID          01J90000000000000000000119
+=== 120 columns
+number  ● recorded  0.01 EUR
+
+Direction        purchase
+Kind             invoice
+State            recorded
+Party name       party_name
+Issued at        2026-09-27
+Cancelled at     2026-09-27
+Cancel reason    cancel_reason
+External source  external_source
+Revision no      1
+Invoice date     2026-09-01
+Supply date      2026-09-01
+Due date         2026-09-01
+Currency         EUR
+Net              0.01 EUR
+Tax              0.01 EUR
+Prepaid          0.01 EUR
+Rounding         0.01 EUR
+Amount due       0.01 EUR
+Base gross       0.01 EUR
+Base currency    EUR
+Needs review     no
+Review note      review_note
+Open             0.01 EUR
+
+Revision
+  Party name raw       party_name_raw
+  Service from         2026-09-01
+  Service to           2026-09-01
+  FX rate source       fx_rate_source
+  VAT code source      vat_code_source
+  Supplier VAT number  supplier_vat_number
+  Buyer VAT number     buyer_vat_number
+  Reason               reason
+  Prices include VAT   no
+
+  Lines (1)
+    DESCRIPTION  VAT CODE       NET       TAX     GROSS  ACCOUNT CODE
+    description  vat_code  0.01 EUR  0.01 EUR  0.01 EUR  account_code
+
+  Documents (1)
+    FILENAME  ROLE  KIND
+    filename  role  invoice
+
+Revisions (1)
+  REVISION NO  STATE       GROSS  INVOICE DATE
+            1  ● state  0.01 EUR  2026-09-01
+
+Entries (1)
+  ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE ROLE
+         1  ● posted  2026-09-01     purchases  primary
+
+Settlement
+  Residual     0.01 EUR
+  Status       ● open
+  Paid         no
+  Credited     no
+  Written off  no
+
+Meta
+  ID                   01J90000000000000000000116
+  Party ID             01J90000000000000000000117
+  Corrects invoice ID  01J90000000000000000000118
+  Created at           2026-09-27T10:00:00Z
+  Revision ID          01J90000000000000000000119

@@ -1,0 +1,74 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: companies get --company cmp0000001
+---
+=== 80 columns
+[1mMock Company OÜ[0m  [32m● [0m[32mready[0m
+
+[90mRegistry code[0m      12345678
+[90mVAT number[0m         EE123456789
+[90mVAT status[0m         registered
+[90mVAT status from[0m    2026-09-01
+[90mLegal form[0m         OÜ
+[90mFiles TSD monthly[0m  [90mno[0m
+[90mBase currency[0m      EUR
+[90mRole[0m               owner
+[90mPermissions[0m        organization.read
+[90mView as[0m            owner
+[90mRefresh pending[0m    [90mno[0m
+
+[1mStatus[0m
+  [90mBank lines to classify[0m      1
+  [90mPayments to explain[0m         1
+  [90mDocuments to book[0m           1
+  [90mPending proposals[0m           1
+  [90mOpen periods[0m                1
+  [90mVAT returns due[0m             1
+  [90mNext VAT due date[0m           2026-09-01
+  [90mLast bank import at[0m         2026-09-27
+  [90mOverdue receivables[0m         1
+  [90mOverdue receivables amount[0m  0.01 EUR
+  [90mRefreshed at[0m                2026-09-27
+  [90mRefresh error[0m               refresh_error
+
+[2mMeta[0m
+  [2mID               cmp0000001[0m
+  [2mOrganization ID  org0000001[0m
+  [2mCore company ID  01J90000000000000000000007[0m
+  [2mCreated at       2026-09-27T10:00:00Z[0m
+  [2mUpdated at       2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1mMock Company OÜ[0m  [32m● [0m[32mready[0m
+
+[90mRegistry code[0m      12345678
+[90mVAT number[0m         EE123456789
+[90mVAT status[0m         registered
+[90mVAT status from[0m    2026-09-01
+[90mLegal form[0m         OÜ
+[90mFiles TSD monthly[0m  [90mno[0m
+[90mBase currency[0m      EUR
+[90mRole[0m               owner
+[90mPermissions[0m        organization.read
+[90mView as[0m            owner
+[90mRefresh pending[0m    [90mno[0m
+
+[1mStatus[0m
+  [90mBank lines to classify[0m      1
+  [90mPayments to explain[0m         1
+  [90mDocuments to book[0m           1
+  [90mPending proposals[0m           1
+  [90mOpen periods[0m                1
+  [90mVAT returns due[0m             1
+  [90mNext VAT due date[0m           2026-09-01
+  [90mLast bank import at[0m         2026-09-27
+  [90mOverdue receivables[0m         1
+  [90mOverdue receivables amount[0m  0.01 EUR
+  [90mRefreshed at[0m                2026-09-27
+  [90mRefresh error[0m               refresh_error
+
+[2mMeta[0m
+  [2mID               cmp0000001[0m
+  [2mOrganization ID  org0000001[0m
+  [2mCore company ID  01J90000000000000000000007[0m
+  [2mCreated at       2026-09-27T10:00:00Z[0m
+  [2mUpdated at       2026-09-27T10:00:00Z[0m

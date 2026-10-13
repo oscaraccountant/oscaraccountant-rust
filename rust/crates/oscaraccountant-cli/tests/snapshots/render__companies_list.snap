@@ -1,0 +1,10 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: companies list --organization org0000001
+---
+=== 80 columns
+NAME             REGISTRY CODE  LEGAL FORM  VAT STATUS  STATE
+Mock Company OÜ  12345678       OÜ          registered  ● ready
+=== 120 columns
+NAME             REGISTRY CODE  LEGAL FORM  VAT STATUS  STATE
+Mock Company OÜ  12345678       OÜ          registered  ● ready
