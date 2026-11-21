@@ -1,9 +1,9 @@
 # The shared behaviour of the Oscar clients
 
-Status: normative, version 0.1.0 of the clients (`clients/VERSION`).
+Status: normative, for the version of the clients in `clients/VERSION`.
 
 This document states the rules that the TypeScript SDK, the Python SDK, the
-Rust SDK and the `oscar` CLI all follow. A client that breaks a rule here has
+Rust SDK, the PHP SDK and the `oscar` CLI all follow. A client that breaks a rule here has
 a bug. The conformance cases in `clients/spec/conformance/` test these rules.
 When a rule here and a client disagree, change the client,
 or change this document first and then every client.
@@ -12,7 +12,7 @@ This document gives exact values where a general rule would leave a
 choice open, so that the conformance cases can be exact. Each such value is marked **(value)**.
 
 "Must" is a requirement. "May" is a permission. "The SDK" means each of the
-three SDKs. "The client" means an SDK or the CLI.
+four SDKs. "The client" means an SDK or the CLI.
 
 ## 1. Credentials
 
@@ -21,9 +21,9 @@ three SDKs. "The client" means an SDK or the CLI.
 A client finds its credential in this order. The first match wins.
 
 1. **An explicit credential.** In code: the option `apiKey` (TypeScript),
-   `api_key` (Python), `.api_key(...)` (Rust), or a token provider (a callback
-   that returns an access token: `tokenProvider`, `token_provider`,
-   `.token_provider(...)`). In the CLI: the global flag `--api-key <key>`.
+   `api_key` (Python), `.api_key(...)` (Rust), `apiKey:` (PHP), or a token
+   provider (a callback that returns an access token: `tokenProvider`,
+   `token_provider`, `.token_provider(...)`, `tokenProvider:`). In the CLI: the global flag `--api-key <key>`.
 2. **The environment variable `OSCAR_API_KEY`.**
 3. **The stored login of the CLI, only when the caller asks for it**
    (section 1.3).
@@ -43,8 +43,8 @@ its message and sends nothing.
 ### 1.2 In a browser
 
 In a browser, the TypeScript SDK accepts a token provider only. It refuses
-`apiKey` with an error at construction, because a browser must never hold an
-organization API key. It does not read `OSCAR_API_KEY` and has no step 3.
+`apiKey` with an error at construction, because a browser must never hold a
+company API key. It does not read `OSCAR_API_KEY` and has no step 3.
 
 ### 1.3 The CLI login, step 3
 
@@ -52,7 +52,7 @@ A library never starts a process on its own. So a server with a missing
 `OSCAR_API_KEY` fails, and never uses the login of a developer by accident.
 Step 3 runs only when one of these is true:
 
-- The caller sets the option `credential: 'cli'` (TypeScript),
+- The caller sets the option `credential: 'cli'` (TypeScript and PHP),
   `credential="cli"` (Python) or `.credential(Credential::Cli)` (Rust).
 - The environment variable `OSCAR_USE_CLI_LOGIN` is `1`.
 
@@ -136,20 +136,29 @@ Only the CLI writes the store. The SDKs never read it; they use step 3.
     "default": {
       "base_url": "https://api.example.com",
       "auth": "oauth",
-      "organization": { "id": "k3j9x2m1q0", "name": "Example OÜ" },
       "company": "p8d7c6b5a4",
       "companies": [
         { "id": "p8d7c6b5a4", "name": "Example OÜ", "registry_code": "12345678",
-          "state": "ready", "organization_id": "k3j9x2m1q0" }
+          "state": "ready" }
       ]
     }
   }
 }
 ```
 
-`auth` is `oauth` or `api_key`. `organization` and `company` may be `null`.
-`companies` is a cache of the companies of `GET /api/me/` (section 4.8); it
-may be missing.
+`auth` is `oauth` or `api_key`. `company` may be `null`. `companies` is a
+cache of the companies of the credential, as `GET /api/me/` lists them
+(section 4.8): one for a company API key, the companies chosen on the consent
+page for an OAuth login, and every company for a staff key. It may be
+missing. A file of a CLI before 0.2.0 also has `organizations` (or one
+`organization`) in a profile and `organization_id` in each cached company: the
+server has no organizations any more, so the CLI drops these keys when it
+reads the file and never writes them again.
+
+The JSON of `oscar auth status` and `oscar profiles list` shows the
+companies of the cache in `companies` (objects with `id` and `name` in `auth
+status`, names in `profiles list`). The keys `organizations` and
+`organization` of the CLI before 0.2.0 are gone.
 The CLI writes the file atomically (a temporary file in the same directory,
 then a rename) and keeps unknown keys. The directory is created with mode
 `0700` on Unix.
@@ -172,7 +181,7 @@ available; the credentials are in `<path>`."
 
 "No keychain service answers" means: the keychain call fails with an error
 that says there is no backend or no service (a server, CI, a container, a
-Linux desktop with no Secret Service, which is common on Omarchy). Any other
+Linux desktop with no Secret Service). Any other
 keychain error is shown to the user, and the CLI does not fall back.
 
 The environment variable `OSCAR_CREDENTIAL_STORE=file` makes the CLI use the
@@ -195,7 +204,7 @@ notice is: "The credentials are in `<path>` (OSCAR_CREDENTIAL_STORE=file)."
 ### 3.1 Base URL
 
 The order, the first match wins: the option of the client (`baseUrl`,
-`base_url`, `.base_url(...)`, the CLI flag `--base-url`), then
+`base_url`, `.base_url(...)`, `baseUrl:` in PHP, the CLI flag `--base-url`), then
 `OSCAR_BASE_URL`, then the profile (CLI only), then the default constant.
 
 The default constant is defined in one place per client, named
@@ -206,12 +215,12 @@ OAuth under `/oauth/` of that origin, so the base URL has no path.
 A client normalizes a base URL: it removes a trailing `/`, and it lower-cases
 the scheme and the host. The scheme must be `https`, or `http` for a loopback
 host (`localhost`, `127.0.0.1`, `[::1]`) or a host that ends in `.personal`
-(the development overlay). Any other base URL is a usage error at
+(a private development network). Any other base URL is a usage error at
 construction.
 
 The API paths start with `/api/` and the OAuth paths with `/oauth/`, and both
 are relative to the base URL. So the base URL is the origin of the frontend,
-which serves both (the root `AGENTS.md`, "Development services").
+which serves both.
 
 ### 3.2 The URL of a call
 
@@ -240,7 +249,7 @@ which serves both (the root `AGENTS.md`, "Development services").
 | `Idempotency-Key` | An operation that accepts it | Section 3.5 |
 
 The caller may add headers for one call (option `headers`, `extra_headers`,
-`.header(...)`). They cannot replace `Authorization` or `Idempotency-Key`.
+`.header(...)`, `headers` of `RequestOptions` in PHP). They cannot replace `Authorization` or `Idempotency-Key`.
 
 A JSON body holds only the fields the caller set. In Python that is
 `model_dump(mode='json', by_alias=True, exclude_unset=True)`. A field set to
@@ -271,7 +280,8 @@ request once only.
 - The client sends it on every operation that accepts it (the generated
   request spec says `idempotent: true`), and on no other operation.
 - The caller may give a key for one call (option `idempotencyKey`,
-  `idempotency_key`, `.idempotency_key(...)`). Else the client makes a
+  `idempotency_key`, `.idempotency_key(...)`, `idempotencyKey` of
+  `RequestOptions` in PHP). Else the client makes a
   UUID version 4, in lower case with hyphens, from the injectable source.
 - The key is made once per call, and every retry of the call sends the same
   key.
@@ -283,10 +293,10 @@ A list operation returns `{"items": [...], "next_cursor": "..." | null}` and
 takes the query parameters `cursor` and `limit` (at most 200).
 
 - Each list method gives one page: `await` the result in TypeScript,
-  `first_page()` in Python, `.send()` in Rust.
+  `first_page()` in Python, `.send()` in Rust, `firstPage()` in PHP.
 - Each list method also gives an iterator over every item of every page:
   `for await` in TypeScript, `for` and `async for` in Python, `.stream()` (a
-  `Stream`) in Rust. The iterator sends the first request with the caller's
+  `Stream`) in Rust, `foreach` in PHP. The iterator sends the first request with the caller's
   parameters. Then it sends the same parameters with `cursor` set to the last
   `next_cursor`, until `next_cursor` is null. Each page is a separate `GET`
   with its own retries.
@@ -296,7 +306,9 @@ takes the query parameters `cursor` and `limit` (at most 200).
 ### 3.7 Errors
 
 Every error of a client derives from one base: `OscarError` in TypeScript
-and Python, the enum `Error` in Rust.
+and Python, the enum `Error` in Rust. In PHP, `OscarError` is an interface
+that every error of the SDK implements, because a library throws
+exceptions and not a subclass of the engine class `\Error`.
 
 A response with a status of 400 or above becomes an `ApiError`. The body is
 an RFC 9457 problem (`application/problem+json`):
@@ -329,12 +341,14 @@ The subtype by status:
 
 `AuthenticationError` is also the error of section 1, with no status.
 `UsageError` is a call the client cannot send as given (section 3.2); it has
-no status. It is `UsageError` in TypeScript and Python (a `ValueError` too)
-and `Error::Config` in Rust.
+no status. It is `UsageError` in TypeScript and Python (a `ValueError` too),
+`UsageError` in PHP (an `\InvalidArgumentException` too) and `Error::Config`
+in Rust.
 Two errors have no response: `ConnectionError` (the request got no response)
 and `TimeoutError` (an attempt ran out of time). Both are raised after the
 last retry. In Python, they subclass `OscarError`, not the builtins of the
-same name. In Rust, they are variants of `Error`.
+same name. In Rust, they are variants of `Error`. In PHP, they extend
+`\RuntimeException`.
 
 The message of an `ApiError` is `<status> <code>: <detail>`, and ends with
 ` (request <id>)` when the request id is known. No message holds a
@@ -351,7 +365,8 @@ credential.
 - **Download** (`files.download`,
   `GET /api/companies/{company_id}/files/{file_id}/content/`): the body is
   bytes, given as a stream (`ReadableStream` in TypeScript, an iterator of
-  `bytes` in Python, a `Stream` of `Bytes` in Rust), with the content type,
+  `bytes` in Python, a `Stream` of `Bytes` in Rust, a generator of strings in
+  PHP), with the content type,
   the length when known, and the file name of `Content-Disposition`. The DRF
   query parameter `format` of this endpoint is not exposed.
 
@@ -362,11 +377,11 @@ credential.
 
 | Part | Values |
 |---|---|
-| `<lang>` | `node`, `python`, `rust` |
+| `<lang>` | `node`, `python`, `rust`, `php` |
 | `<version>` | `clients/VERSION` |
 | `<os>` | `linux`, `macos`, `windows`, or `unknown` |
 | `<arch>` | `x86_64`, `arm64`, or the name the runtime gives |
-| `<runtime>` | `node/<version>`, `deno/<version>`, `bun/<version>`, `python/<version>`, `rust` |
+| `<runtime>` | `node/<version>`, `deno/<version>`, `bun/<version>`, `python/<version>`, `rust`, `php/<version>` |
 
 Example: `oscaraccountant-python/0.1.0 (linux; x86_64; python/3.14.2)`. A
 browser does not let a page set `User-Agent`, so the TypeScript SDK sends
@@ -422,8 +437,8 @@ The resource is `<base URL>/api`, with no trailing `/`. The scope is
    3 (with the real port), `client_id=oscar-cli`, `code_verifier` and
    `resource`.
 7. Call `GET /api/me/`, choose the default company (section 4.8), then
-   store the tokens (section 2), the organization, the company and the
-   cache of the companies.
+   store the tokens (section 2), the company and the cache of the companies
+   of the credential.
 
 The server never skips its consent page for a loopback redirect URI.
 
@@ -500,19 +515,36 @@ the key is deleted locally and stays valid at the server.
 
 ### 4.8 Companies and prompts of the CLI
 
-The default company of a login, from the companies of `GET /api/me/` (of
-the organization of the credential): `-c/--company <x>` when given; else the
+The default company of a login, from the companies of `GET /api/me/` (the
+companies of the credential): `-c/--company <x>` when given; else the
 only company; else, on a terminal, a picker (name, registry code, state);
 else the previous default of the profile when it is still listed; else none,
 and the CLI says how to choose one (`oscar companies use <x>`). With no
 company, the CLI offers `oscar onboard`.
 
-`<x>` of `-c/--company`, `OSCAR_COMPANY` and `oscar companies use` is the id,
-the registry code, or a unique, case-insensitive prefix of the name; among
-several names with the prefix, the name equal to `<x>` wins. An ambiguous
+`-c/--company` is a global option: it may come before the command too
+(`oscar -c <x> invoices list`), and a `-c` after the command wins over one
+before it. Then come `OSCAR_COMPANY`, then the default company of the
+profile. `oscar companies get [<x>]` also takes the company as an argument;
+the argument and `-c` with different values is exit code 2.
+
+`<x>` of `-c/--company`, `OSCAR_COMPANY`, `oscar companies get` and `oscar
+companies use` is the id, the registry code, or a unique, case-insensitive
+prefix of the name; among several names with the prefix, the name equal to
+`<x>` wins. An ambiguous
 value is exit code 2, with one line per match. The cache of the profile
 answers first; a value it does not know reads `GET /api/me/` again and stores
 the fresh list. The default company of the profile is used as stored.
+
+`oscar companies list` asks nothing and needs no company: it calls `GET
+/api/companies/`, the companies the credential reaches, one page at a time
+(`--cursor`, `--limit`, and `--all` for every page), like any list.
+
+A list with a query parameter `ordering` whose values include a descending
+one (`-invoice_date`) sends that value when `--ordering` is not given, so the
+newest records come first: the descending value of the first ascending one,
+else the first descending value. `--ordering` always wins. The API default
+stays ascending; the SDKs send no default.
 
 The CLI asks only when standard input and standard error are terminals, and
 neither `--no-input` nor `OSCAR_NO_INPUT` (any value but `0` or `false`) is
@@ -529,3 +561,22 @@ generated resources and the hand-written runtime of each language is in
 (operation id, method, path template, path values, query, body,
 `idempotent`, response kind); the runtime applies every rule of this
 document to it.
+
+Every client reads a response with forward compatibility, so a newer server
+does not break an older client:
+
+- **An unknown enum value.** Every enum is open. A value that the client does
+  not know is kept as its string, and the client gives no error. TypeScript
+  types each enum as a string union that also accepts any string, Python
+  makes a member `_unknown` with the value, Rust has the variant
+  `UnknownValue(String)`, PHP types the field `<Enum>|string`, and the CLI
+  prints the string.
+- **An unknown response field.** A field that the client does not know is
+  ignored or kept, and the client gives no error. No client rejects an
+  extra field. Python and PHP keep it (`extra='allow'`, `extra()`).
+
+The conformance cases `requests.unknown-enum-value` and
+`requests.unknown-field-kept` prove both rules on every client. These rules
+cover a new value and a new field only. A response field that becomes
+nullable, changes its type, or is removed breaks a released client, and
+needs a new client version.

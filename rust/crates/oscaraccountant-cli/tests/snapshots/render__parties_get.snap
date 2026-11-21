@@ -17,6 +17,7 @@ Expects document  no
 Is confirmed      no
 Notes             notes
 Private persons   no
+Roles             supplier
 
 Defaults
   Expense role  expense_role
@@ -43,6 +44,7 @@ Expects document  no
 Is confirmed      no
 Notes             notes
 Private persons   no
+Roles             supplier
 
 Defaults
   Expense role  expense_role

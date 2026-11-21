@@ -1,0 +1,7 @@
+---
+source: crates/oscaraccountant-cli/tests/cli.rs
+expression: table.stdout
+---
+NAME               REGISTRY CODE  LEGAL FORM  VAT STATUS    STATE
+Second Company OÜ  22222222       OÜ          unregistered  ● ready
+Third Company OÜ   33333333       OÜ          unregistered  ● ready

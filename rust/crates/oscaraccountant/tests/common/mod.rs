@@ -140,9 +140,17 @@ pub fn builder_with_env(
         })
 }
 
-pub fn organization(id: &str) -> Value {
-    json!({"id": id, "name": format!("Org {id}"), "role": "owner", "permissions": [], "companies": [],
-           "created_at": "2026-09-27T10:00:00Z", "updated_at": "2026-09-27T10:00:00Z"})
+pub fn company(id: &str) -> Value {
+    json!({"id": id, "name": format!("Company {id}"), "registry_code": "12345678", "vat_number": "",
+           "vat_status": "unregistered", "vat_status_from": null, "legal_form": "ou",
+           "files_tsd_monthly": false, "state": "ready", "core_company_id": null, "base_currency": "EUR",
+           "created_at": "2026-09-27T10:00:00Z", "updated_at": "2026-09-27T10:00:00Z",
+           "role": "owner", "permissions": [], "view_as": "owner", "refresh_pending": false,
+           "status": {"bank_lines_to_classify": 0, "payments_to_explain": 0, "documents_to_book": 0,
+                      "pending_proposals": 0, "open_periods": 0, "vat_returns_due": 0,
+                      "next_vat_due_date": null, "last_bank_import_at": null, "overdue_receivables": 0,
+                      "overdue_receivables_minor": 0, "refreshed_at": null, "refresh_error": "",
+                      "vat_months_not_checked": 0, "vat_not_checked_from": null, "vat_not_checked_to": null}})
 }
 
 pub fn outcome() -> Value {
@@ -152,5 +160,5 @@ pub fn outcome() -> Value {
 pub fn stored_document() -> Value {
     json!({"id": "f1", "kind": "invoice", "name": "a.pdf", "content_type": "application/pdf", "size_bytes": 4,
            "sha256": "x", "received_on": null, "core_document_id": null, "bank_transaction_ids": [],
-           "uploaded_by": null, "created_at": "2026-09-27T10:00:00Z"})
+           "uploaded_by": null, "created_at": "2026-09-27T10:00:00Z", "deleted_at": null})
 }

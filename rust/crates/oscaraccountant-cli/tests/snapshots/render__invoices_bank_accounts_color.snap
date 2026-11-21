@@ -1,0 +1,26 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: invoices bank-accounts 01J90000000000000000000116 --company cmp0000001
+---
+=== 80 columns
+[90mCurrency[0m  EUR
+[90mSource[0m    override
+
+[1mBank accounts[0m [2m(1)[0m
+  [1mLABEL[0m  [1mIBAN[0m  [1mCURRENCY[0m
+         iban  EUR
+
+[2mMeta[0m
+  [2mInvoice ID   01J90000000000000000000313[0m
+  [2mRevision ID  01J90000000000000000000314[0m
+=== 120 columns
+[90mCurrency[0m  EUR
+[90mSource[0m    override
+
+[1mBank accounts[0m [2m(1)[0m
+  [1mLABEL[0m  [1mIBAN[0m  [1mCURRENCY[0m
+         iban  EUR
+
+[2mMeta[0m
+  [2mInvoice ID   01J90000000000000000000313[0m
+  [2mRevision ID  01J90000000000000000000314[0m

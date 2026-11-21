@@ -42,9 +42,8 @@ async fn api_key_login_whoami_token_and_logout() {
     let user = User::new();
     let run = user.login_with_key(&mock).await.expect(0);
     assert!(
-        run.stderr.contains(
-            "✓ Logged in as mock@example.com · Mock Organization OÜ · company Mock Company OÜ"
-        ),
+        run.stderr
+            .contains("✓ Logged in as mock@example.com · company Mock Company OÜ"),
         "{}",
         run.stderr
     );
@@ -54,7 +53,10 @@ async fn api_key_login_whoami_token_and_logout() {
     assert_eq!(config["default_profile"], "default");
     assert_eq!(profile["auth"], "api_key");
     assert_eq!(profile["base_url"], mock.url);
-    assert_eq!(profile["organization"]["id"], mock.organization_id);
+    // The companies of the key, and no organization any more.
+    assert!(profile.get("organizations").is_none(), "{profile}");
+    assert_eq!(profile["companies"][0]["id"], mock.company_id);
+    assert!(profile["companies"][0].get("organization_id").is_none());
     assert_eq!(profile["company"], mock.company_id);
     assert!(
         !config.to_string().contains(&mock.api_key),
@@ -117,6 +119,12 @@ async fn api_key_login_whoami_token_and_logout() {
         .json();
     assert_eq!(status["auth"], "api_key");
     assert_eq!(status["expires_at"], Value::Null);
+    assert_eq!(
+        status["companies"],
+        json!([{"id": mock.company_id, "name": "Mock Company OÜ"}])
+    );
+    assert!(status.get("organizations").is_none(), "{status}");
+    assert!(status.get("organization").is_none(), "{status}");
     assert!(
         status["store"]
             .as_str()
@@ -276,13 +284,13 @@ async fn loopback_login_errors() {
     let error = mock.wait_for_requests("/cli/error", 1).await;
     assert_eq!(error.len(), 1, "the browser landed on the error page");
     assert_eq!(error[0]["query"], json!([["reason", "access_denied"]]));
-    // The browser line names the URL too (N3-9).
+    // The browser line names the URL too.
     assert!(
         run.stderr.contains("If it does not open, open this URL"),
         "{}",
         run.stderr
     );
-    // An account with no company yet (N2-4): the reason of the denial, and the way out.
+    // An account with no company yet: the reason of the denial, and the way out.
     mock.control(
         "POST",
         "/_mock/config",
@@ -463,6 +471,8 @@ async fn profiles_and_config() {
     assert_eq!(list.as_array().unwrap().len(), 2);
     assert_eq!(list[0]["name"], "default");
     assert_eq!(list[0]["default"], true);
+    assert_eq!(list[0]["companies"], json!(["Mock Company OÜ"]));
+    assert!(list[0].get("organization").is_none(), "{list}");
     user.run(&["profiles", "use", "second"]).await.expect(0);
     assert_eq!(user.config()["default_profile"], "second");
     user.run(&["profiles", "use", "nobody"]).await.expect(2);
@@ -479,7 +489,7 @@ async fn profiles_and_config() {
         .json();
     assert_eq!(got, json!({"company": "cmp0000009"}));
     assert_eq!(user.config()["profiles"]["second"]["company"], "cmp0000009");
-    // The company of another organization: 404, exit code 1.
+    // A company the key does not reach: 404, exit code 1.
     user.run(&["invoices", "list"]).await.expect(1);
     user.run(&["invoices", "list", "--company", &mock.company_id])
         .await
@@ -791,7 +801,6 @@ fn command_line(call: &Value, workdir: &std::path::Path) -> Vec<String> {
         let value = call["path"][arg.name].as_str().unwrap().to_owned();
         match arg.name {
             "company_id" => args.extend(["--company".to_owned(), value]),
-            "organization_id" => args.extend(["--organization".to_owned(), value]),
             _ => args.push(value),
         }
     }
@@ -851,13 +860,18 @@ async fn every_command_in_json_and_table_form() {
             continue;
         }
         let args = command_line(call, user.dir.path());
+        // A command with no content (`files delete`, 204) says "Done." on stderr, also with --json.
+        let empty = case["expect"]["result"]["kind"] == "none";
         let mut json_args: Vec<&str> = args.iter().map(String::as_str).collect();
         json_args.push("--json");
         // A command may run once only (an upload, a command with a key): each run gets a new
         // Idempotency-Key, so a second run is a new call.
         let run = user.run(&json_args).await;
         assert_eq!(run.code, 0, "{name}: {args:?}: {}", run.stderr);
-        if !name.ends_with("download") {
+        if empty {
+            assert!(run.stdout.is_empty(), "{name}: {}", run.stdout);
+            assert_eq!(run.stderr.trim(), "Done.", "{name}");
+        } else if !name.ends_with("download") {
             run.json();
         }
         user.set("OSCAR_FORCE_TTY", "1");
@@ -910,7 +924,7 @@ async fn completion_and_help() {
 
 #[test]
 fn a_closed_pipe_is_not_a_panic() {
-    // Self-test P2-17: `oscar completion bash | head -3` panicked with "Broken pipe".
+    // Regression: `oscar completion bash | head -3` panicked with "Broken pipe".
     let user = User::new();
     for args in [&["completion", "bash"][..], &["completion", "zsh"][..]] {
         let mut child = std::process::Command::new(User::binary())
@@ -952,13 +966,12 @@ async fn script_companies(mock: &Mock, companies: Value) {
     let me = json!({
         "user": {"id": "u1", "email": "mock@example.com", "name": "Mock User", "is_staff": false, "ui_mode": "simple"},
         "credential": {"kind": "api_key", "scopes": ["read", "write"], "staff_key": false},
-        "organizations": [{"id": mock.organization_id, "name": "Mock Organization OÜ", "role": "owner", "is_member": true}],
         "companies": companies,
         "cli_min_version": "0.1.0",
         "email_verified": true,
         "has_totp": false,
         "staff_mfa_required": false,
-        "features": {"agent": false, "inbox": false},
+        "features": {"agent": false, "inbox": false, "employees": false},
     });
     mock.control(
         "POST",
@@ -968,21 +981,20 @@ async fn script_companies(mock: &Mock, companies: Value) {
     .await;
 }
 
-fn company(id: &str, name: &str, code: &str, organization: &str) -> Value {
-    json!({"id": id, "organization_id": organization, "name": name, "registry_code": code,
+fn company(id: &str, name: &str, code: &str) -> Value {
+    json!({"id": id, "name": name, "registry_code": code,
            "vat_number": "", "legal_form": "ou", "state": "ready"})
 }
 
 #[tokio::test]
 async fn several_companies_and_the_company_flag() {
     let mock = Mock::start(defaults()).await;
-    let org = mock.organization_id.clone();
     script_companies(
         &mock,
         json!([
-            company(&mock.company_id, "Mock Company OÜ", "12345678", &org),
-            company("cmp0000002", "Alpha OÜ", "22222222", &org),
-            company("cmp0000003", "Alpha Holding OÜ", "33333333", &org),
+            company(&mock.company_id, "Mock Company OÜ", "12345678"),
+            company("cmp0000002", "Alpha OÜ", "22222222"),
+            company("cmp0000003", "Alpha Holding OÜ", "33333333"),
         ]),
     )
     .await;
@@ -1046,8 +1058,8 @@ async fn several_companies_and_the_company_flag() {
     script_companies(
         &mock,
         json!([
-            company(&mock.company_id, "Mock Company OÜ", "12345678", &org),
-            company("cmp0000004", "Delta AS", "44444444", &org),
+            company(&mock.company_id, "Mock Company OÜ", "12345678"),
+            company("cmp0000004", "Delta AS", "44444444"),
         ]),
     )
     .await;
@@ -1160,7 +1172,7 @@ async fn no_company_offers_the_onboarding_and_no_input_never_asks() {
 }
 
 /// With no login at all, a company command says "Not logged in" (exit 3), not "No company"
-/// (exit 2): the login is what is missing (P2-15).
+/// (exit 2): the login is what is missing.
 #[tokio::test]
 async fn no_login_is_not_logged_in_before_no_company() {
     let mock = Mock::start(defaults()).await;
@@ -1201,7 +1213,7 @@ async fn no_login_is_not_logged_in_before_no_company() {
 
 #[tokio::test]
 async fn a_row_is_found_by_what_the_list_shows_and_a_path_never_walks() {
-    // Self-test N2-5: `oscar invoices get EE-2026-007` and `oscar files get <name>` were 404.
+    // Regression: `oscar invoices get EE-2026-007` and `oscar files get <name>` were 404.
     let mock = Mock::start(defaults()).await;
     let user = User::new();
     user.login_with_key(&mock).await.expect(0);
@@ -1238,7 +1250,7 @@ async fn a_row_is_found_by_what_the_list_shows_and_a_path_never_walks() {
             .contains(r#"["number","EE-2026-007"]"#),
         "the list is filtered on the number: {lists:?}"
     );
-    // In lower case (N3-d): the exact filter of the server finds nothing, so the number is tried
+    // In lower case: the exact filter of the server finds nothing, so the number is tried
     // in upper case.
     let empty = json!({"items": [], "next_cursor": null});
     mock.control(
@@ -1283,7 +1295,7 @@ async fn a_row_is_found_by_what_the_list_shows_and_a_path_never_walks() {
         many.stderr
     );
 
-    // Self-test N2-1: a value that would leave its segment is refused, and nothing is sent.
+    // Regression: a value that would leave its segment is refused, and nothing is sent.
     let before = mock.requests().await.len();
     for bad in ["../../me", "a/b", ".."] {
         let run = user.run(&["invoices", "get", bad]).await.expect(2);
@@ -1298,13 +1310,13 @@ async fn a_row_is_found_by_what_the_list_shows_and_a_path_never_walks() {
 
 #[tokio::test]
 async fn an_error_page_is_summed_up_not_printed() {
-    // Self-test N2-2: a Django HTML 404 page of hundreds of lines after `error: 404 unknown:`.
+    // Regression: an HTML 404 page of hundreds of lines after `error: 404 unknown:`.
     let mock = Mock::start(defaults()).await;
     let mut user = User::new();
     user.login_with_key(&mock).await.expect(0);
     let page = format!(
         "<!DOCTYPE html><html><head><title>Page not found at /api/x/</title></head><body>{}</body></html>",
-        "<p>Using the URLconf defined in config.urls</p>\n".repeat(300)
+        "<p>No route matches this path.</p>\n".repeat(300)
     );
     let script = json!({"responses": [{"match": {"path": "/api/me/"}, "times": 2, "response": {"status": 404,
         "headers": {"content-type": "text/html"}, "body": {"kind": "text", "value": page}}}]});
@@ -1318,8 +1330,401 @@ async fn an_error_page_is_summed_up_not_printed() {
     user.set("OSCAR_DEBUG", "1");
     let debug = user.run(&["whoami"]).await.expect(1);
     assert!(
-        debug.stderr.contains("Using the URLconf"),
+        debug.stderr.contains("No route matches this path."),
         "{}",
         debug.stderr
+    );
+}
+
+/// `GET /api/me/` of an OAuth login granted two companies on the consent page, for every later
+/// call.
+async fn script_two_companies(mock: &Mock, companies: Value) {
+    mock.control("DELETE", "/_mock/responses", None).await;
+    let me = json!({
+        "user": {"id": "u1", "email": "mock@example.com", "name": "Mock User", "is_staff": false, "ui_mode": "simple"},
+        "credential": {"kind": "oauth", "scopes": ["read", "write"], "staff_key": false},
+        "companies": companies,
+        "cli_min_version": "0.1.0",
+        "email_verified": true,
+        "has_totp": false,
+        "staff_mfa_required": false,
+        "features": {"agent": false, "inbox": false, "employees": false},
+    });
+    mock.control(
+        "POST",
+        "/_mock/responses",
+        Some(json!({"responses": [{"match": {"path": "/api/me/"}, "times": 1000, "response": {"status": 200, "body": {"kind": "json", "value": me}}}]})),
+    )
+    .await;
+}
+
+/// A login of two companies: the profile stores both, the login line counts them, and both are
+/// the choices of the default company. No command asks for an organization.
+#[tokio::test]
+async fn a_login_of_two_companies() {
+    let mock = Mock::start(defaults()).await;
+    script_two_companies(
+        &mock,
+        json!([
+            company(&mock.company_id, "Mock Company OÜ", "12345678"),
+            company("cmp0000002", "Second Company OÜ", "22222222"),
+        ]),
+    )
+    .await;
+    let user = User::new();
+    let run = user.login_with_device(&mock).await.expect(0);
+    assert!(
+        run.stderr
+            .contains("Logged in as mock@example.com · 2 companies · no company"),
+        "{}",
+        run.stderr
+    );
+    assert!(
+        run.stderr.contains("You have 2 companies"),
+        "{}",
+        run.stderr
+    );
+    let profile = &user.config()["profiles"]["default"];
+    assert_eq!(profile["auth"], "oauth");
+    assert_eq!(profile["companies"].as_array().unwrap().len(), 2);
+    assert!(profile.get("organizations").is_none(), "{profile}");
+    assert!(profile.get("organization").is_none(), "{profile}");
+
+    // The default company may be the second one.
+    let run = user
+        .run(&["login", "--device", "--base-url", &mock.url, "-c", "second"])
+        .await
+        .expect(0);
+    assert!(
+        run.stderr.contains("· company Second Company OÜ"),
+        "{}",
+        run.stderr
+    );
+    assert_eq!(
+        user.config()["profiles"]["default"]["company"],
+        "cmp0000002"
+    );
+    // Not a company of the grant.
+    user.run(&["login", "--device", "--base-url", &mock.url, "-c", "third"])
+        .await
+        .expect(2);
+    // A login again keeps the default company it still reaches.
+    user.run(&["login", "--device", "--base-url", &mock.url])
+        .await
+        .expect(0);
+    assert_eq!(
+        user.config()["profiles"]["default"]["company"],
+        "cmp0000002"
+    );
+
+    let list = user
+        .run(&["profiles", "list", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(
+        list[0]["companies"],
+        json!(["Mock Company OÜ", "Second Company OÜ"])
+    );
+    let status = user
+        .run(&["auth", "status", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(
+        status["companies"],
+        json!([
+            {"id": mock.company_id, "name": "Mock Company OÜ"},
+            {"id": "cmp0000002", "name": "Second Company OÜ"},
+        ])
+    );
+    let whoami = user.run(&["whoami"]).await.expect(0).json();
+    assert!(whoami.get("organizations").is_none(), "{whoami}");
+    assert_eq!(whoami["companies"].as_array().unwrap().len(), 2);
+    // The organization commands and the flag are gone.
+    user.run(&["organizations", "list"]).await.expect(2);
+    user.run(&["companies", "list", "--organization", "org0000001"])
+        .await
+        .expect(2);
+}
+
+/// The `config.json` of a CLI before 0.2.0, with the organizations of each profile and an
+/// `organization_id` in each cached company: it loads, no command asks for an organization,
+/// and the next write drops the old keys.
+#[tokio::test]
+async fn the_config_file_of_an_older_cli_still_loads() {
+    let mock = Mock::start(defaults()).await;
+    let user = User::new();
+    user.login_with_key(&mock).await.expect(0);
+    let mut config = user.config();
+    let profile = config["profiles"]["default"].as_object_mut().unwrap();
+    profile.insert(
+        "organizations".into(),
+        json!([{"id": "org0000001", "name": "Mock Organization OÜ"}]),
+    );
+    profile.insert(
+        "organization".into(),
+        json!({"id": "org0000001", "name": "Mock Organization OÜ"}),
+    );
+    profile["companies"][0]["organization_id"] = json!("org0000001");
+    let path = user.dir.path().join("config.json");
+    std::fs::write(&path, config.to_string()).unwrap();
+
+    let list = user
+        .run(&["profiles", "list", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(list[0]["companies"], json!(["Mock Company OÜ"]));
+    assert!(list[0].get("organizations").is_none(), "{list}");
+    let status = user
+        .run(&["auth", "status", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(
+        status["companies"],
+        json!([{"id": mock.company_id, "name": "Mock Company OÜ"}])
+    );
+    assert!(status.get("organization").is_none(), "{status}");
+    user.run(&["companies", "list", "--json"]).await.expect(0);
+    assert_eq!(mock.requests_to("/api/companies/").await.len(), 1);
+    user.run(&["invoices", "list", "--json"]).await.expect(0);
+
+    // The next write of the file: no organization key, no `organization_id`.
+    user.run(&["companies", "use", &mock.company_id])
+        .await
+        .expect(0);
+    let profile = &user.config()["profiles"]["default"];
+    assert!(profile.get("organizations").is_none(), "{profile}");
+    assert!(profile.get("organization").is_none(), "{profile}");
+    assert!(
+        profile["companies"][0].get("organization_id").is_none(),
+        "{profile}"
+    );
+    assert_eq!(profile["company"], mock.company_id);
+}
+
+/// A company as `GET /api/companies/` lists it.
+fn listed_company(id: &str, name: &str, code: &str) -> Value {
+    json!({"id": id, "name": name, "registry_code": code,
+           "vat_number": "", "vat_status": "unregistered", "vat_status_from": null,
+           "legal_form": "ou", "files_tsd_monthly": false, "state": "ready",
+           "core_company_id": "01J90000000000000000000008", "base_currency": "EUR",
+           "created_at": "2026-09-27T10:00:00Z", "updated_at": "2026-09-27T10:00:00Z"})
+}
+
+/// The pages of `GET /api/companies/`, for its next requests.
+async fn script_company_pages(mock: &Mock, pages: &[(Value, Option<&str>)], times: u32) {
+    let responses: Vec<Value> = pages
+        .iter()
+        .map(|(items, next)| {
+            json!({"match": {"path": "/api/companies/"}, "times": times, "response": {"status": 200,
+                   "body": {"kind": "json", "value": {"items": items, "next_cursor": next}}}})
+        })
+        .collect();
+    mock.control(
+        "POST",
+        "/_mock/responses",
+        Some(json!({ "responses": responses })),
+    )
+    .await;
+}
+
+/// The ids of the items of a list answer.
+fn ids(list: &Value) -> Vec<&str> {
+    list["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["id"].as_str().unwrap())
+        .collect()
+}
+
+/// `oscar companies list` asks nothing: it calls `GET /api/companies/` once per page, with no
+/// default company, no `--organization` and no read of `GET /api/me/` first.
+#[tokio::test]
+async fn companies_list_asks_nothing() {
+    let mock = Mock::start(defaults()).await;
+    script_two_companies(
+        &mock,
+        json!([
+            company(&mock.company_id, "Mock Company OÜ", "12345678"),
+            company("cmp0000002", "Second Company OÜ", "22222222"),
+        ]),
+    )
+    .await;
+    let mut user = User::new();
+    user.login_with_device(&mock).await.expect(0);
+    // Two companies and no terminal: no default company, and the list needs none.
+    assert_eq!(user.config()["profiles"]["default"]["company"], Value::Null);
+    let me = mock.requests_to("/api/me/").await.len();
+    let second = listed_company("cmp0000002", "Second Company OÜ", "22222222");
+    let third = listed_company("cmp0000003", "Third Company OÜ", "33333333");
+    script_company_pages(&mock, &[(json!([second]), Some("page2"))], 1).await;
+    let list = user
+        .run(&["companies", "list", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(ids(&list), ["cmp0000002"]);
+    assert_eq!(list["next_cursor"], "page2");
+    // The next page with its cursor.
+    script_company_pages(&mock, &[(json!([third]), None)], 1).await;
+    let next = user
+        .run(&["companies", "list", "--cursor", "page2", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(ids(&next), ["cmp0000003"]);
+    let pages = mock.requests_to("/api/companies/").await;
+    assert_eq!(pages.len(), 2, "{pages:#?}");
+    assert_eq!(pages[0]["query"], json!([]));
+    assert_eq!(pages[1]["query"], json!([["cursor", "page2"]]));
+    assert_eq!(mock.requests_to("/api/me/").await.len(), me);
+    assert!(mock.requests_to("/api/organizations/").await.is_empty());
+
+    // The table.
+    script_company_pages(&mock, &[(json!([second, third]), None)], 1000).await;
+    user.set("OSCAR_FORCE_TTY", "1")
+        .set("COLUMNS", "100")
+        .set("FORCE_HYPERLINK", "0")
+        .set("LC_ALL", "en_US.UTF-8");
+    let table = user.run(&["companies", "list"]).await.expect(0);
+    insta::assert_snapshot!("companies_list_of_the_login", table.stdout);
+    user.vars.retain(|(key, _)| key != "OSCAR_FORCE_TTY");
+
+    // A key of OSCAR_API_KEY and no profile: the same call.
+    let mut keyed = User::new();
+    keyed
+        .set("OSCAR_API_KEY", &mock.api_key)
+        .set("OSCAR_BASE_URL", &mock.url);
+    mock.control("DELETE", "/_mock/responses", None).await;
+    let list = keyed
+        .run(&["companies", "list", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(ids(&list), [mock.company_id.as_str()]);
+    assert_eq!(keyed.config(), Value::Null);
+}
+
+/// A list with an `ordering` asks for the newest first, unless `--ordering` is given; a list
+/// with no `ordering` sends none.
+#[tokio::test]
+async fn lists_ask_for_the_newest_first() {
+    let mock = Mock::start(defaults()).await;
+    let user = User::new();
+    user.login_with_key(&mock).await.expect(0);
+    let company = &mock.company_id;
+    let last_query = |requests: Vec<Value>| requests.last().unwrap()["query"].clone();
+
+    user.run(&["invoices", "list", "--json"]).await.expect(0);
+    let invoices = format!("/api/companies/{company}/invoices/");
+    let query = last_query(mock.requests_to(&invoices).await);
+    assert_eq!(query, json!([["ordering", "-invoice_date"]]));
+
+    user.run(&["invoices", "list", "--ordering", "invoice_date", "--json"])
+        .await
+        .expect(0);
+    let query = last_query(mock.requests_to(&invoices).await);
+    assert_eq!(query, json!([["ordering", "invoice_date"]]));
+
+    user.run(&["documents", "list", "--json"]).await.expect(0);
+    let documents = format!("/api/companies/{company}/documents/");
+    let query = last_query(mock.requests_to(&documents).await);
+    assert_eq!(query, json!([["ordering", "-created_at"]]));
+
+    user.run(&["bank-transactions", "list", "--json"])
+        .await
+        .expect(0);
+    let lines = format!("/api/companies/{company}/bank-transactions/");
+    let query = last_query(mock.requests_to(&lines).await);
+    assert_eq!(query, json!([["ordering", "-booking_date"]]));
+
+    user.run(&["accounts", "list", "--json"]).await.expect(0);
+    let accounts = format!("/api/companies/{company}/accounts/");
+    assert_eq!(last_query(mock.requests_to(&accounts).await), json!([]));
+
+    let help = user.run(&["invoices", "list", "--help"]).await.expect(0);
+    assert!(
+        help.stdout
+            .contains("[default: -invoice_date, newest first]"),
+        "{}",
+        help.stdout
+    );
+}
+
+/// `-c/--company` before the command, the command's `-c` over the root's, and `oscar companies
+/// get <COMPANY>`.
+#[tokio::test]
+async fn the_company_before_the_command_and_as_the_argument_of_companies_get() {
+    let mock = Mock::start(defaults()).await;
+    script_companies(
+        &mock,
+        json!([
+            company(&mock.company_id, "Mock Company OÜ", "12345678"),
+            company("cmp0000002", "Alpha OÜ", "22222222"),
+        ]),
+    )
+    .await;
+    let mut user = User::new();
+    // Two companies and no terminal: no default company.
+    user.login_with_key(&mock).await.expect(0);
+    assert_eq!(user.config()["profiles"]["default"]["company"], Value::Null);
+    user.run(&["invoices", "list", "--json"]).await.expect(2);
+    let mine = format!("/api/companies/{}/invoices/", mock.company_id);
+    let alpha = "/api/companies/cmp0000002/invoices/";
+
+    // `oscar -c X invoices list`.
+    user.run(&["-c", "12345678", "invoices", "list", "--json"])
+        .await
+        .expect(0);
+    assert_eq!(mock.requests_to(&mine).await.len(), 1);
+    // The command's -c wins over the root's.
+    user.run(&["-c", "alpha", "invoices", "list", "-c", "mock", "--json"])
+        .await
+        .expect(0);
+    assert_eq!(mock.requests_to(&mine).await.len(), 2);
+    assert!(mock.requests_to(alpha).await.is_empty());
+    // The flag wins over OSCAR_COMPANY.
+    user.set("OSCAR_COMPANY", "alpha");
+    user.run(&["--company", "mock", "invoices", "list", "--json"])
+        .await
+        .expect(0);
+    assert_eq!(mock.requests_to(&mine).await.len(), 3);
+    assert!(mock.requests_to(alpha).await.is_empty());
+    user.vars.retain(|(key, _)| key != "OSCAR_COMPANY");
+
+    // `oscar companies get <COMPANY>`, by registry code, and with the root's -c.
+    let path = format!("/api/companies/{}/", mock.company_id);
+    let got = user
+        .run(&["companies", "get", "12345678", "--json"])
+        .await
+        .expect(0)
+        .json();
+    assert_eq!(got["id"], mock.company_id.as_str());
+    assert_eq!(mock.requests_to(&path).await.len(), 1);
+    user.run(&["-c", "mock", "companies", "get", "--json"])
+        .await
+        .expect(0);
+    assert_eq!(mock.requests_to(&path).await.len(), 2);
+    // The same company twice is fine; two companies are a usage error, with no call.
+    user.run(&["companies", "get", "12345678", "-c", "12345678", "--json"])
+        .await
+        .expect(0);
+    let run = user
+        .run(&["companies", "get", "12345678", "-c", "alpha"])
+        .await
+        .expect(2);
+    insta::assert_snapshot!("companies_get_company_twice", run.stderr);
+    user.run(&["-c", "alpha", "companies", "get", "12345678"])
+        .await
+        .expect(2);
+    assert_eq!(mock.requests_to(&path).await.len(), 3);
+    assert!(
+        mock.requests_to("/api/companies/cmp0000002/")
+            .await
+            .is_empty()
     );
 }

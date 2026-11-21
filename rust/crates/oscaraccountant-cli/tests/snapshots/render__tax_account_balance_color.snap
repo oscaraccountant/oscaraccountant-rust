@@ -1,0 +1,48 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: tax-account balance --company cmp0000001
+---
+=== 80 columns
+[32m● [0m[32mok[0m
+
+[90mLast attempt at[0m     2026-09-27
+[90mLast success at[0m     2026-09-27
+[90mAs of[0m               2026-09-27
+[90mRequest date[0m        2026-09-27
+[90mTotal[0m               120.00
+[90mInterest[0m            0.00
+[90mPrepayment balance[0m  35.50
+[90mRefresh pending[0m     [90mno[0m
+
+[1mAccount balances[0m
+  [90mE[0m  35.50
+
+[1mClaims[0m [2m(1)[0m
+  [1mTAX PERIOD CODE[0m  [1mCLAIM TYPE CODE[0m  [1mDOCUMENT TYPE CODE[0m  [1mBALANCE[0m  [1mDUE DATE[0m
+  2026-08          KM               KMD                 120.00   2026-09-20
+
+[1mNotices[0m [2m(1)[0m
+  [1mKIND[0m  [1mAMOUNT[0m
+  debt  120.00
+=== 120 columns
+[32m● [0m[32mok[0m
+
+[90mLast attempt at[0m     2026-09-27
+[90mLast success at[0m     2026-09-27
+[90mAs of[0m               2026-09-27
+[90mRequest date[0m        2026-09-27
+[90mTotal[0m               120.00
+[90mInterest[0m            0.00
+[90mPrepayment balance[0m  35.50
+[90mRefresh pending[0m     [90mno[0m
+
+[1mAccount balances[0m
+  [90mE[0m  35.50
+
+[1mClaims[0m [2m(1)[0m
+  [1mTAX PERIOD CODE[0m  [1mCLAIM TYPE CODE[0m  [1mDOCUMENT TYPE CODE[0m  [1mBALANCE[0m  [1mDUE DATE[0m
+  2026-08          KM               KMD                 120.00   2026-09-20
+
+[1mNotices[0m [2m(1)[0m
+  [1mKIND[0m  [1mAMOUNT[0m
+  debt  120.00

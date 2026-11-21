@@ -92,11 +92,12 @@ pub struct Options {
     pub no_wait: bool,
 }
 
-/// The books software of the company step, with its label.
+/// The books software of the company step, with its label: the sources of a migration (the
+/// import routes of the backend), then "My accountant".
 pub const BOOKS_SOFTWARE: &[(&str, &str)] = &[
     ("merit_aktiva", "Merit Aktiva"),
+    ("e_arveldaja", "e-Arveldaja (e-Financials)"),
     ("xolo", "Xolo"),
-    ("directo", "Directo"),
     ("other", "Other software"),
     ("my_accountant", "My accountant"),
 ];
@@ -376,13 +377,9 @@ pub struct OpenOnboarding {
     pub name: String,
     /// The registry code of its company, when the server gives it.
     pub registry_code: Option<String>,
-    /// The name of the organization of its company, when the server gives it.
-    pub organization: Option<String>,
-    /// False: the company is in another organization than the login's, so its routes answer 404
-    /// to this login (a token of the CLI is bound to one organization).
+    /// False: the login does not reach the company, so its routes answer 404 to this login (a
+    /// token of the CLI reaches only the companies chosen on the consent page at its login).
     pub reachable: bool,
-    /// The name of the organization of the login, when it has one.
-    pub login_organization: Option<String>,
     /// The state of `GET /api/onboarding/`: the steps and the current one.
     pub state: Value,
 }
@@ -400,39 +397,25 @@ impl OpenOnboarding {
         Some(Self {
             name: text(&company["name"]).unwrap_or_else(|| "your company".to_owned()),
             registry_code: text(&company["registry_code"]),
-            organization: text(&company["organization"]["name"]),
             reachable,
-            login_organization: organization_of(me),
             state,
             id,
         })
     }
 
-    /// The organization to choose on the consent page: its own name, else the company's.
-    pub fn organization_name(&self) -> &str {
-        self.organization.as_deref().unwrap_or(&self.name)
-    }
-
-    /// `the onboarding of X is open in organization Y`, and the organization of this login.
+    /// `the onboarding of X is open, and this login does not reach it`.
     pub fn elsewhere_line(&self) -> String {
-        let login = self
-            .login_organization
-            .as_deref()
-            .map(|name| format!(", and this login is for \"{name}\""))
-            .unwrap_or_default();
         format!(
-            "The onboarding of {} ({}) is open in the organization \"{}\"{login}.",
-            self.name,
-            self.id,
-            self.organization_name()
+            "The onboarding of {} ({}) is open, and this login does not reach that company.",
+            self.name, self.id
         )
     }
 
     /// What to run to reach it by hand.
     pub fn login_hint(&self) -> String {
         format!(
-            "Run `oscar login`, choose the organization \"{}\" on the consent page, then `oscar onboard`.",
-            self.organization_name()
+            "Run `oscar login`, choose the company \"{}\" on the consent page, then `oscar onboard`.",
+            self.name
         )
     }
 
@@ -471,6 +454,8 @@ struct Flow<'a> {
     client: Client,
     base_url: String,
     company_name: String,
+    /// The PEP answer went with the company step of this run: step 3 does not send it again.
+    pep_sent: bool,
     language: Option<String>,
     poll: Duration,
     limit: Duration,
@@ -528,7 +513,7 @@ pub async fn status(app: &mut App, options: Options) -> Result<()> {
         None => match flow.open_onboarding().await? {
             Some(open) if !open.reachable => {
                 // The routes of the company answer 404 to this login: show the person's state,
-                // never "set up already" (N3-P1-1).
+                // never "set up already".
                 return flow.status_elsewhere(&open);
             }
             Some(open) => Some(open.id),
@@ -644,6 +629,7 @@ impl<'a> Flow<'a> {
             client,
             base_url,
             company_name: String::new(),
+            pep_sent: false,
             language,
             poll,
             limit,
@@ -692,7 +678,7 @@ impl<'a> Flow<'a> {
     }
 
     /// The onboarding of the default company is done and no other one is open: on a terminal,
-    /// ask whether to onboard a new company (as "New organization" of the web app) or to see
+    /// ask whether to onboard a new company (as "New company" of the web app) or to see
     /// the setup checklist of this one. True for a new company. With no terminal the checklist
     /// shows, and its last line names `--registry-code`.
     async fn new_after_done(&mut self, company: &str, state: &Value) -> Result<bool> {
@@ -721,7 +707,7 @@ impl<'a> Flow<'a> {
     }
 
     /// A company named with `-c/--company` must have an onboarding: a company that is set up
-    /// already (made before the flow, or by the firm) is a usage error that says so (P2-22).
+    /// already (made before the flow, or by the firm) is a usage error that says so.
     async fn has_onboarding(&mut self, company: &str) -> Result<()> {
         match self.api().get(&api::COMPANY_ONBOARDING, company).await {
             Ok(_) => Ok(()),
@@ -781,7 +767,7 @@ impl<'a> Flow<'a> {
 
     /// `--registry-code` while an onboarding is open: the server keeps one open onboarding at a
     /// time (409 `onboarding_company_exists`), as the web app, so the code of another company
-    /// is refused with the one to finish, never ignored (N3-P2-1). The code of the open one goes
+    /// is refused with the one to finish, never ignored. The code of the open one goes
     /// on with it.
     fn one_open_onboarding(&mut self, open: &OpenOnboarding) -> Result<()> {
         let Some(code) = self.options.registry_code.as_deref() else {
@@ -817,9 +803,9 @@ impl<'a> Flow<'a> {
         Err(error)
     }
 
-    /// The open onboarding of a company this login cannot reach (another organization): say
-    /// so, and offer the browser login to that organization with the consent-page hint, as
-    /// after step 1 (N3-P1-1). With no terminal, the error says what to run.
+    /// The open onboarding of a company this login cannot reach (the consent page granted other
+    /// companies): say so, and offer the browser login with the consent-page hint, as after
+    /// step 1. With no terminal, the error says what to run.
     async fn reach_open(&mut self, open: &OpenOnboarding) -> Result<()> {
         if open.reachable {
             return Ok(());
@@ -835,11 +821,11 @@ impl<'a> Flow<'a> {
             theme::symbol(theme::Sym::Bang),
             open.elsewhere_line()
         ));
-        let organization = open.organization_name().to_owned();
+        let name = open.name.clone();
         let yes = self
             .prompter
             .confirm(
-                &format!("Log in to \"{organization}\" now, in the browser?"),
+                &format!("Log in to \"{name}\" now, in the browser?"),
                 true,
                 "`oscar login`",
             )
@@ -847,11 +833,10 @@ impl<'a> Flow<'a> {
         if !yes {
             return Err(CliError::usage(open.login_hint()));
         }
-        self.login_again(&open.id, &organization, open.login_organization.as_deref())
-            .await
+        self.login_again(&open.id, &name).await
     }
 
-    /// `oscar onboard status` for an onboarding open in another organization: the steps of
+    /// `oscar onboard status` for an onboarding this login does not reach: the steps of
     /// the person's state, and how to reach it.
     fn status_elsewhere(&mut self, open: &OpenOnboarding) -> Result<()> {
         if self.app.json() {
@@ -950,7 +935,7 @@ impl<'a> Flow<'a> {
         };
         let result = tokio::select! {
             result = waiting => result,
-            // Ctrl-C ends the wait, never the work: say how to go on (N3-8).
+            // Ctrl-C ends the wait, never the work: say how to go on.
             _ = tokio::signal::ctrl_c() => {
                 spinner.finish();
                 return Err(CliError::interrupted(
@@ -1199,7 +1184,17 @@ impl<'a> Flow<'a> {
             ));
             return Err(error);
         }
-        let changes = self.books_and_website(&draft).await?;
+        let mut changes = self.books_and_website(&draft).await?;
+        // The PEP questions of the person who sets up the company are on this step: the
+        // confirmation needs both answers. An answer given before stays unless a flag changes it.
+        let pep_known = !draft["is_pep"].is_null() && !draft["is_pep_related"].is_null();
+        let pep_given = self.options.pep.is_some() || self.options.pep_related.is_some();
+        if (!pep_known || pep_given)
+            && let Some(changes) = changes.as_object_mut()
+        {
+            changes.extend(self.pep_answer().await?);
+            self.pep_sent = true;
+        }
         if !changes.as_object().is_some_and(Map::is_empty) {
             self.api()
                 .call(&api::ONBOARDING_DRAFT, &[], &[], Some(&changes))
@@ -1255,6 +1250,7 @@ impl<'a> Flow<'a> {
                 .filter(|t| !t.is_empty())
                 .map(str::to_owned)
         };
+        let young = draft["prefill"]["young_company"].as_bool().unwrap_or(false);
         let books_today = match self.options.books_today.clone() {
             Some(answer) => answer,
             None => {
@@ -1265,41 +1261,58 @@ impl<'a> Flow<'a> {
                             .map(str::to_owned)
                     })
                     .unwrap_or_default();
-                let mut options = choices(&[
-                    ("yes", "Yes, in software or with an accountant"),
-                    ("no", "No, not yet"),
-                ]);
+                // A company registered less than 3 months ago is asked about its accounting (R5).
+                let (question, answers) = if young {
+                    (
+                        "Do you already have accounting?",
+                        [
+                            (
+                                "yes",
+                                "Yes - I already have an accountant or accounting software",
+                            ),
+                            ("no", "No - I do not yet have accounting set up"),
+                        ],
+                    )
+                } else {
+                    (
+                        "Does the company keep books today?",
+                        [
+                            ("yes", "Yes - in accounting software or with an accountant"),
+                            ("no", "No - the company keeps no books yet"),
+                        ],
+                    )
+                };
+                let mut options = choices(&answers);
                 if default == "no" {
                     options.reverse();
                 }
                 self.prompter
-                    .select(
-                        "Does the company keep books today?",
-                        options,
-                        "--books-today yes|no",
-                    )
+                    .select(question, options, "--books-today yes|no")
                     .await?
                     .value
             }
         };
         changes.insert("books_today".into(), json!(books_today));
         if books_today == "no" {
-            let reason = match self.options.books_no_reason.clone() {
-                Some(reason) => reason,
-                None => {
-                    self.prompter
-                        .text(
-                            "Why does the company keep no books yet?",
-                            TextOptions {
-                                initial: saved("books_no_reason"),
-                                ..TextOptions::default()
-                            },
-                            "--books-no-reason <text>",
-                        )
-                        .await?
-                }
-            };
-            changes.insert("books_no_reason".into(), json!(reason));
+            // A young company with no accounting yet: nothing more to ask (R5).
+            if !young {
+                let reason = match self.options.books_no_reason.clone() {
+                    Some(reason) => reason,
+                    None => {
+                        self.prompter
+                            .text(
+                                "Why does the company keep no books yet?",
+                                TextOptions {
+                                    initial: saved("books_no_reason"),
+                                    ..TextOptions::default()
+                                },
+                                "--books-no-reason <text>",
+                            )
+                            .await?
+                    }
+                };
+                changes.insert("books_no_reason".into(), json!(reason));
+            }
         } else {
             let software = match self.options.books_software.clone() {
                 Some(software) => software,
@@ -1361,8 +1374,9 @@ impl<'a> Flow<'a> {
         Ok(Value::Object(changes))
     }
 
-    /// After the company step: the login must reach the new company. A token of the CLI is bound
-    /// to one organization, and the company is in a new one, so the CLI logs in again.
+    /// After the company step: the login must reach the new company. A token of the CLI reaches
+    /// only the companies chosen on the consent page at its login, and the company is new, so
+    /// the CLI logs in again.
     async fn reach(&mut self, company: &str) -> Result<()> {
         let me = self.api().call(&api::ME, &[], &[], None).await?;
         let reached = me["companies"].as_array().is_some_and(|items| {
@@ -1373,29 +1387,22 @@ impl<'a> Flow<'a> {
         if reached {
             return Ok(());
         }
-        // The consent page cannot preselect an organization (the authorize request has no hint
-        // for it), so the CLI names the one to choose: it carries the name of the company.
-        let organization = organization_of(&me);
+        // The consent page cannot preselect a company (the authorize request has no hint for
+        // it), so the CLI names the one to choose.
         self.note(&format!(
-            "{} is in a new organization of its own. Log in again to reach it.",
+            "This login does not reach {} yet. Log in again to reach it.",
             self.company_name
         ));
         let name = self.company_name.clone();
-        self.login_again(company, &name, organization.as_deref())
-            .await
+        self.login_again(company, &name).await
     }
 
-    /// Log in again, in the browser (or with a device code with no display), to the
-    /// organization `organization`, which holds `company`; `other` is the organization of the
-    /// login now. Fails when the new login still does not reach the company.
-    async fn login_again(
-        &mut self,
-        company: &str,
-        organization: &str,
-        other: Option<&str>,
-    ) -> Result<()> {
-        // The one thing the person must do right (P2-18): its own block, in the warning colour.
-        for line in consent_hint(organization, other) {
+    /// Log in again, in the browser (or with a device code with no display), and choose the
+    /// company `company`, named `name`, on the consent page. Fails when the new login still
+    /// does not reach the company.
+    async fn login_again(&mut self, company: &str, name: &str) -> Result<()> {
+        // The one thing the person must do right: its own block, in the warning colour.
+        for line in consent_hint(name) {
             self.note(&line);
         }
         self.app.out.flush();
@@ -1423,7 +1430,7 @@ impl<'a> Flow<'a> {
         });
         if !reached {
             return Err(CliError::auth(format!(
-                "This login does not reach {} ({company}). Run `oscar login`, choose the organization \"{organization}\", then `oscar onboard -c {company}`.",
+                "This login does not reach {} ({company}). Run `oscar login`, choose the company \"{name}\", then `oscar onboard -c {company}`.",
                 self.company_name
             )));
         }
@@ -1514,6 +1521,28 @@ impl<'a> Flow<'a> {
                 let choice = self.prompter.select(label, options, &flag).await?;
                 Ok(json!(choice.value))
             }
+            Kind::Percent => {
+                let initial = current
+                    .and_then(Value::as_u64)
+                    .map(|share| share.to_string());
+                let text = self
+                    .prompter
+                    .text(
+                        label,
+                        TextOptions {
+                            initial,
+                            help: questions::hint(key).map(str::to_owned),
+                            placeholder: Some("0 to 100".into()),
+                            check: Some(std::sync::Arc::new(|text: &str| {
+                                questions::percent(text).map(|_| ())
+                            })),
+                            ..TextOptions::default()
+                        },
+                        &flag,
+                    )
+                    .await?;
+                Ok(json!(questions::percent(&text).map_err(CliError::usage)?))
+            }
         }
     }
 
@@ -1524,11 +1553,7 @@ impl<'a> Flow<'a> {
         answers: &Map<String, Value>,
         website: &Map<String, Value>,
     ) -> Result<Value> {
-        let mut body: Map<String, Value> = answers
-            .iter()
-            .filter(|(_, value)| questions::answered(Some(value)))
-            .map(|(key, value)| (key.clone(), value.clone()))
-            .collect();
+        let mut body = questions::draft(answers);
         body.extend(website.clone());
         let saved = self
             .api()
@@ -1646,6 +1671,7 @@ impl<'a> Flow<'a> {
             return self.submit(company, &answers, &asked, &website).await;
         }
         let website = self.website_answer(&questionnaire).await?;
+        let mut structure_intro = false;
         for question in QUESTIONS {
             if matches!(question.key, "estonia_reason" | "startup_funds_source") {
                 // The server decides these from the answers saved so far.
@@ -1654,6 +1680,11 @@ impl<'a> Flow<'a> {
             if given.contains_key(question.key) || !questions::asked(question.key, &answers, &asked)
             {
                 continue;
+            }
+            if questions::STRUCTURE.contains(&question.key) && !structure_intro {
+                // The web form says why before the first structure question.
+                structure_intro = true;
+                self.note(questions::STRUCTURE_INTRO);
             }
             let place = questions::place(question.key, &answers, &asked);
             let value = self
@@ -1833,7 +1864,7 @@ impl<'a> Flow<'a> {
             }
         }
         let (requirements, mine) = if requirements.is_empty() {
-            // The start made the caller's requirement: list who verifies now (N3-8).
+            // The start made the caller's requirement: list who verifies now.
             let step = self.identity_step(company).await?;
             let mine = step["requirement_id"].as_str().map(str::to_owned);
             let requirements = self.requirements(company).await?;
@@ -1875,7 +1906,7 @@ impl<'a> Flow<'a> {
         }
     }
 
-    /// A check that runs: its link again, for a person who closed the page (P2-21). The start
+    /// A check that runs: its link again, for a person who closed the page. The start
     /// call gives the open Didit session back; it needs the consent, given again with a yes on
     /// a terminal or with `--consent`.
     async fn link_again(&mut self, company: &str) -> Result<()> {
@@ -1941,10 +1972,47 @@ impl<'a> Flow<'a> {
         false
     }
 
+    /// The PEP answer (a politically exposed person), from the flags or the prompts: `is_pep`,
+    /// `is_pep_related`, and `pep_details` when either is yes.
+    async fn pep_answer(&mut self) -> Result<Map<String, Value>> {
+        let mut answer = Map::new();
+        let pep = self
+            .yes_no(self.options.pep, PEP_QUESTION, "--pep yes|no")
+            .await?;
+        let related = self
+            .yes_no(
+                self.options.pep_related,
+                PEP_RELATED_QUESTION,
+                "--pep-related yes|no",
+            )
+            .await?;
+        answer.insert("is_pep".into(), json!(pep));
+        answer.insert("is_pep_related".into(), json!(related));
+        let details = if pep || related {
+            match self.options.pep_details.clone() {
+                Some(details) => details,
+                None => {
+                    self.prompter
+                        .text(
+                            PEP_DETAILS_QUESTION,
+                            TextOptions::default(),
+                            "--pep-details <text>",
+                        )
+                        .await?
+                }
+            }
+        } else {
+            String::new()
+        };
+        answer.insert("pep_details".into(), json!(details));
+        Ok(answer)
+    }
+
     /// Start the check of the caller as the web page does: the privacy notices, the PEP question
     /// (unless answered before), then the Didit link. `pep_answered`: the PEP answer is kept.
     async fn start_check(&mut self, company: &str, pep_answered: bool) -> Result<()> {
-        let pep_given = self.options.pep.is_some() || self.options.pep_related.is_some();
+        let pep_given =
+            !self.pep_sent && (self.options.pep.is_some() || self.options.pep_related.is_some());
         let ask_pep = !pep_answered || pep_given;
         if !self.prompter.interactive() {
             self.missing_identity_flags(ask_pep)?;
@@ -1954,7 +2022,7 @@ impl<'a> Flow<'a> {
             || self
                 .prompter
                 .confirm(
-                    &format!("I have read the privacy notice ({privacy}) and the Didit Verification Privacy Notice ({DIDIT_PRIVACY_URL}), and I agree to the check"),
+                    &format!("I consent to Didit and OscarAI OÜ processing my face image and document photo (biometric data) to verify my identity. I have read the privacy notice ({privacy}) and the Didit Verification Privacy Notice ({DIDIT_PRIVACY_URL})"),
                     false,
                     "--consent",
                 )
@@ -1964,37 +2032,13 @@ impl<'a> Flow<'a> {
                 "The identity check needs your consent to the privacy notices.",
             ));
         }
-        let mut body = json!({"consent": true});
+        let mut body = json!({"consent": true, "consent_text": CONSENT_TEXT});
         if let Some(language) = &self.language {
             body["language"] = json!(language);
         }
         if ask_pep {
-            let pep = self
-                .yes_no(self.options.pep, PEP_QUESTION, "--pep yes|no")
-                .await?;
-            let related = self
-                .yes_no(
-                    self.options.pep_related,
-                    PEP_RELATED_QUESTION,
-                    "--pep-related yes|no",
-                )
-                .await?;
-            body["is_pep"] = json!(pep);
-            body["is_pep_related"] = json!(related);
-            if pep || related {
-                let details = match self.options.pep_details.clone() {
-                    Some(details) => details,
-                    None => {
-                        self.prompter
-                            .text(
-                                PEP_DETAILS_QUESTION,
-                                TextOptions::default(),
-                                "--pep-details <text>",
-                            )
-                            .await?
-                    }
-                };
-                body["pep_details"] = json!(details);
+            for (key, value) in self.pep_answer().await? {
+                body[key] = value;
             }
         }
         let started = match self
@@ -2030,7 +2074,7 @@ impl<'a> Flow<'a> {
         Ok(())
     }
 
-    /// With no terminal: every flag of step 3 that is missing, in one usage error (N3-5).
+    /// With no terminal: every flag of step 3 that is missing, in one usage error.
     fn missing_identity_flags(&self, ask_pep: bool) -> Result<()> {
         let options = &self.options;
         let mut rows: Vec<(&str, &str)> = Vec::new();
@@ -2437,7 +2481,7 @@ impl<'a> Flow<'a> {
             let message = format!("The onboarding of {} is done", self.company_name);
             self.success(&message);
         } else {
-            // Never "done" while a required item is open (N2-7): say what is left.
+            // Never "done" while a required item is open: say what is left.
             self.note(&format!(
                 "{} Steps 1 to 5 are done. Left to do, required: {}.",
                 theme::symbol(theme::Sym::Arrow),
@@ -2454,7 +2498,9 @@ impl<'a> Flow<'a> {
 }
 
 /// The Didit Verification Privacy Notice (the web page links the same).
-const DIDIT_PRIVACY_URL: &str = "https://didit.me/privacy-policy";
+const DIDIT_PRIVACY_URL: &str = "https://didit.me/terms/verification-privacy-notice";
+/// The key of the consent text the CLI shows before the identity check (`kyc.consent.CONSENT_TEXTS`).
+const CONSENT_TEXT: &str = "cli_identity_biometric_v1";
 
 /// The PEP questions of step 3, as the web page asks them.
 const PEP_QUESTION: &str = "Do you hold, or have you held, a prominent public function (PEP)?";
@@ -2480,10 +2526,10 @@ fn register_activity(questionnaire: &Value) -> Option<String> {
         .map(str::to_owned)
 }
 
-/// The block before the login to a new organization: the consent page cannot preselect it
-/// (the authorize request has no hint for it), so the CLI names the one to choose, apart from
-/// the other lines and in the warning colour.
-pub fn consent_hint(company: &str, other: Option<&str>) -> Vec<String> {
+/// The block before the login to reach a company: the consent page cannot preselect it (the
+/// authorize request has no hint for it), so the CLI names the one to choose, apart from the
+/// other lines and in the warning colour.
+pub fn consent_hint(company: &str) -> Vec<String> {
     let theme = theme::current();
     let mut lines = vec![
         String::new(),
@@ -2492,27 +2538,18 @@ pub fn consent_hint(company: &str, other: Option<&str>) -> Vec<String> {
             theme.paint_bold(
                 theme::Role::Warn,
                 &format!(
-                    "{} Important: on the consent page, choose the organization \"{company}\".",
+                    "{} Important: on the consent page, choose the company \"{company}\".",
                     theme.symbol(theme::Sym::Bang)
                 )
             )
         ),
     ];
-    if let Some(other) = other {
-        lines.push(format!(
-            "    {}",
-            theme.paint(
-                theme::Role::Warn,
-                &format!("Not \"{other}\": that login cannot reach the company.")
-            )
-        ));
-    }
     lines.push(String::new());
     lines
 }
 
 /// The review of step 2: each question asked, then its answer on the next line, one note per
-/// line, so a terminal never loses an answer (N2-3: "No" for a false answer).
+/// line, so a terminal never loses an answer ("No" for a false answer).
 pub fn review_lines(answers: &Map<String, Value>, asked: &Value) -> Vec<String> {
     let theme = theme::current();
     let mut lines = Vec::new();
@@ -2562,7 +2599,7 @@ pub fn setup_name(key: &str) -> &str {
         "bank" => "Connect your bank",
         "inbox" => "Invoice inbox",
         "emta_access" => "e-MTA access",
-        "sales_invoices" => "Sales invoices",
+        "payment_providers" => "Payment providers",
         "payroll" => "Payroll",
         other => other,
     }
@@ -2573,14 +2610,6 @@ async fn connect(app: &App) -> Result<(Client, Value)> {
     let (client, _) = app.client().await?;
     let me = Api::new(&client).call(&api::ME, &[], &[], None).await?;
     Ok((client, me))
-}
-
-/// The name of the organization of a login, from `GET /api/me/`, when it has one.
-fn organization_of(me: &Value) -> Option<String> {
-    match me["organizations"].as_array()?.as_slice() {
-        [one] => one["name"].as_str().map(str::to_owned),
-        _ => None,
-    }
 }
 
 /// `oscar login` with these flags, from the onboarding.
@@ -2596,9 +2625,9 @@ async fn run_login(app: &mut App, flags: &[&str]) -> Result<()> {
 }
 
 /// Step 0 with no login: log in, or set up the account and the company in the browser first.
-/// The CLI asks whether the person has a company in Oscar: a token is bound to one
-/// organization, so an account with none (a sign-up that stopped before step 1) has nothing
-/// to log in to, and does step 1 in the browser like a new person (N2-4). A login the consent
+/// The CLI asks whether the person has a company in Oscar: a token is bound to the
+/// companies chosen on the consent page, so an account with none (a sign-up that stopped before step 1) has nothing
+/// to log in to, and does step 1 in the browser like a new person. A login the consent
 /// page denies for that reason takes the same path.
 async fn first_login(app: &mut App, prompter: &Prompter, error: &CliError) -> Result<()> {
     let base_url = app.select(&app.config()?)?.base_url;
@@ -2642,7 +2671,7 @@ async fn first_login(app: &mut App, prompter: &Prompter, error: &CliError) -> Re
     run_login(app, flags).await
 }
 
-/// Step 1 in the browser, for a person with no organization: open the onboarding page, and
+/// Step 1 in the browser, for a person with no company: open the onboarding page, and
 /// wait until the person says the company is created.
 async fn company_in_browser(app: &mut App, prompter: &Prompter, signup: &str) -> Result<()> {
     let opened = !login::no_display(&app.env) && browser::open(signup, &app.env);
@@ -2653,7 +2682,7 @@ async fn company_in_browser(app: &mut App, prompter: &Prompter, signup: &str) ->
     app.out
         .note("Create your account (if needed) and your company there, then come back.");
     app.out.flush();
-    // No default answer, as the other yes or no questions (N3-h): Enter alone asks again.
+    // No default answer, as the other yes or no questions: Enter alone asks again.
     let done = prompter
         .yes_no("Is your company created?", None, "`oscar login`")
         .await?;
@@ -2801,39 +2830,39 @@ mod tests {
 
     #[test]
     fn an_open_onboarding_says_where_it_is() {
-        let me =
-            json!({"organizations": [{"id": "o1", "name": "Old OÜ"}], "companies": [{"id": "c1"}]});
+        let me = json!({"companies": [{"id": "c1"}]});
         assert!(OpenOnboarding::read(json!({"company": null}), &me).is_none());
         let state = json!({
             "current_step": "identity",
-            "company": {"id": "c2", "name": "OÜ Selfi", "registry_code": "17585039",
-                        "organization": {"id": "o2", "name": "Selfi Org"}},
+            "company": {"id": "c2", "name": "Second Example OÜ", "registry_code": "87654321"},
         });
         let open = OpenOnboarding::read(state, &me).unwrap();
         assert!(!open.reachable);
-        assert_eq!(open.organization_name(), "Selfi Org");
         assert_eq!(
             open.elsewhere_line(),
-            "The onboarding of OÜ Selfi (c2) is open in the organization \"Selfi Org\", and this login is for \"Old OÜ\"."
+            "The onboarding of Second Example OÜ (c2) is open, and this login does not reach that company."
+        );
+        assert_eq!(
+            open.login_hint(),
+            "Run `oscar login`, choose the company \"Second Example OÜ\" on the consent page, then `oscar onboard`."
         );
         assert_eq!(open.step_text(), "step 3 (Verify your identity)");
         assert!(open.is_other_code("12345678"));
-        assert!(!open.is_other_code(" 17585039 "));
+        assert!(!open.is_other_code(" 87654321 "));
         assert!(
             open.new_company_hint()
                 .contains("finish it first with `oscar onboard`")
         );
-        // An older server: no registry code and no organization; the company names it.
+        // An older server: no registry code and no name.
         let bare = json!({"current_step": "nowhere", "company": {"id": "c1", "name": ""}});
         let open = OpenOnboarding::read(bare, &json!({})).unwrap();
         assert!(!open.reachable);
         assert_eq!(open.name, "your company");
-        assert_eq!(open.organization_name(), "your company");
         assert!(open.is_other_code("12345678"));
         assert_eq!(open.step_text(), "an open step");
         assert_eq!(
             open.elsewhere_line(),
-            "The onboarding of your company (c1) is open in the organization \"your company\"."
+            "The onboarding of your company (c1) is open, and this login does not reach that company."
         );
         let mine = json!({"company": {"id": "c1", "name": "A"}});
         assert!(OpenOnboarding::read(mine, &me).unwrap().reachable);
@@ -2842,17 +2871,15 @@ mod tests {
     #[test]
     fn the_consent_hint_stands_out() {
         let _theme = theme::scoped(theme::Theme::PLAIN);
-        let lines = consent_hint("OÜ Selfi", Some("Old OÜ"));
+        let lines = consent_hint("Second Example OÜ");
         assert_eq!(
             lines,
             [
                 "",
-                "  ! Important: on the consent page, choose the organization \"OÜ Selfi\".",
-                "    Not \"Old OÜ\": that login cannot reach the company.",
+                "  ! Important: on the consent page, choose the company \"Second Example OÜ\".",
                 "",
             ]
         );
-        assert_eq!(consent_hint("A", None).len(), 3);
     }
 
     #[test]

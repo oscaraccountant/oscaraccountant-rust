@@ -1,4 +1,4 @@
-//! Step 2, "About your business": the questions of the AML questionnaire (internal rules 6.9),
+//! Step 2, "About your business": the questions of the AML questionnaire,
 //! in the order of the web form, and the answers given as flags or in a file.
 
 use serde_json::{Map, Value, json};
@@ -17,6 +17,8 @@ pub enum Kind {
     YesNo,
     /// One of these values, each with its label.
     Choice(&'static [(&'static str, &'static str)]),
+    /// A whole number of percent, from 0 to 100.
+    Percent,
 }
 
 /// One question.
@@ -41,6 +43,13 @@ pub const TURNOVER: &[(&str, &str)] = &[
 /// The use of cash.
 pub const CASH: &[(&str, &str)] = &[("no", "No"), ("a_little", "A little"), ("often", "Often")];
 
+/// The answers of `cash_usage` that ask the cash share (8a): the share is required then, and
+/// cleared on `no`.
+pub const CASH_USED: &[&str] = &["a_little", "often"];
+
+/// The line of help under the cash share, as the web form shows it.
+pub const CASH_SHARE_HINT: &str = "An estimate is enough.";
+
 /// Where the board members and the owners live.
 pub const RESIDENCE: &[(&str, &str)] = &[
     ("all_estonia", "All in Estonia"),
@@ -54,6 +63,13 @@ pub const EXPERIENCE: &[(&str, &str)] = &[
     ("3_10", "3 to 10 years"),
     ("over_10", "Over 10 years"),
 ];
+
+/// The structure questions (rule 4.2 items 6, 7 and 9): asked only when the register does not show
+/// natural persons who hold all of the company (`asked.structure` of the server).
+pub const STRUCTURE: &[&str] = &["bearer_shares", "trust_in_chain", "nominees"];
+
+/// The line before the structure questions, as the web form shows it.
+pub const STRUCTURE_INTRO: &str = "We could not see the whole ownership of the company in the Business Register, so we ask three more questions.";
 
 /// Every question, in the order of the form. [`asked`] says which apply.
 pub const QUESTIONS: &[Question] = &[
@@ -81,6 +97,11 @@ pub const QUESTIONS: &[Question] = &[
         key: "cash_usage",
         label: "Does the business take or pay cash?",
         kind: Kind::Choice(CASH),
+    },
+    Question {
+        key: "cash_share_percent",
+        label: "What share of the turnover is received or paid in cash?",
+        kind: Kind::Percent,
     },
     Question {
         key: "uses_crypto_assets",
@@ -118,13 +139,28 @@ pub const QUESTIONS: &[Question] = &[
         kind: Kind::Text,
     },
     Question {
+        key: "bearer_shares",
+        label: "Does the company, or a company that owns it, have bearer shares?",
+        kind: Kind::YesNo,
+    },
+    Question {
+        key: "trust_in_chain",
+        label: "Is a trust or a foundation among the owners?",
+        kind: Kind::YesNo,
+    },
+    Question {
+        key: "nominees",
+        label: "Does anyone hold shares or a board seat for another person?",
+        kind: Kind::YesNo,
+    },
+    Question {
         key: "startup_funds_source",
         label: "Where did the start-up money come from?",
         kind: Kind::Text,
     },
     Question {
         key: "acts_for_others",
-        label: "Does anyone act for, or on behalf of, someone else?",
+        label: "Do you run this company for someone else?",
         kind: Kind::YesNo,
     },
     Question {
@@ -134,7 +170,7 @@ pub const QUESTIONS: &[Question] = &[
     },
     Question {
         key: "field_experience",
-        label: "How long have you worked in this field?",
+        label: "How long have the founders done this kind of work?",
         kind: Kind::Choice(EXPERIENCE),
     },
 ];
@@ -144,18 +180,31 @@ pub fn question(key: &str) -> Option<&'static Question> {
     QUESTIONS.iter().find(|question| question.key == key)
 }
 
+/// The line of help under question `key`, when it has one.
+pub fn hint(key: &str) -> Option<&'static str> {
+    (key == "cash_share_percent").then_some(CASH_SHARE_HINT)
+}
+
 /// Whether `key` is asked, after these answers. `server` is the `asked` object of the server,
-/// for the questions it decides (11, why Estonia; 12, the start-up money).
+/// for the questions it decides (11, why Estonia; 12, the start-up money; the structure questions).
 pub fn asked(key: &str, answers: &Map<String, Value>, server: &Value) -> bool {
     let yes = |field: &str| answers.get(field) == Some(&Value::Bool(true));
     let abroad = answers.get("residence").and_then(Value::as_str) == Some("some_abroad");
     match key {
+        "cash_share_percent" => answers
+            .get("cash_usage")
+            .and_then(Value::as_str)
+            .is_some_and(|usage| CASH_USED.contains(&usage)),
         "licence_description" => yes("needs_licence"),
         "residence_countries" | "e_resident" => abroad,
         "acts_for_others_reason" => yes("acts_for_others"),
         "estonia_reason" | "startup_funds_source" => {
             server.get(key).and_then(Value::as_bool).unwrap_or(false)
         }
+        key if STRUCTURE.contains(&key) => server
+            .get("structure")
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
         _ => true,
     }
 }
@@ -190,6 +239,18 @@ pub fn countries(text: &str) -> std::result::Result<Vec<String>, String> {
         ));
     }
     Ok(codes)
+}
+
+/// A whole number of percent from 0 to 100, as a person writes it (`40`, `40 %` or `40%`).
+pub fn percent(text: &str) -> std::result::Result<u8, String> {
+    let number = text.trim().trim_end_matches('%').trim_end();
+    match number.parse::<u8>() {
+        Ok(value) if value <= 100 => Ok(value),
+        _ => Err(format!(
+            "`{}` is not a share: give a whole number from 0 to 100, for example 20.",
+            text.trim()
+        )),
+    }
 }
 
 /// Yes or no, as a person writes it.
@@ -228,6 +289,9 @@ pub fn parse(key: &str, text: &str) -> Result<Value> {
                 )))
             }
         }
+        Kind::Percent => percent(text)
+            .map(|value| json!(value))
+            .map_err(|message| CliError::usage(format!("{key}: {message}"))),
     }
 }
 
@@ -235,21 +299,28 @@ pub fn parse(key: &str, text: &str) -> Result<Value> {
 pub fn from_file(text: &str) -> Result<Map<String, Value>> {
     let value: Value = serde_json::from_str(text)
         .map_err(|error| CliError::usage(format!("--answers is not valid JSON: {error}")))?;
-    let Value::Object(map) = value else {
+    let Value::Object(mut map) = value else {
         return Err(CliError::usage(
             "--answers is a JSON object of the answers, for example {\"cash_usage\": \"no\"}.",
         ));
     };
-    for (key, value) in &map {
+    for (key, value) in &mut map {
         if !QUESTIONNAIRE_FIELDS.contains(&key.as_str()) {
             return Err(CliError::usage(format!(
                 "--answers: `{key}` is not a question of the questionnaire."
             )));
         }
-        if let (Some(question), Value::String(text)) = (question(key), value)
-            && matches!(question.kind, Kind::Choice(_))
-        {
-            parse(key, text)?;
+        match (question(key).map(|question| question.kind), &*value) {
+            (Some(Kind::Choice(_)), Value::String(text)) => {
+                parse(key, text)?;
+            }
+            // A share is a whole number from 0 to 100; "40" or "40 %" in the file is read too.
+            (Some(Kind::Percent), Value::Null) => {}
+            (Some(Kind::Percent), Value::String(text)) => *value = parse(key, text)?,
+            (Some(Kind::Percent), other) => {
+                *value = parse(key, &other.to_string())?;
+            }
+            _ => {}
         }
     }
     Ok(map)
@@ -284,11 +355,17 @@ pub fn show(key: &str, value: &Value) -> String {
             .join(", "),
         (None, Value::String(text)) => text.clone(),
         (None, Value::Null) => "-".to_owned(),
+        (None, Value::Number(number))
+            if question(key).is_some_and(|question| question.kind == Kind::Percent) =>
+        {
+            // As the review shows a share elsewhere in the CLI: "40 %".
+            format!("{number} %")
+        }
         (None, other) => other.to_string(),
     }
 }
 
-/// What `--answer <key>=` takes, for the list of missing answers (N3-6): the values of a
+/// What `--answer <key>=` takes, for the list of missing answers: the values of a
 /// choice, `yes|no`, country codes, or `<text>`.
 pub fn value_hint(key: &str) -> String {
     match question(key).map(|question| question.kind) {
@@ -299,6 +376,7 @@ pub fn value_hint(key: &str) -> String {
             .join("|"),
         Some(Kind::YesNo) => "yes|no".to_owned(),
         Some(Kind::Countries) => "<codes, for example EE,FI>".to_owned(),
+        Some(Kind::Percent) => "<0 to 100>".to_owned(),
         Some(Kind::Text) | None => "<text>".to_owned(),
     }
 }
@@ -322,6 +400,17 @@ pub fn place(key: &str, answers: &Map<String, Value>, server: &Value) -> (usize,
         .collect();
     let at = shown.iter().position(|shown| *shown == key).unwrap_or(0);
     (at + 1, shown.len())
+}
+
+/// The body of a draft save: every answered field, but not the cash share when cash is not used,
+/// so a share kept from an earlier "a little" or "often" never goes with a "no".
+pub fn draft(answers: &Map<String, Value>) -> Map<String, Value> {
+    answers
+        .iter()
+        .filter(|(_, value)| answered(Some(value)))
+        .filter(|(key, _)| *key != "cash_share_percent" || asked(key, answers, &Value::Null))
+        .map(|(key, value)| (key.clone(), value.clone()))
+        .collect()
 }
 
 /// The body of the submission: the answered fields of the questions that are asked.
@@ -367,7 +456,7 @@ mod tests {
         );
         assert_eq!(value_hint("estonia_reason"), "<text>");
         assert_eq!(value_hint("nope"), "<text>");
-        // Money as everywhere in the CLI: a space between thousands (N3-7).
+        // Money as everywhere in the CLI: a space between thousands.
         assert_eq!(
             show("expected_turnover", &json!("under_50k")),
             "Under 50 000 EUR"
@@ -461,7 +550,104 @@ mod tests {
     }
 
     #[test]
+    fn asks_the_structure_questions_when_the_server_says_so() {
+        let answers = Map::new();
+        let not_asked = json!({"structure": false});
+        let asked_now = json!({"structure": true});
+        for key in STRUCTURE {
+            assert_eq!(question(key).unwrap().kind, Kind::YesNo);
+            assert!(!asked(key, &answers, &not_asked));
+            assert!(!asked(key, &answers, &json!({})));
+            assert!(asked(key, &answers, &asked_now));
+        }
+        assert_eq!(missing(&answers, &asked_now).len(), 13);
+        assert!(missing(&answers, &asked_now).contains(&"nominees"));
+        // In the order of the web form: after "why Estonia", before the start-up money.
+        assert_eq!(place("bearer_shares", &answers, &asked_now), (9, 13));
+        let mut given = Map::new();
+        given.insert("bearer_shares".into(), json!(false));
+        given.insert("trust_in_chain".into(), json!(false));
+        given.insert("nominees".into(), json!(true));
+        assert_eq!(
+            body(&given, &asked_now),
+            json!({"bearer_shares": false, "trust_in_chain": false, "nominees": true})
+        );
+        // Not asked: the server would drop them, so they are not sent.
+        assert_eq!(body(&given, &not_asked), json!({}));
+        assert_eq!(parse("nominees", "no").unwrap(), json!(false));
+        assert_eq!(value_hint("trust_in_chain"), "yes|no");
+    }
+
+    #[test]
+    fn asks_the_cash_share_when_cash_is_used() {
+        let server = json!({});
+        let mut answers = Map::new();
+        assert!(!asked("cash_share_percent", &answers, &server));
+        answers.insert("cash_usage".into(), json!("no"));
+        assert!(!asked("cash_share_percent", &answers, &server));
+        assert!(!missing(&answers, &server).contains(&"cash_share_percent"));
+        for usage in CASH_USED {
+            answers.insert("cash_usage".into(), json!(usage));
+            assert!(asked("cash_share_percent", &answers, &server));
+            assert!(missing(&answers, &server).contains(&"cash_share_percent"));
+        }
+        // Right after the cash question, as the web form asks it.
+        assert_eq!(place("cash_usage", &answers, &server), (5, 11));
+        assert_eq!(place("cash_share_percent", &answers, &server), (6, 11));
+        answers.insert("cash_share_percent".into(), json!(40));
+        assert!(!missing(&answers, &server).contains(&"cash_share_percent"));
+        assert_eq!(body(&answers, &server)["cash_share_percent"], json!(40));
+        assert_eq!(draft(&answers)["cash_share_percent"], json!(40));
+        // A share kept from an earlier answer never goes with a "no".
+        answers.insert("cash_usage".into(), json!("no"));
+        assert!(body(&answers, &server).get("cash_share_percent").is_none());
+        assert!(!draft(&answers).contains_key("cash_share_percent"));
+        assert_eq!(draft(&answers)["cash_usage"], json!("no"));
+        assert_eq!(hint("cash_share_percent"), Some("An estimate is enough."));
+        assert_eq!(hint("cash_usage"), None);
+        assert_eq!(value_hint("cash_share_percent"), "<0 to 100>");
+        assert_eq!(question("cash_share_percent").unwrap().kind, Kind::Percent);
+    }
+
+    #[test]
+    fn parses_a_share() {
+        assert_eq!(parse("cash_share_percent", "40").unwrap(), json!(40));
+        assert_eq!(parse("cash_share_percent", " 0 ").unwrap(), json!(0));
+        assert_eq!(parse("cash_share_percent", "100").unwrap(), json!(100));
+        assert_eq!(parse("cash_share_percent", "40 %").unwrap(), json!(40));
+        assert_eq!(parse("cash_share_percent", "40%").unwrap(), json!(40));
+        for bad in ["101", "-1", "40.5", "forty", "", "%"] {
+            let error = parse("cash_share_percent", bad).unwrap_err();
+            assert!(
+                error.message.contains("whole number from 0 to 100"),
+                "{bad}: {}",
+                error.message
+            );
+        }
+        assert_eq!(
+            from_flag("cash_share_percent=60").unwrap(),
+            ("cash_share_percent".to_owned(), json!(60))
+        );
+        let map = from_file(r#"{"cash_usage": "often", "cash_share_percent": 60}"#).unwrap();
+        assert_eq!(map["cash_share_percent"], json!(60));
+        let map = from_file(r#"{"cash_share_percent": "25 %"}"#).unwrap();
+        assert_eq!(map["cash_share_percent"], json!(25));
+        let map = from_file(r#"{"cash_share_percent": null}"#).unwrap();
+        assert_eq!(map["cash_share_percent"], Value::Null);
+        for bad in [
+            r#"{"cash_share_percent": 101}"#,
+            r#"{"cash_share_percent": 40.5}"#,
+            r#"{"cash_share_percent": true}"#,
+            r#"{"cash_share_percent": "lots"}"#,
+        ] {
+            assert!(from_file(bad).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
     fn shows_answers() {
+        assert_eq!(show("cash_share_percent", &json!(40)), "40 %");
+        assert_eq!(show("cash_share_percent", &Value::Null), "-");
         assert_eq!(show("cash_usage", &json!("a_little")), "A little");
         assert_eq!(show("needs_licence", &json!(true)), "Yes");
         assert_eq!(show("needs_licence", &json!(false)), "No");

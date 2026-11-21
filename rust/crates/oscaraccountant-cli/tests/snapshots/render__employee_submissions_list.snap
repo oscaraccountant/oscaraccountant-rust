@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employee-submissions list --company cmp0000001
+---
+=== 80 columns
+KIND          STATUS        EVENT DATE  EMPLOYEE NAME  SUBMITTED AT
+new employee  ● registered  2026-09-01  Mari Mock      2026-08-25
+change        ● submitted   2026-11-01  Mari Mock      2026-09-27
+=== 120 columns
+KIND          STATUS        EVENT DATE  EMPLOYEE NAME  SUBMITTED AT
+new employee  ● registered  2026-09-01  Mari Mock      2026-08-25
+change        ● submitted   2026-11-01  Mari Mock      2026-09-27

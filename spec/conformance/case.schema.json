@@ -37,7 +37,7 @@
         "skip": {
           "description": "Runners that skip the case, each with the reason.",
           "type": "object",
-          "propertyNames": { "enum": ["typescript", "python", "rust"] },
+          "propertyNames": { "enum": ["typescript", "python", "rust", "php"] },
           "additionalProperties": { "type": "string", "minLength": 1 }
         },
         "client": { "$ref": "#/$defs/client" },

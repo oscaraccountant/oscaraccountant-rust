@@ -51,8 +51,6 @@ pub struct Mock {
     pub api_key: String,
     /// The one company.
     pub company_id: String,
-    /// The one organization.
-    pub organization_id: String,
     http: reqwest::Client,
 }
 
@@ -92,7 +90,6 @@ impl Mock {
             url: text("url"),
             api_key: text("api_key"),
             company_id: text("company_id"),
-            organization_id: text("organization_id"),
             child,
             http: reqwest_client(TlsRoots::Bundled).expect("an HTTP client"),
         }
@@ -238,9 +235,27 @@ impl User {
             .stderr(Stdio::piped())
             .kill_on_drop(true);
         for (name, _) in std::env::vars_os() {
-            let text = name.to_string_lossy();
+            // Windows compares variable names without case, and so does `oscar` there: compare
+            // the name in upper case, or `oscar_config_dir` would reach the child.
+            let text = if cfg!(windows) {
+                name.to_string_lossy().to_ascii_uppercase()
+            } else {
+                name.to_string_lossy().into_owned()
+            };
+            // The locale and `TERM` of the machine choose the symbols (`theme`): a runner with
+            // `TERM=dumb` or `LANG=C` printed `v` for `✓`. No locale counts as UTF-8; a test that
+            // needs another one sets it.
             if text.starts_with("OSCAR_")
-                || ["BROWSER", "SSH_CONNECTION", "NO_COLOR"].contains(&text.as_ref())
+                || [
+                    "BROWSER",
+                    "SSH_CONNECTION",
+                    "NO_COLOR",
+                    "LC_ALL",
+                    "LC_CTYPE",
+                    "LANG",
+                    "TERM",
+                ]
+                .contains(&text.as_ref())
             {
                 command.env_remove(&name);
             }
@@ -248,6 +263,7 @@ impl User {
         command
             .env("OSCAR_CONFIG_DIR", self.dir.path())
             .env("OSCAR_CREDENTIAL_STORE", "file")
+            .env("TERM", "xterm-256color")
             .env("NO_COLOR", "1")
             // A display, so the loopback login is the default on Linux.
             .env("DISPLAY", ":99")
@@ -315,11 +331,17 @@ impl User {
 }
 
 /// A browser for the loopback login: a Python script that follows the URL with a `GET`.
+///
+/// In a pseudo terminal `oscar` is the session leader, so its exit sends `SIGHUP` to this script,
+/// which can still be on its way to the page after the redirect. A real browser belongs to the
+/// session of a shell and lives on, so the script ignores the signal (Windows has no `SIGHUP`).
 pub fn test_browser(dir: &Path) -> String {
     let script = dir.join("browser.py");
     std::fs::write(
         &script,
-        "import sys, urllib.request\nurllib.request.urlopen(sys.argv[1], timeout=60).read()\n",
+        "import signal, sys, urllib.request\n\
+         if hasattr(signal, 'SIGHUP'):\n    signal.signal(signal.SIGHUP, signal.SIG_IGN)\n\
+         urllib.request.urlopen(sys.argv[1], timeout=60).read()\n",
     )
     .expect("the browser script");
     format!("{} {}", python().display(), script.display())

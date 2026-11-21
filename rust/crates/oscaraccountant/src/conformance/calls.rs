@@ -145,7 +145,7 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
             .await,
         ),
         "companies.list" => list!(
-            query!(options!(client.companies().list(path("organization_id")), call), call, {
+            query!(options!(client.companies().list(), call), call, {
                 cursor: str, limit: int,
             }),
             call
@@ -178,6 +178,58 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
             .send()
             .await,
         ),
+        "employee_submissions.create" => json(
+            options!(
+                client
+                    .employee_submissions()
+                    .create(path("company_id"), body(call)),
+                call
+            )
+            .send()
+            .await,
+        ),
+        "employee_submissions.list" => list!(
+            query!(options!(client.employee_submissions().list(path("company_id")), call), call, {
+                cursor: str, limit: int,
+            }),
+            call
+        ),
+        "employee_submissions.retrieve" => json(
+            options!(
+                client
+                    .employee_submissions()
+                    .retrieve(path("company_id"), path("submission_id")),
+                call
+            )
+            .send()
+            .await,
+        ),
+        "employees.list" => list!(
+            query!(options!(client.employees().list(path("company_id")), call), call, {
+                cursor: str, limit: int,
+            }),
+            call
+        ),
+        "employees.retrieve" => json(
+            options!(
+                client
+                    .employees()
+                    .retrieve(path("company_id"), path("employee_id")),
+                call
+            )
+            .send()
+            .await,
+        ),
+        "files.delete" => {
+            let mut request = keyed!(
+                client.files().delete(path("company_id"), path("file_id")),
+                call
+            );
+            if call.get("body").is_some() {
+                request = request.body(body(call));
+            }
+            request.send().await.map(|()| Outcome::None)
+        }
         "files.download" => {
             let download = options!(
                 client.files().download(path("company_id"), path("file_id")),
@@ -255,6 +307,16 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
                 .send()
                 .await,
         ),
+        "invoices.bank_accounts" => json(
+            options!(
+                client
+                    .invoices()
+                    .bank_accounts(path("company_id"), path("invoice_id")),
+                call
+            )
+            .send()
+            .await,
+        ),
         "invoices.cancel" => json(
             keyed!(
                 client
@@ -313,25 +375,33 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
             .send()
             .await,
         ),
+        "invoices.set_bank_accounts" => json(
+            keyed!(
+                client.invoices().set_bank_accounts(
+                    path("company_id"),
+                    path("invoice_id"),
+                    body(call)
+                ),
+                call
+            )
+            .send()
+            .await,
+        ),
+        "invoices.set_default_bank_accounts" => json(
+            keyed!(
+                client
+                    .invoices()
+                    .set_default_bank_accounts(path("company_id"), body(call)),
+                call
+            )
+            .send()
+            .await,
+        ),
         "me.retrieve" => json(options!(client.me().retrieve(), call).send().await),
         "open_items.retrieve" => json(
             query!(options!(client.open_items().retrieve(path("company_id")), call), call, {
                 account_code: str, as_of: str, party_id: str,
             })
-            .send()
-            .await,
-        ),
-        "organizations.list" => list!(
-            query!(options!(client.organizations().list(), call), call, {
-                cursor: str, limit: int,
-            }),
-            call
-        ),
-        "organizations.retrieve" => json(
-            options!(
-                client.organizations().retrieve(path("organization_id")),
-                call
-            )
             .send()
             .await,
         ),
@@ -343,6 +413,30 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
             .send()
             .await,
         ),
+        "parties.set_address" => {
+            let mut request = keyed!(
+                client
+                    .parties()
+                    .set_address(path("company_id"), path("party_id")),
+                call
+            );
+            if call.get("body").is_some() {
+                request = request.body(body(call));
+            }
+            json(request.send().await)
+        }
+        "parties.update" => {
+            let mut request = keyed!(
+                client
+                    .parties()
+                    .update(path("company_id"), path("party_id")),
+                call
+            );
+            if call.get("body").is_some() {
+                request = request.body(body(call));
+            }
+            json(request.send().await)
+        }
         "parties.list" => list!(
             query!(options!(client.parties().list(path("company_id")), call), call, {
                 cursor: str, include_merged: bool, kind: str, limit: int, reg_code: str,
@@ -355,6 +449,22 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
                 client
                     .parties()
                     .retrieve(path("company_id"), path("party_id")),
+                call
+            )
+            .send()
+            .await,
+        ),
+        "pay_runs.list" => list!(
+            query!(options!(client.pay_runs().list(path("company_id")), call), call, {
+                cursor: str, limit: int,
+            }),
+            call
+        ),
+        "pay_runs.retrieve" => json(
+            options!(
+                client
+                    .pay_runs()
+                    .retrieve(path("company_id"), path("pay_run_id")),
                 call
             )
             .send()
@@ -399,6 +509,11 @@ pub(super) async fn call(client: &Client, call: &Value) -> Result<Outcome, Error
                 .await,
             )
         }
+        "tax_account.balance" => json(
+            options!(client.tax_account().balance(path("company_id")), call)
+                .send()
+                .await,
+        ),
         "trial_balance.retrieve" => json(
             query!(options!(client.trial_balance().retrieve(path("company_id")), call), call, {
                 date_from: str, date_to: str, period: str,

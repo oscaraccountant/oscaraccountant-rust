@@ -36,6 +36,7 @@ use super::types::{
     BooksGeneralLedger,
     BooksIncomeStatement,
     BooksInvoice,
+    BooksInvoiceBankAccounts,
     BooksInvoiceDetail,
     BooksInvoiceDirectionEnum,
     BooksInvoiceKindEnum,
@@ -53,6 +54,7 @@ use super::types::{
     BooksVatCode,
     BooksVatCodePage,
     BooksVatPreview,
+    BooksVatSchemeEnum,
     BooksVatTreatmentEnum,
     CancelInvoiceBodyRequest,
     CommandOutcome,
@@ -60,7 +62,11 @@ use super::types::{
     CompanyDetail,
     CreatePartyOutcome,
     CreatePartyPayloadRequest,
+    DocumentDirectionEnum,
     DocumentsListOrdering,
+    Employee,
+    EmployeeDetail,
+    FileDeleteRequest,
     InboundEmail,
     Inbox,
     InvoicesListOrdering,
@@ -68,15 +74,31 @@ use super::types::{
     IssueInvoiceBodyRequest,
     IssueInvoiceOutcome,
     Me,
-    Organization,
     PaginatedCompanyList,
+    PaginatedEmployeeList,
     PaginatedInboundEmailList,
-    PaginatedOrganizationList,
+    PaginatedPayRunList,
     PaginatedStoredDocumentList,
+    PaginatedSubmissionList,
+    PartyRoleEnum,
+    PatchedPartyUpdateRequest,
+    PayRun,
+    PayRunDetail,
+    ReceiptStateEnum,
     RecordInvoiceOutcome,
     RecordInvoicePayloadRequest,
     ReviseInvoiceBodyRequest,
+    SetDefaultInvoiceBankAccountsOutcome,
+    SetDefaultInvoiceBankAccountsPayloadRequest,
+    SetInvoiceBankAccountsBodyRequest,
+    SetInvoiceBankAccountsOutcome,
+    SetPartyAddressBodyRequest,
+    SetPartyAddressOutcome,
     StoredDocument,
+    StoredDocumentDetail,
+    Submission,
+    SubmissionRequestRequest,
+    TaxAccountBalance,
 };
 use crate::{Client, Download, Error, PageStream};
 
@@ -111,6 +133,16 @@ impl Client {
         DocumentsResource { client: self }
     }
 
+    /// The `employee_submissions` operations.
+    pub fn employee_submissions(&self) -> EmployeeSubmissionsResource<'_> {
+        EmployeeSubmissionsResource { client: self }
+    }
+
+    /// The `employees` operations.
+    pub fn employees(&self) -> EmployeesResource<'_> {
+        EmployeesResource { client: self }
+    }
+
     /// The `files` operations.
     pub fn files(&self) -> FilesResource<'_> {
         FilesResource { client: self }
@@ -141,14 +173,14 @@ impl Client {
         OpenItemsResource { client: self }
     }
 
-    /// The `organizations` operations.
-    pub fn organizations(&self) -> OrganizationsResource<'_> {
-        OrganizationsResource { client: self }
-    }
-
     /// The `parties` operations.
     pub fn parties(&self) -> PartiesResource<'_> {
         PartiesResource { client: self }
+    }
+
+    /// The `pay_runs` operations.
+    pub fn pay_runs(&self) -> PayRunsResource<'_> {
+        PayRunsResource { client: self }
     }
 
     /// The `periods` operations.
@@ -159,6 +191,11 @@ impl Client {
     /// The `reports` operations.
     pub fn reports(&self) -> ReportsResource<'_> {
         ReportsResource { client: self }
+    }
+
+    /// The `tax_account` operations.
+    pub fn tax_account(&self) -> TaxAccountResource<'_> {
+        TaxAccountResource { client: self }
     }
 
     /// The `trial_balance` operations.
@@ -443,9 +480,23 @@ impl<'a> BankTransactionsResource<'a> {
     ///
     /// The bank transactions with their settlement status, derived on read. Ordered by booking date.
     ///
-    /// `has_document` and `file_ids` name the uploaded files that explain a
-    /// transaction (an upload with `bank_transaction_id`). `to_explain=true`
-    /// lists the payments to explain: money out still open that no file explains.
+    /// `has_document` and `file_ids` name the files that explain a transaction:
+    /// an upload with `bank_transaction_id`, and each file of a purchase invoice
+    /// a payment allocation matched to it.
+    ///
+    /// `to_explain=true` lists the payments to explain ("missing receipts"): every
+    /// payment out still open that no file of a matched invoice explains. Each
+    /// carries `receipt_state`: `missing`, `receipt_not_booked` (a file is linked,
+    /// the payment is not booked yet, `receipt_detail` says why) or
+    /// `invoice_not_matched` (a posted invoice fits it, only the match is missing:
+    /// `matched_invoice_candidates`, `match_proposal_id`). A `receipt_state` filter
+    /// lists one state. Both add `coverage` to the page: the bank accounts and the
+    /// months the answer checked, the months with no transaction and the accounts
+    /// with none. A month or an account outside the coverage is not checked.
+    ///
+    /// A line removed from the books (`status` `retracted`) shows only for firm
+    /// staff. For any other caller the list leaves it out, also with
+    /// `status=retracted`, which then gives an empty list.
     ///
     /// `GET /api/companies/{company_id}/bank-transactions/`
     pub fn list(&self, company_id: impl Into<String>) -> BankTransactionsListRequest<'a> {
@@ -462,6 +513,7 @@ impl<'a> BankTransactionsResource<'a> {
             ordering: None,
             party_id: None,
             q: None,
+            receipt_state: None,
             statement_id: None,
             status: None,
             to_explain: None,
@@ -472,6 +524,10 @@ impl<'a> BankTransactionsResource<'a> {
     /// Get a bank transaction
     ///
     /// One bank transaction with its source row, entries, allocations, the judgement on it, and its files.
+    ///
+    /// A line removed from the books (`status` `retracted`) shows only for firm
+    /// staff. Any other caller gets the same 404 `not_found` as for an id that
+    /// does not exist.
     ///
     /// `GET /api/companies/{company_id}/bank-transactions/{bank_transaction_id}/`
     pub fn retrieve(
@@ -503,6 +559,7 @@ pub struct BankTransactionsListRequest<'a> {
     ordering: Option<String>,
     party_id: Option<String>,
     q: Option<String>,
+    receipt_state: Option<String>,
     statement_id: Option<String>,
     status: Option<String>,
     to_explain: Option<String>,
@@ -543,7 +600,7 @@ impl<'a> BankTransactionsListRequest<'a> {
         self
     }
 
-    /// Only transactions an uploaded file explains (true) or that none explains (false).
+    /// Only transactions a file explains (true) or that none explains (false). A file explains a transaction when it was uploaded for it, or when it is a file of the purchase invoice a payment allocation matched to it.
     pub fn has_document(mut self, value: bool) -> Self {
         self.has_document = Some(value.to_string());
         self
@@ -580,6 +637,16 @@ impl<'a> BankTransactionsListRequest<'a> {
         self
     }
 
+    /// The payments to explain in this receipt state only (implies `status` `open` and `direction` `out`): `missing` (no receipt and no booked invoice), `receipt_not_booked` (a file is linked, the payment is not booked yet), `invoice_not_matched` (a posted invoice fits the payment, only the match is missing). The page then carries `coverage`. Excludes `status`, `direction`, `has_document` and `to_explain`.
+    ///
+    /// * `missing` - missing
+    /// * `receipt_not_booked` - receipt_not_booked
+    /// * `invoice_not_matched` - invoice_not_matched
+    pub fn receipt_state(mut self, value: impl Into<ReceiptStateEnum>) -> Self {
+        self.receipt_state = Some(Into::<ReceiptStateEnum>::into(value).to_string());
+        self
+    }
+
     /// Transactions of this statement only.
     pub fn statement_id(mut self, value: impl Into<String>) -> Self {
         self.statement_id = Some(value.into());
@@ -588,6 +655,8 @@ impl<'a> BankTransactionsListRequest<'a> {
 
     /// Transactions with this status; `open` is `unmatched` and `part_matched`.
     ///
+    /// * `migrated` - migrated
+    /// * `retracted` - retracted
     /// * `unmatched` - unmatched
     /// * `part_matched` - part_matched
     /// * `matched` - matched
@@ -602,7 +671,7 @@ impl<'a> BankTransactionsListRequest<'a> {
         self
     }
 
-    /// The payments to explain (true): money out still open (`status` `open`) that no uploaded file explains. Excludes `status`, `direction` and `has_document`.
+    /// The payments to explain (true): money out still open (`status` `open`) that no file of a matched purchase invoice explains, in every receipt state (`receipt_state`: `missing`, `receipt_not_booked`, `invoice_not_matched`). A file a person uploaded does not take a payment out of the list: it stays as `receipt_not_booked` until the payment is booked. The page then carries `coverage`: the bank accounts and months the answer checked. Excludes `status`, `direction`, `has_document` and `receipt_state`.
     pub fn to_explain(mut self, value: bool) -> Self {
         self.to_explain = Some(value.to_string());
         self
@@ -643,6 +712,7 @@ impl<'a> BankTransactionsListRequest<'a> {
                 ("ordering", self.ordering),
                 ("party_id", self.party_id),
                 ("q", self.q),
+                ("receipt_state", self.receipt_state),
                 ("statement_id", self.statement_id),
                 ("status", self.status),
                 ("to_explain", self.to_explain),
@@ -731,13 +801,12 @@ pub struct CompaniesResource<'a> {
 }
 
 impl<'a> CompaniesResource<'a> {
-    /// One page of the companies, newest first.
+    /// One page of the visible companies, newest first. A staff list is written to the audit log.
     ///
-    /// `GET /api/organizations/{organization_id}/companies/`
-    pub fn list(&self, organization_id: impl Into<String>) -> CompaniesListRequest<'a> {
+    /// `GET /api/companies/`
+    pub fn list(&self) -> CompaniesListRequest<'a> {
         CompaniesListRequest {
             client: self.client,
-            organization_id: organization_id.into(),
             cursor: None,
             limit: None,
             options: RequestOptions::default(),
@@ -760,7 +829,6 @@ impl<'a> CompaniesResource<'a> {
 #[must_use = "a request does nothing until it is sent"]
 pub struct CompaniesListRequest<'a> {
     client: &'a Client,
-    organization_id: String,
     cursor: Option<String>,
     limit: Option<String>,
     options: RequestOptions,
@@ -799,10 +867,10 @@ impl<'a> CompaniesListRequest<'a> {
 
     fn into_spec(self) -> RequestSpec {
         RequestSpec {
-            operation_id: "organizations_companies_list",
+            operation_id: "companies_list",
             method: HttpMethod::Get,
-            path: "/api/organizations/{organization_id}/companies/",
-            path_params: vec![("organization_id", self.organization_id)],
+            path: "/api/companies/",
+            path_params: Vec::new(),
             query: [
                 ("cursor", self.cursor),
                 ("limit", self.limit),
@@ -1040,6 +1108,8 @@ impl<'a> DocumentsResource<'a> {
     ///
     /// One document record with the invoices, statements, events and VAT returns that refer to it.
     ///
+    /// `deletion` says whether the stored file can be deleted now, and what stops it (null without a stored file).
+    ///
     /// `GET /api/companies/{company_id}/documents/{document_id}/`
     pub fn retrieve(
         &self,
@@ -1246,6 +1316,407 @@ impl<'a> DocumentsRetrieveRequest<'a> {
     }
 }
 
+/// The `employee_submissions` operations.
+#[derive(Clone, Copy)]
+pub struct EmployeeSubmissionsResource<'a> {
+    client: &'a Client,
+}
+
+impl<'a> EmployeeSubmissionsResource<'a> {
+    /// Submit a new employee, a new employment, a change, a suspension or an end, for the firm to review.
+    ///
+    /// Staff review it; on approval OscarAI registers the event in TÖR. The
+    /// personal code of a new employee is sealed and never returned. The
+    /// event is checked as TÖR checks it (400 `tor_invalid_event`).
+    ///
+    /// `POST /api/companies/{company_id}/employees/submissions/`
+    pub fn create(
+        &self,
+        company_id: impl Into<String>,
+        body: SubmissionRequestRequest,
+    ) -> EmployeeSubmissionsCreateRequest<'a> {
+        EmployeeSubmissionsCreateRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            body,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// One page of the submissions, newest first, with their status and the reason of a refusal.
+    ///
+    /// `GET /api/companies/{company_id}/employees/submissions/`
+    pub fn list(&self, company_id: impl Into<String>) -> EmployeeSubmissionsListRequest<'a> {
+        EmployeeSubmissionsListRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            cursor: None,
+            limit: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// One submission: its status, the reason of a refusal, TÖR's messages, the TÖR id once registered.
+    ///
+    /// `GET /api/companies/{company_id}/employees/submissions/{submission_id}/`
+    pub fn retrieve(
+        &self,
+        company_id: impl Into<String>,
+        submission_id: impl Into<String>,
+    ) -> EmployeeSubmissionsRetrieveRequest<'a> {
+        EmployeeSubmissionsRetrieveRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            submission_id: submission_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+}
+
+/// The request of `employee_submissions.create`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct EmployeeSubmissionsCreateRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    body: SubmissionRequestRequest,
+    options: RequestOptions,
+}
+
+impl<'a> EmployeeSubmissionsCreateRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = Some(RequestBody::Json(serde_json::to_value(&self.body)?));
+        Ok(RequestSpec {
+            operation_id: "companies_employees_submissions_create",
+            method: HttpMethod::Post,
+            path: "/api/companies/{company_id}/employees/submissions/",
+            path_params: vec![("company_id", self.company_id)],
+            query: Vec::new(),
+            body,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<Submission, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()?).await
+    }
+}
+
+/// The request of `employee_submissions.list`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct EmployeeSubmissionsListRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    cursor: Option<String>,
+    limit: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> EmployeeSubmissionsListRequest<'a> {
+    /// The pagination cursor value.
+    pub fn cursor(mut self, value: impl Into<String>) -> Self {
+        self.cursor = Some(value.into());
+        self
+    }
+
+    /// Number of results to return per page.
+    pub fn limit(mut self, value: i64) -> Self {
+        self.limit = Some(value.to_string());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_employees_submissions_list",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/employees/submissions/",
+            path_params: vec![("company_id", self.company_id)],
+            query: [
+                ("cursor", self.cursor),
+                ("limit", self.limit),
+            ]
+            .into_iter()
+            .filter_map(|(name, value)| value.map(|value| (name, value)))
+            .collect(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<PaginatedSubmissionList, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+
+    /// Every item of every page, from this request on.
+    pub fn stream(self) -> PageStream<PaginatedSubmissionList> {
+        let client = self.client;
+        client.paginate(self.into_spec())
+    }
+}
+
+/// The request of `employee_submissions.retrieve`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct EmployeeSubmissionsRetrieveRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    submission_id: String,
+    options: RequestOptions,
+}
+
+impl<'a> EmployeeSubmissionsRetrieveRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_employees_submissions_retrieve",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/employees/submissions/{submission_id}/",
+            path_params: vec![
+                ("company_id", self.company_id),
+                ("submission_id", self.submission_id),
+            ],
+            query: Vec::new(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<Submission, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+}
+
+/// The `employees` operations.
+#[derive(Clone, Copy)]
+pub struct EmployeesResource<'a> {
+    client: &'a Client,
+}
+
+impl<'a> EmployeesResource<'a> {
+    /// One page of the employees, newest first, each with the facts of its newest employment.
+    ///
+    /// `source` `tor_external` and `registered_outside` mark what TÖR showed
+    /// that was not made through OscarAI. The personal code is masked.
+    ///
+    /// `GET /api/companies/{company_id}/employees/`
+    pub fn list(&self, company_id: impl Into<String>) -> EmployeesListRequest<'a> {
+        EmployeesListRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            cursor: None,
+            limit: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// One employee, with every employment (the TÖR id and state, the suspensions) and the absences.
+    ///
+    /// `GET /api/companies/{company_id}/employees/{employee_id}/`
+    pub fn retrieve(
+        &self,
+        company_id: impl Into<String>,
+        employee_id: impl Into<String>,
+    ) -> EmployeesRetrieveRequest<'a> {
+        EmployeesRetrieveRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            employee_id: employee_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+}
+
+/// The request of `employees.list`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct EmployeesListRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    cursor: Option<String>,
+    limit: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> EmployeesListRequest<'a> {
+    /// The pagination cursor value.
+    pub fn cursor(mut self, value: impl Into<String>) -> Self {
+        self.cursor = Some(value.into());
+        self
+    }
+
+    /// Number of results to return per page.
+    pub fn limit(mut self, value: i64) -> Self {
+        self.limit = Some(value.to_string());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_employees_list",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/employees/",
+            path_params: vec![("company_id", self.company_id)],
+            query: [
+                ("cursor", self.cursor),
+                ("limit", self.limit),
+            ]
+            .into_iter()
+            .filter_map(|(name, value)| value.map(|value| (name, value)))
+            .collect(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<PaginatedEmployeeList, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+
+    /// Every item of every page, from this request on.
+    pub fn stream(self) -> PageStream<PaginatedEmployeeList> {
+        let client = self.client;
+        client.paginate(self.into_spec())
+    }
+}
+
+/// The request of `employees.retrieve`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct EmployeesRetrieveRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    employee_id: String,
+    options: RequestOptions,
+}
+
+impl<'a> EmployeesRetrieveRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_employees_retrieve",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/employees/{employee_id}/",
+            path_params: vec![("company_id", self.company_id), ("employee_id", self.employee_id)],
+            query: Vec::new(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<EmployeeDetail, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+}
+
 /// The `files` operations.
 #[derive(Clone, Copy)]
 pub struct FilesResource<'a> {
@@ -1253,7 +1724,37 @@ pub struct FilesResource<'a> {
 }
 
 impl<'a> FilesResource<'a> {
-    /// The bytes of the file, after the permission check. PDF and images show inline.
+    /// Delete the file for good: its bytes are removed at once, its open drafts are discarded, and the row stays
+    /// as a tombstone (the hash, the size, the kind, the dates) in the books and in the audit log.
+    ///
+    /// Only a file that nothing in the books refers to, and that no payment match linked to a bank line: 409
+    /// `document_in_use` otherwise (ask your accountant). 409 `document_legal_hold` under a legal hold, 409
+    /// `document_system` for a file Oscar stored itself, 409 `company_data_deleted`. A 409 lists every blocker in
+    /// `errors` (`code`, `kind`, `id`, `state`, `label`, `detail`); the detail of the file shows them first, as
+    /// `deletion`.
+    /// A file already deleted answers 204 again. The same bytes uploaded again restore the file. The body and its
+    /// `reason` are optional. A repeat with the `Idempotency-Key` of a deletion answers 204 and changes nothing, also
+    /// after the file was restored. 503 `file_unavailable` for a restored file while the storage has not yet deleted
+    /// the bytes of its earlier deletion: try again later.
+    ///
+    /// `POST /api/companies/{company_id}/files/{file_id}/delete/`
+    pub fn delete(
+        &self,
+        company_id: impl Into<String>,
+        file_id: impl Into<String>,
+    ) -> FilesDeleteRequest<'a> {
+        FilesDeleteRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            file_id: file_id.into(),
+            body: None,
+            idempotency_key: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// The bytes of the file, after the permission check. PDF and images show inline. 410 `document_deleted`
+    /// for a deleted file.
     ///
     /// `GET /api/companies/{company_id}/files/{file_id}/content/`
     pub fn download(
@@ -1269,7 +1770,7 @@ impl<'a> FilesResource<'a> {
         }
     }
 
-    /// One page of the company's files, newest first. Filter: `kind`.
+    /// One page of the company's files, newest first. Filter: `kind`. A deleted file is left out.
     ///
     /// `GET /api/companies/{company_id}/files/`
     pub fn list(&self, company_id: impl Into<String>) -> FilesListRequest<'a> {
@@ -1283,7 +1784,8 @@ impl<'a> FilesResource<'a> {
         }
     }
 
-    /// One file.
+    /// One file, with `deletion`: whether it can be deleted now, and what stops it. A deleted file answers with
+    /// its tombstone: `deleted_at` set, an empty name.
     ///
     /// `GET /api/companies/{company_id}/files/{file_id}/`
     pub fn retrieve(
@@ -1305,6 +1807,9 @@ impl<'a> FilesResource<'a> {
     /// within what the uploader may do. With `auto_process` (the batch import), the uploader must hold
     /// `invoices.write`: 403 `permission_denied` for `auto_process` without `invoices.write`, 409 `not_extractable`
     /// for `auto_process` on a file that is not a PDF of kind invoice, receipt or credit note.
+    /// `direction` names who issued the document (`sale`: the company; `purchase`: a supplier); left out, it is
+    /// detected. A sale opens a sales invoice draft that a person confirms; it is never booked by itself.
+    /// 400 `direction_not_allowed` for a `direction` on a kind that is not read, or `sale` on a receipt.
     /// 413 `file_too_large`, 400 `empty_file`, 415 `unsupported_file_type`.
     ///
     /// `POST /api/companies/{company_id}/files/`
@@ -1321,9 +1826,78 @@ impl<'a> FilesResource<'a> {
             received_on: None,
             bank_transaction_id: None,
             auto_process: None,
+            direction: None,
             idempotency_key: None,
             options: RequestOptions::default(),
         }
+    }
+}
+
+/// The request of `files.delete`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct FilesDeleteRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    file_id: String,
+    body: Option<FileDeleteRequest>,
+    idempotency_key: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> FilesDeleteRequest<'a> {
+    /// The body.
+    pub fn body(mut self, value: FileDeleteRequest) -> Self {
+        self.body = Some(value);
+        self
+    }
+
+    /// The `Idempotency-Key` of the call. The runtime makes one when it is not set.
+    pub fn idempotency_key(mut self, value: impl Into<String>) -> Self {
+        self.idempotency_key = Some(value.into());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = match &self.body {
+            Some(value) => Some(RequestBody::Json(serde_json::to_value(value)?)),
+            None => None,
+        };
+        Ok(RequestSpec {
+            operation_id: "companies_files_delete",
+            method: HttpMethod::Post,
+            path: "/api/companies/{company_id}/files/{file_id}/delete/",
+            path_params: vec![("company_id", self.company_id), ("file_id", self.file_id)],
+            query: Vec::new(),
+            body,
+            idempotent: true,
+            idempotency_key: self.idempotency_key,
+            response: ResponseKind::Empty,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<(), Error> {
+        let client = self.client;
+        client.execute_empty(self.into_spec()?).await
     }
 }
 
@@ -1509,7 +2083,7 @@ impl<'a> FilesRetrieveRequest<'a> {
     }
 
     /// Send the request.
-    pub async fn send(self) -> Result<StoredDocument, Error> {
+    pub async fn send(self) -> Result<StoredDocumentDetail, Error> {
         let client = self.client;
         client.execute(self.into_spec()).await
     }
@@ -1525,6 +2099,7 @@ pub struct FilesUploadRequest<'a> {
     received_on: Option<String>,
     bank_transaction_id: Option<String>,
     auto_process: Option<String>,
+    direction: Option<String>,
     idempotency_key: Option<String>,
     options: RequestOptions,
 }
@@ -1549,6 +2124,15 @@ impl<'a> FilesUploadRequest<'a> {
     /// The batch import. Every upload of an invoice, receipt or credit note is recorded and posted without a person when the extraction is confident and the company switch `invoice_auto_book` is on, and the reconciliation matcher links it to its bank line; `auto_process` also refuses the upload without `invoices.write` (403) and a file the extraction does not read: only a PDF of kind invoice, receipt or credit note (409 `not_extractable` otherwise). The post needs `invoices.post_purchase`. A draft that is not confident waits for a person. Follow it with `GET extractions/?file=`.
     pub fn auto_process(mut self, value: bool) -> Self {
         self.auto_process = Some(value.to_string());
+        self
+    }
+
+    /// Who issued the document: `sale` (the company issued it: an invoice or credit note issued in another system, recorded as a sales invoice with its own number after a person confirms it, never by itself) or `purchase` (a supplier did). Left out, Oscar detects it from the printed seller and buyer, then from the extraction. Only for kind invoice, receipt or credit note, and `sale` not for a receipt: 400 `direction_not_allowed` otherwise.
+    ///
+    /// * `sale` - Sale
+    /// * `purchase` - Purchase
+    pub fn direction(mut self, value: impl Into<DocumentDirectionEnum>) -> Self {
+        self.direction = Some(Into::<DocumentDirectionEnum>::into(value).to_string());
         self
     }
 
@@ -1591,6 +2175,9 @@ impl<'a> FilesUploadRequest<'a> {
         if let Some(value) = self.auto_process {
             fields.push(MultipartField::Text { name: "auto_process", value });
         }
+        if let Some(value) = self.direction {
+            fields.push(MultipartField::Text { name: "direction", value });
+        }
         RequestSpec {
             operation_id: "companies_files_create",
             method: HttpMethod::Post,
@@ -1623,6 +2210,10 @@ impl<'a> GeneralLedgerResource<'a> {
     ///
     /// The general ledger: each account with its lines and running balance, in the base currency.
     ///
+    /// The lines of the correction pairs (an entry whose reversal is posted, and
+    /// the reversal) are left out unless `include_corrections=true`; each
+    /// account's `hidden_corrections` counts them. The balances count every line.
+    ///
     /// `GET /api/companies/{company_id}/general-ledger/`
     pub fn retrieve(&self, company_id: impl Into<String>) -> GeneralLedgerRetrieveRequest<'a> {
         GeneralLedgerRetrieveRequest {
@@ -1631,6 +2222,7 @@ impl<'a> GeneralLedgerResource<'a> {
             account_code: None,
             date_from: None,
             date_to: None,
+            include_corrections: None,
             options: RequestOptions::default(),
         }
     }
@@ -1644,6 +2236,7 @@ pub struct GeneralLedgerRetrieveRequest<'a> {
     account_code: Option<String>,
     date_from: Option<String>,
     date_to: Option<String>,
+    include_corrections: Option<String>,
     options: RequestOptions,
 }
 
@@ -1663,6 +2256,12 @@ impl<'a> GeneralLedgerRetrieveRequest<'a> {
     /// The last day of the range, inclusive.
     pub fn date_to(mut self, value: impl Into<String>) -> Self {
         self.date_to = Some(value.into());
+        self
+    }
+
+    /// Include the lines of the correction pairs: an entry whose reversal is posted (`state` `reversed`), and the reversal (an entry with `reverses_entry_id`). Default false: they are left out, and `hidden_corrections` counts them. The replacement of a correction is always included.
+    pub fn include_corrections(mut self, value: bool) -> Self {
+        self.include_corrections = Some(value.to_string());
         self
     }
 
@@ -1694,6 +2293,7 @@ impl<'a> GeneralLedgerRetrieveRequest<'a> {
                 ("account_code", self.account_code),
                 ("date_from", self.date_from),
                 ("date_to", self.date_to),
+                ("include_corrections", self.include_corrections),
             ]
             .into_iter()
             .filter_map(|(name, value)| value.map(|value| (name, value)))
@@ -1939,6 +2539,30 @@ pub struct InvoicesResource<'a> {
 }
 
 impl<'a> InvoicesResource<'a> {
+    /// Get the bank accounts an invoice prints
+    ///
+    /// The bank accounts an own sales invoice prints, in print order.
+    ///
+    /// A draft prints the accounts a person chose for it (`set_invoice_bank_accounts`, `source` `override`), else the
+    /// company default (`set_default_invoice_bank_accounts`, `default`), else every active account in the invoice
+    /// currency (`automatic`): the issue freezes the same list. An issued invoice answers the accounts it froze
+    /// (`snapshot`). `problem` names a chosen account that can no longer print: the issue refuses until the choice
+    /// changes. A purchase invoice is 409 `invalid_state`.
+    ///
+    /// `GET /api/companies/{company_id}/invoices/{invoice_id}/bank-accounts/`
+    pub fn bank_accounts(
+        &self,
+        company_id: impl Into<String>,
+        invoice_id: impl Into<String>,
+    ) -> InvoicesBankAccountsRequest<'a> {
+        InvoicesBankAccountsRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            invoice_id: invoice_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+
     /// Cancel an issued sales invoice or a posted purchase invoice: the number is kept and a posted entry is reversed.
     ///
     /// Runs the core command `cancel_invoice`. Permission: `invoices.write` for a sales invoice, `invoices.post_purchase` for a purchase invoice. The path carries `invoice_id`.
@@ -2066,6 +2690,96 @@ impl<'a> InvoicesResource<'a> {
             idempotency_key: None,
             options: RequestOptions::default(),
         }
+    }
+
+    /// Set the bank accounts one draft sales invoice prints, or clear the choice to use the company default.
+    ///
+    /// Runs the core command `set_invoice_bank_accounts`. Permission: `invoices.issue`. The path carries `invoice_id`.
+    ///
+    /// `POST /api/companies/{company_id}/invoices/{invoice_id}/bank-accounts`
+    pub fn set_bank_accounts(
+        &self,
+        company_id: impl Into<String>,
+        invoice_id: impl Into<String>,
+        body: SetInvoiceBankAccountsBodyRequest,
+    ) -> InvoicesSetBankAccountsRequest<'a> {
+        InvoicesSetBankAccountsRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            invoice_id: invoice_id.into(),
+            body,
+            idempotency_key: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// Set the bank accounts the sales invoices print by default, in order.
+    ///
+    /// Runs the core command `set_default_invoice_bank_accounts`. Permission: `invoices.issue`.
+    ///
+    /// `POST /api/companies/{company_id}/invoice-bank-accounts`
+    pub fn set_default_bank_accounts(
+        &self,
+        company_id: impl Into<String>,
+        body: SetDefaultInvoiceBankAccountsPayloadRequest,
+    ) -> InvoicesSetDefaultBankAccountsRequest<'a> {
+        InvoicesSetDefaultBankAccountsRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            body,
+            idempotency_key: None,
+            options: RequestOptions::default(),
+        }
+    }
+}
+
+/// The request of `invoices.bank_accounts`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct InvoicesBankAccountsRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    invoice_id: String,
+    options: RequestOptions,
+}
+
+impl<'a> InvoicesBankAccountsRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "books_invoices_bank_accounts_retrieve",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/invoices/{invoice_id}/bank-accounts/",
+            path_params: vec![("company_id", self.company_id), ("invoice_id", self.invoice_id)],
+            query: Vec::new(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<BooksInvoiceBankAccounts, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
     }
 }
 
@@ -2550,6 +3264,123 @@ impl<'a> InvoicesReviseRequest<'a> {
     }
 }
 
+/// The request of `invoices.set_bank_accounts`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct InvoicesSetBankAccountsRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    invoice_id: String,
+    body: SetInvoiceBankAccountsBodyRequest,
+    idempotency_key: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> InvoicesSetBankAccountsRequest<'a> {
+    /// The `Idempotency-Key` of the call. The runtime makes one when it is not set.
+    pub fn idempotency_key(mut self, value: impl Into<String>) -> Self {
+        self.idempotency_key = Some(value.into());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = Some(RequestBody::Json(serde_json::to_value(&self.body)?));
+        Ok(RequestSpec {
+            operation_id: "commands_set_invoice_bank_accounts",
+            method: HttpMethod::Post,
+            path: "/api/companies/{company_id}/invoices/{invoice_id}/bank-accounts",
+            path_params: vec![("company_id", self.company_id), ("invoice_id", self.invoice_id)],
+            query: Vec::new(),
+            body,
+            idempotent: true,
+            idempotency_key: self.idempotency_key,
+            response: ResponseKind::Json,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<SetInvoiceBankAccountsOutcome, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()?).await
+    }
+}
+
+/// The request of `invoices.set_default_bank_accounts`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct InvoicesSetDefaultBankAccountsRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    body: SetDefaultInvoiceBankAccountsPayloadRequest,
+    idempotency_key: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> InvoicesSetDefaultBankAccountsRequest<'a> {
+    /// The `Idempotency-Key` of the call. The runtime makes one when it is not set.
+    pub fn idempotency_key(mut self, value: impl Into<String>) -> Self {
+        self.idempotency_key = Some(value.into());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = Some(RequestBody::Json(serde_json::to_value(&self.body)?));
+        Ok(RequestSpec {
+            operation_id: "commands_set_default_invoice_bank_accounts",
+            method: HttpMethod::Post,
+            path: "/api/companies/{company_id}/invoice-bank-accounts",
+            path_params: vec![("company_id", self.company_id)],
+            query: Vec::new(),
+            body,
+            idempotent: true,
+            idempotency_key: self.idempotency_key,
+            response: ResponseKind::Json,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<SetDefaultInvoiceBankAccountsOutcome, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()?).await
+    }
+}
+
 /// The `me` operations.
 #[derive(Clone, Copy)]
 pub struct MeResource<'a> {
@@ -2557,9 +3388,9 @@ pub struct MeResource<'a> {
 }
 
 impl<'a> MeResource<'a> {
-    /// Return the caller. A staff session that sees organizations without a membership is audited.
+    /// Return the caller. A staff session that sees companies without a membership is audited.
     ///
-    /// So is every read by a staff key, which sees every organization.
+    /// So is every read by a staff key, which sees every company.
     ///
     /// `GET /api/me/`
     pub fn retrieve(&self) -> MeRetrieveRequest<'a> {
@@ -2719,160 +3550,6 @@ impl<'a> OpenItemsRetrieveRequest<'a> {
     }
 }
 
-/// The `organizations` operations.
-#[derive(Clone, Copy)]
-pub struct OrganizationsResource<'a> {
-    client: &'a Client,
-}
-
-impl<'a> OrganizationsResource<'a> {
-    /// One page of the visible organizations. A staff list is written to the audit log.
-    ///
-    /// `GET /api/organizations/`
-    pub fn list(&self) -> OrganizationsListRequest<'a> {
-        OrganizationsListRequest {
-            client: self.client,
-            cursor: None,
-            limit: None,
-            options: RequestOptions::default(),
-        }
-    }
-
-    /// Return the organization.
-    ///
-    /// `GET /api/organizations/{organization_id}/`
-    pub fn retrieve(&self, organization_id: impl Into<String>) -> OrganizationsRetrieveRequest<'a> {
-        OrganizationsRetrieveRequest {
-            client: self.client,
-            organization_id: organization_id.into(),
-            options: RequestOptions::default(),
-        }
-    }
-}
-
-/// The request of `organizations.list`: set the optional parameters, then send it.
-#[must_use = "a request does nothing until it is sent"]
-pub struct OrganizationsListRequest<'a> {
-    client: &'a Client,
-    cursor: Option<String>,
-    limit: Option<String>,
-    options: RequestOptions,
-}
-
-impl<'a> OrganizationsListRequest<'a> {
-    /// The pagination cursor value.
-    pub fn cursor(mut self, value: impl Into<String>) -> Self {
-        self.cursor = Some(value.into());
-        self
-    }
-
-    /// Number of results to return per page.
-    pub fn limit(mut self, value: i64) -> Self {
-        self.limit = Some(value.to_string());
-        self
-    }
-
-    /// The timeout of each attempt of this call, instead of the one of the client.
-    pub fn timeout(mut self, value: std::time::Duration) -> Self {
-        self.options.timeout = Some(value);
-        self
-    }
-
-    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
-    pub fn max_retries(mut self, value: u32) -> Self {
-        self.options.max_retries = Some(value);
-        self
-    }
-
-    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
-    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.options.headers.push((name.into(), value.into()));
-        self
-    }
-
-    fn into_spec(self) -> RequestSpec {
-        RequestSpec {
-            operation_id: "organizations_list",
-            method: HttpMethod::Get,
-            path: "/api/organizations/",
-            path_params: Vec::new(),
-            query: [
-                ("cursor", self.cursor),
-                ("limit", self.limit),
-            ]
-            .into_iter()
-            .filter_map(|(name, value)| value.map(|value| (name, value)))
-            .collect(),
-            body: None,
-            idempotent: false,
-            idempotency_key: None,
-            response: ResponseKind::Json,
-            options: self.options,
-        }
-    }
-
-    /// Send the request.
-    pub async fn send(self) -> Result<PaginatedOrganizationList, Error> {
-        let client = self.client;
-        client.execute(self.into_spec()).await
-    }
-
-    /// Every item of every page, from this request on.
-    pub fn stream(self) -> PageStream<PaginatedOrganizationList> {
-        let client = self.client;
-        client.paginate(self.into_spec())
-    }
-}
-
-/// The request of `organizations.retrieve`: set the optional parameters, then send it.
-#[must_use = "a request does nothing until it is sent"]
-pub struct OrganizationsRetrieveRequest<'a> {
-    client: &'a Client,
-    organization_id: String,
-    options: RequestOptions,
-}
-
-impl<'a> OrganizationsRetrieveRequest<'a> {
-    /// The timeout of each attempt of this call, instead of the one of the client.
-    pub fn timeout(mut self, value: std::time::Duration) -> Self {
-        self.options.timeout = Some(value);
-        self
-    }
-
-    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
-    pub fn max_retries(mut self, value: u32) -> Self {
-        self.options.max_retries = Some(value);
-        self
-    }
-
-    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
-    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.options.headers.push((name.into(), value.into()));
-        self
-    }
-
-    fn into_spec(self) -> RequestSpec {
-        RequestSpec {
-            operation_id: "organizations_retrieve",
-            method: HttpMethod::Get,
-            path: "/api/organizations/{organization_id}/",
-            path_params: vec![("organization_id", self.organization_id)],
-            query: Vec::new(),
-            body: None,
-            idempotent: false,
-            idempotency_key: None,
-            response: ResponseKind::Json,
-            options: self.options,
-        }
-    }
-
-    /// Send the request.
-    pub async fn send(self) -> Result<Organization, Error> {
-        let client = self.client;
-        client.execute(self.into_spec()).await
-    }
-}
-
 /// The `parties` operations.
 #[derive(Clone, Copy)]
 pub struct PartiesResource<'a> {
@@ -2903,17 +3580,24 @@ impl<'a> PartiesResource<'a> {
     ///
     /// The parties, ordered by their cleaned name. Merged parties are left out unless asked for.
     ///
+    /// `roles` says what each party is to the company, from its kind, its invoices and its open purchase drafts;
+    /// `role` filters on the roles the books derive (an open draft aside), and `exclude_kind=employee` leaves out
+    /// the employees, as the list of customers and suppliers does.
+    ///
     /// `GET /api/companies/{company_id}/parties/`
     pub fn list(&self, company_id: impl Into<String>) -> PartiesListRequest<'a> {
         PartiesListRequest {
             client: self.client,
             company_id: company_id.into(),
             cursor: None,
+            exclude_kind: None,
             external_key: None,
             include_merged: None,
+            include_settled_external: None,
             kind: None,
             limit: None,
             reg_code: None,
+            role: None,
             search: None,
             vat_number: None,
             options: RequestOptions::default(),
@@ -2922,7 +3606,7 @@ impl<'a> PartiesResource<'a> {
 
     /// Get a party
     ///
-    /// One party with its defaults.
+    /// One party with its defaults and its roles.
     ///
     /// `GET /api/companies/{company_id}/parties/{party_id}/`
     pub fn retrieve(
@@ -2934,6 +3618,46 @@ impl<'a> PartiesResource<'a> {
             client: self.client,
             company_id: company_id.into(),
             party_id: party_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// Set the postal address of a party.
+    ///
+    /// Runs the core command `set_party_address`. Permission: `parties.write`. The path carries `party_id`.
+    ///
+    /// `POST /api/companies/{company_id}/parties/{party_id}/address`
+    pub fn set_address(
+        &self,
+        company_id: impl Into<String>,
+        party_id: impl Into<String>,
+    ) -> PartiesSetAddressRequest<'a> {
+        PartiesSetAddressRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            party_id: party_id.into(),
+            body: None,
+            idempotency_key: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// Edit a party
+    ///
+    /// Changes the fields of the body (`parties.write`), within the lock rules of the party (`locks`): a locked field changes only with `override_reason`, from firm staff, and the change is audited (`party.lock_overridden`); a client gets 403 `override_not_allowed`. A locked field changed without one is 409 `party_field_locked`, one error per field. A staff key, an agent or an OAuth client that overrides a lock gets 403 `human_actor_required`: it proposes the command `override_party_lock`, and a person of the firm confirms it. The name of an Estonian company may take `register_name` without one. `is_confirmed: true` confirms the party; un-confirming needs a person (403 `human_actor_required`). Answers the party as `GET` does. With `Idempotency-Key`, a repeat with the same body replays.
+    ///
+    /// `PATCH /api/companies/{company_id}/parties/{party_id}/`
+    pub fn update(
+        &self,
+        company_id: impl Into<String>,
+        party_id: impl Into<String>,
+    ) -> PartiesUpdateRequest<'a> {
+        PartiesUpdateRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            party_id: party_id.into(),
+            body: None,
+            idempotency_key: None,
             options: RequestOptions::default(),
         }
     }
@@ -3003,11 +3727,14 @@ pub struct PartiesListRequest<'a> {
     client: &'a Client,
     company_id: String,
     cursor: Option<String>,
+    exclude_kind: Option<String>,
     external_key: Option<String>,
     include_merged: Option<String>,
+    include_settled_external: Option<String>,
     kind: Option<String>,
     limit: Option<String>,
     reg_code: Option<String>,
+    role: Option<String>,
     search: Option<String>,
     vat_number: Option<String>,
     options: RequestOptions,
@@ -3020,6 +3747,19 @@ impl<'a> PartiesListRequest<'a> {
         self
     }
 
+    /// Leave out the parties of this kind: `employee` on the list of customers and suppliers.
+    ///
+    /// * `supplier` - supplier
+    /// * `customer` - customer
+    /// * `employee` - employee
+    /// * `authority` - authority
+    /// * `group_company` - group_company
+    /// * `other` - other
+    pub fn exclude_kind(mut self, value: impl Into<BooksPartyKindEnum>) -> Self {
+        self.exclude_kind = Some(Into::<BooksPartyKindEnum>::into(value).to_string());
+        self
+    }
+
     /// The exact key of the party in another system.
     pub fn external_key(mut self, value: impl Into<String>) -> Self {
         self.external_key = Some(value.into());
@@ -3029,6 +3769,12 @@ impl<'a> PartiesListRequest<'a> {
     /// Include parties merged into another. Default false.
     pub fn include_merged(mut self, value: bool) -> Self {
         self.include_merged = Some(value.to_string());
+        self
+    }
+
+    /// Include the parties with a key in another system (a Stripe customer) that have no open item. Default false: the list leaves them out unless it is filtered by `search`, `reg_code`, `vat_number` or `external_key`.
+    pub fn include_settled_external(mut self, value: bool) -> Self {
+        self.include_settled_external = Some(value.to_string());
         self
     }
 
@@ -3054,6 +3800,15 @@ impl<'a> PartiesListRequest<'a> {
     /// The exact registry code.
     pub fn reg_code(mut self, value: impl Into<String>) -> Self {
         self.reg_code = Some(value.into());
+        self
+    }
+
+    /// Only the parties that play this role, as `roles` derives it from the kind and the invoices.
+    ///
+    /// * `supplier` - supplier
+    /// * `customer` - customer
+    pub fn role(mut self, value: impl Into<PartyRoleEnum>) -> Self {
+        self.role = Some(Into::<PartyRoleEnum>::into(value).to_string());
         self
     }
 
@@ -3095,11 +3850,14 @@ impl<'a> PartiesListRequest<'a> {
             path_params: vec![("company_id", self.company_id)],
             query: [
                 ("cursor", self.cursor),
+                ("exclude_kind", self.exclude_kind),
                 ("external_key", self.external_key),
                 ("include_merged", self.include_merged),
+                ("include_settled_external", self.include_settled_external),
                 ("kind", self.kind),
                 ("limit", self.limit),
                 ("reg_code", self.reg_code),
+                ("role", self.role),
                 ("search", self.search),
                 ("vat_number", self.vat_number),
             ]
@@ -3172,6 +3930,306 @@ impl<'a> PartiesRetrieveRequest<'a> {
 
     /// Send the request.
     pub async fn send(self) -> Result<BooksPartyDetail, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+}
+
+/// The request of `parties.set_address`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct PartiesSetAddressRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    party_id: String,
+    body: Option<SetPartyAddressBodyRequest>,
+    idempotency_key: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> PartiesSetAddressRequest<'a> {
+    /// The body.
+    pub fn body(mut self, value: SetPartyAddressBodyRequest) -> Self {
+        self.body = Some(value);
+        self
+    }
+
+    /// The `Idempotency-Key` of the call. The runtime makes one when it is not set.
+    pub fn idempotency_key(mut self, value: impl Into<String>) -> Self {
+        self.idempotency_key = Some(value.into());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = match &self.body {
+            Some(value) => Some(RequestBody::Json(serde_json::to_value(value)?)),
+            None => None,
+        };
+        Ok(RequestSpec {
+            operation_id: "commands_set_party_address",
+            method: HttpMethod::Post,
+            path: "/api/companies/{company_id}/parties/{party_id}/address",
+            path_params: vec![("company_id", self.company_id), ("party_id", self.party_id)],
+            query: Vec::new(),
+            body,
+            idempotent: true,
+            idempotency_key: self.idempotency_key,
+            response: ResponseKind::Json,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<SetPartyAddressOutcome, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()?).await
+    }
+}
+
+/// The request of `parties.update`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct PartiesUpdateRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    party_id: String,
+    body: Option<PatchedPartyUpdateRequest>,
+    idempotency_key: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> PartiesUpdateRequest<'a> {
+    /// The body.
+    pub fn body(mut self, value: PatchedPartyUpdateRequest) -> Self {
+        self.body = Some(value);
+        self
+    }
+
+    /// The `Idempotency-Key` of the call. The runtime makes one when it is not set.
+    pub fn idempotency_key(mut self, value: impl Into<String>) -> Self {
+        self.idempotency_key = Some(value.into());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> Result<RequestSpec, Error> {
+        let body = match &self.body {
+            Some(value) => Some(RequestBody::Json(serde_json::to_value(value)?)),
+            None => None,
+        };
+        Ok(RequestSpec {
+            operation_id: "books_parties_update",
+            method: HttpMethod::Patch,
+            path: "/api/companies/{company_id}/parties/{party_id}/",
+            path_params: vec![("company_id", self.company_id), ("party_id", self.party_id)],
+            query: Vec::new(),
+            body,
+            idempotent: true,
+            idempotency_key: self.idempotency_key,
+            response: ResponseKind::Json,
+            options: self.options,
+        })
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<BooksPartyDetail, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()?).await
+    }
+}
+
+/// The `pay_runs` operations.
+#[derive(Clone, Copy)]
+pub struct PayRunsResource<'a> {
+    client: &'a Client,
+}
+
+impl<'a> PayRunsResource<'a> {
+    /// One page of the pay runs, newest month first, with their totals and the net pay not paid yet.
+    ///
+    /// A client sees the posted runs; firm staff also the drafts and the approved ones.
+    ///
+    /// `GET /api/companies/{company_id}/payroll/pay-runs/`
+    pub fn list(&self, company_id: impl Into<String>) -> PayRunsListRequest<'a> {
+        PayRunsListRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            cursor: None,
+            limit: None,
+            options: RequestOptions::default(),
+        }
+    }
+
+    /// One pay run with every employee: the inputs, the gross and the net, the net not paid yet, the payments.
+    ///
+    /// `GET /api/companies/{company_id}/payroll/pay-runs/{pay_run_id}/`
+    pub fn retrieve(
+        &self,
+        company_id: impl Into<String>,
+        pay_run_id: impl Into<String>,
+    ) -> PayRunsRetrieveRequest<'a> {
+        PayRunsRetrieveRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            pay_run_id: pay_run_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+}
+
+/// The request of `pay_runs.list`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct PayRunsListRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    cursor: Option<String>,
+    limit: Option<String>,
+    options: RequestOptions,
+}
+
+impl<'a> PayRunsListRequest<'a> {
+    /// The pagination cursor value.
+    pub fn cursor(mut self, value: impl Into<String>) -> Self {
+        self.cursor = Some(value.into());
+        self
+    }
+
+    /// Number of results to return per page.
+    pub fn limit(mut self, value: i64) -> Self {
+        self.limit = Some(value.to_string());
+        self
+    }
+
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_payroll_pay_runs_list",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/payroll/pay-runs/",
+            path_params: vec![("company_id", self.company_id)],
+            query: [
+                ("cursor", self.cursor),
+                ("limit", self.limit),
+            ]
+            .into_iter()
+            .filter_map(|(name, value)| value.map(|value| (name, value)))
+            .collect(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<PaginatedPayRunList, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+
+    /// Every item of every page, from this request on.
+    pub fn stream(self) -> PageStream<PaginatedPayRunList> {
+        let client = self.client;
+        client.paginate(self.into_spec())
+    }
+}
+
+/// The request of `pay_runs.retrieve`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct PayRunsRetrieveRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    pay_run_id: String,
+    options: RequestOptions,
+}
+
+impl<'a> PayRunsRetrieveRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_payroll_pay_runs_retrieve",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/payroll/pay-runs/{pay_run_id}/",
+            path_params: vec![("company_id", self.company_id), ("pay_run_id", self.pay_run_id)],
+            query: Vec::new(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<PayRunDetail, Error> {
         let client = self.client;
         client.execute(self.into_spec()).await
     }
@@ -3328,6 +4386,7 @@ impl<'a> ReportsResource<'a> {
             company_id: company_id.into(),
             compare_date: None,
             date: Some(date.into()),
+            omit_empty: None,
             schema: None,
             simplified: None,
             options: RequestOptions::default(),
@@ -3352,6 +4411,7 @@ impl<'a> ReportsResource<'a> {
             compare_to: None,
             date_from: Some(date_from.into()),
             date_to: Some(date_to.into()),
+            omit_empty: None,
             schema: None,
             simplified: None,
             options: RequestOptions::default(),
@@ -3366,6 +4426,7 @@ pub struct ReportsBalanceSheetRequest<'a> {
     company_id: String,
     compare_date: Option<String>,
     date: Option<String>,
+    omit_empty: Option<String>,
     schema: Option<String>,
     simplified: Option<String>,
     options: RequestOptions,
@@ -3375,6 +4436,12 @@ impl<'a> ReportsBalanceSheetRequest<'a> {
     /// A second date to compare with, for example the end of the previous year.
     pub fn compare_date(mut self, value: impl Into<String>) -> Self {
         self.compare_date = Some(value.into());
+        self
+    }
+
+    /// Leave out the lines whose amount and comparison amount are both 0, and a heading with every row under it when none of its lines is kept. The totals, cash, receivables, issued capital, retained earnings and the profit for the year always show. Default false: the full scheme.
+    pub fn omit_empty(mut self, value: bool) -> Self {
+        self.omit_empty = Some(value.to_string());
         self
     }
 
@@ -3417,6 +4484,7 @@ impl<'a> ReportsBalanceSheetRequest<'a> {
             query: [
                 ("compare_date", self.compare_date),
                 ("date", self.date),
+                ("omit_empty", self.omit_empty),
                 ("schema", self.schema),
                 ("simplified", self.simplified),
             ]
@@ -3447,6 +4515,7 @@ pub struct ReportsProfitAndLossRequest<'a> {
     compare_to: Option<String>,
     date_from: Option<String>,
     date_to: Option<String>,
+    omit_empty: Option<String>,
     schema: Option<String>,
     simplified: Option<String>,
     options: RequestOptions,
@@ -3462,6 +4531,12 @@ impl<'a> ReportsProfitAndLossRequest<'a> {
     /// The last day of a period to compare with. Goes with `compare_from`.
     pub fn compare_to(mut self, value: impl Into<String>) -> Self {
         self.compare_to = Some(value.into());
+        self
+    }
+
+    /// Leave out the lines whose amount and comparison amount are both 0, and a heading with every row under it when none of its lines is kept. The totals, cash, receivables, issued capital, retained earnings and the profit for the year always show. Default false: the full scheme.
+    pub fn omit_empty(mut self, value: bool) -> Self {
+        self.omit_empty = Some(value.to_string());
         self
     }
 
@@ -3506,6 +4581,7 @@ impl<'a> ReportsProfitAndLossRequest<'a> {
                 ("compare_to", self.compare_to),
                 ("date_from", self.date_from),
                 ("date_to", self.date_to),
+                ("omit_empty", self.omit_empty),
                 ("schema", self.schema),
                 ("simplified", self.simplified),
             ]
@@ -3522,6 +4598,78 @@ impl<'a> ReportsProfitAndLossRequest<'a> {
 
     /// Send the request.
     pub async fn send(self) -> Result<BooksIncomeStatement, Error> {
+        let client = self.client;
+        client.execute(self.into_spec()).await
+    }
+}
+
+/// The `tax_account` operations.
+#[derive(Clone, Copy)]
+pub struct TaxAccountResource<'a> {
+    client: &'a Client,
+}
+
+impl<'a> TaxAccountResource<'a> {
+    /// The tax account from the stored copy, with its as-of time, the access status and the notices.
+    ///
+    /// Nothing is read from EMTA here: the copy is refreshed every night, after
+    /// a filing or a tax payment, and by staff. Before the first refresh every
+    /// amount is null and `access_status` is `never`.
+    ///
+    /// `GET /api/companies/{company_id}/tax-account/balance/`
+    pub fn balance(&self, company_id: impl Into<String>) -> TaxAccountBalanceRequest<'a> {
+        TaxAccountBalanceRequest {
+            client: self.client,
+            company_id: company_id.into(),
+            options: RequestOptions::default(),
+        }
+    }
+}
+
+/// The request of `tax_account.balance`: set the optional parameters, then send it.
+#[must_use = "a request does nothing until it is sent"]
+pub struct TaxAccountBalanceRequest<'a> {
+    client: &'a Client,
+    company_id: String,
+    options: RequestOptions,
+}
+
+impl<'a> TaxAccountBalanceRequest<'a> {
+    /// The timeout of each attempt of this call, instead of the one of the client.
+    pub fn timeout(mut self, value: std::time::Duration) -> Self {
+        self.options.timeout = Some(value);
+        self
+    }
+
+    /// The number of retries of this call, instead of the one of the client. 0 turns them off.
+    pub fn max_retries(mut self, value: u32) -> Self {
+        self.options.max_retries = Some(value);
+        self
+    }
+
+    /// An extra header of this call. It cannot replace `Authorization` or `Idempotency-Key`.
+    pub fn header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.options.headers.push((name.into(), value.into()));
+        self
+    }
+
+    fn into_spec(self) -> RequestSpec {
+        RequestSpec {
+            operation_id: "companies_tax_account_balance",
+            method: HttpMethod::Get,
+            path: "/api/companies/{company_id}/tax-account/balance/",
+            path_params: vec![("company_id", self.company_id)],
+            query: Vec::new(),
+            body: None,
+            idempotent: false,
+            idempotency_key: None,
+            response: ResponseKind::Json,
+            options: self.options,
+        }
+    }
+
+    /// Send the request.
+    pub async fn send(self) -> Result<TaxAccountBalance, Error> {
         let client = self.client;
         client.execute(self.into_spec()).await
     }
@@ -3648,6 +4796,7 @@ impl<'a> VatCodesResource<'a> {
             cursor: None,
             direction: None,
             limit: None,
+            special_scheme: None,
             treatment: None,
             options: RequestOptions::default(),
         }
@@ -3663,6 +4812,7 @@ pub struct VatCodesListRequest<'a> {
     cursor: Option<String>,
     direction: Option<String>,
     limit: Option<String>,
+    special_scheme: Option<String>,
     treatment: Option<String>,
     options: RequestOptions,
 }
@@ -3695,6 +4845,17 @@ impl<'a> VatCodesListRequest<'a> {
         self
     }
 
+    /// The codes of this scheme only: `oss_union`, `ioss`, `gb_vat` (UK VAT) or `au_gst` (Australian GST).
+    ///
+    /// * `oss_union` - oss_union
+    /// * `ioss` - ioss
+    /// * `gb_vat` - gb_vat
+    /// * `au_gst` - au_gst
+    pub fn special_scheme(mut self, value: impl Into<BooksVatSchemeEnum>) -> Self {
+        self.special_scheme = Some(Into::<BooksVatSchemeEnum>::into(value).to_string());
+        self
+    }
+
     /// Codes with this treatment only.
     ///
     /// * `standard` - standard
@@ -3708,6 +4869,8 @@ impl<'a> VatCodesListRequest<'a> {
     /// * `rc_non_eu` - rc_non_eu
     /// * `foreign_vat` - foreign_vat
     /// * `oss` - oss
+    /// * `foreign_scheme` - foreign_scheme
+    /// * `import` - import
     /// * `unknown` - unknown
     pub fn treatment(mut self, value: impl Into<BooksVatTreatmentEnum>) -> Self {
         self.treatment = Some(Into::<BooksVatTreatmentEnum>::into(value).to_string());
@@ -3743,6 +4906,7 @@ impl<'a> VatCodesListRequest<'a> {
                 ("cursor", self.cursor),
                 ("direction", self.direction),
                 ("limit", self.limit),
+                ("special_scheme", self.special_scheme),
                 ("treatment", self.treatment),
             ]
             .into_iter()
@@ -3943,6 +5107,14 @@ impl Page for PaginatedCompanyList {
     }
 }
 
+impl Page for PaginatedEmployeeList {
+    type Item = Employee;
+
+    fn into_parts(self) -> (Vec<Employee>, Option<String>) {
+        (self.items, self.next_cursor)
+    }
+}
+
 impl Page for PaginatedInboundEmailList {
     type Item = InboundEmail;
 
@@ -3951,10 +5123,10 @@ impl Page for PaginatedInboundEmailList {
     }
 }
 
-impl Page for PaginatedOrganizationList {
-    type Item = Organization;
+impl Page for PaginatedPayRunList {
+    type Item = PayRun;
 
-    fn into_parts(self) -> (Vec<Organization>, Option<String>) {
+    fn into_parts(self) -> (Vec<PayRun>, Option<String>) {
         (self.items, self.next_cursor)
     }
 }
@@ -3963,6 +5135,14 @@ impl Page for PaginatedStoredDocumentList {
     type Item = StoredDocument;
 
     fn into_parts(self) -> (Vec<StoredDocument>, Option<String>) {
+        (self.items, self.next_cursor)
+    }
+}
+
+impl Page for PaginatedSubmissionList {
+    type Item = Submission;
+
+    fn into_parts(self) -> (Vec<Submission>, Option<String>) {
         (self.items, self.next_cursor)
     }
 }

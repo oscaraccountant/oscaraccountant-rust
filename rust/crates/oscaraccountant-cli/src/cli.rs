@@ -40,6 +40,10 @@ pub fn command() -> Command {
                 .help("Print the version"),
         );
     let root = common(root, true)
+        .arg(company_arg().help_heading(GLOBAL).help(
+            "The company of the command: its id, registry code or the start of its name; \
+             a -c/--company after the command wins [env: OSCAR_COMPANY]",
+        ))
         .subcommand(login())
         .subcommand(onboard())
         .subcommand(common(
@@ -47,7 +51,7 @@ pub fn command() -> Command {
             true,
         ))
         .subcommand(common(
-            Command::new("whoami").about("Show the user, the organization and the companies"),
+            Command::new("whoami").about("Show the user and the companies"),
             true,
         ))
         .subcommand(auth())
@@ -122,8 +126,8 @@ fn login() -> Command {
             .long_about(
                 "Log in and store the credential in the OS keychain.\n\n\
                  The default opens the browser. With --device, or when no display is found, \
-                 it prints a code to enter on another device. With --api-key, it reads an \
-                 organization API key from standard input or a prompt.",
+                 it prints a code to enter on another device. With --api-key, it reads a \
+                 company API key from standard input or a prompt.",
             )
             .arg(
                 Arg::new("device")
@@ -220,7 +224,13 @@ fn onboard() -> Command {
             .arg(text("books-no-reason", "TEXT", STEP1, "Why the company keeps no books yet"))
             .arg(
                 text("books-software", "NAME", STEP1, "Where the books are kept")
-                    .value_parser(["merit_aktiva", "xolo", "directo", "other", "my_accountant"]),
+                    .value_parser([
+                        "merit_aktiva",
+                        "e_arveldaja",
+                        "xolo",
+                        "other",
+                        "my_accountant",
+                    ]),
             )
             .arg(text("books-software-other", "NAME", STEP1, "The name of the other software"))
             .arg(text("website", "URL", STEP1, "The company website").conflicts_with("no-website"))
@@ -452,13 +462,12 @@ fn flag_arg(id_prefix: &str, flag: &generated::Flag) -> Arg {
 pub fn path_id(name: &str) -> String {
     match name {
         "company_id" => "company".to_owned(),
-        "organization_id" => "organization".to_owned(),
         other => format!("path:{other}"),
     }
 }
 
-/// The argument of a path parameter: `--company` and `--organization` have a default, every
-/// other one is a positional argument.
+/// The argument of a path parameter: `--company` has a default, every other one is a
+/// positional argument.
 fn path_arg(operation: &generated::Command, arg: &generated::Arg) -> Arg {
     let help = id_help(operation, arg.name).unwrap_or_else(|| {
         arg.help
@@ -473,10 +482,6 @@ fn path_arg(operation: &generated::Command, arg: &generated::Arg) -> Arg {
             "The company: its id, registry code or the start of its name [default: the \
              profile's; env: OSCAR_COMPANY]",
         ),
-        "organization_id" => Arg::new("organization")
-            .long("organization")
-            .value_name("ID")
-            .help("The organization [default: the profile's]"),
         name => Arg::new(path_id(name))
             .required(true)
             .value_name(name.to_uppercase())
@@ -486,7 +491,7 @@ fn path_arg(operation: &generated::Command, arg: &generated::Arg) -> Arg {
 
 /// The help of an id the CLI resolves against the list of its place (`invoices get`): the id,
 /// its start or end, or the title the list shows (an invoice number, a file name). `None` when
-/// no list resolves it: the help of the schema stays (N3-e).
+/// no list resolves it: the help of the schema stays.
 fn id_help(operation: &generated::Command, name: &str) -> Option<String> {
     let template: Vec<&str> = operation.path.trim_end_matches('/').split('/').collect();
     let index = template
@@ -517,6 +522,71 @@ fn company_arg() -> Arg {
         .value_name("COMPANY")
 }
 
+/// The id of the positional `<COMPANY>` of `oscar companies use` and `oscar companies get`. It
+/// is not `company`, so it never counts as `-c/--company` in [`globals`].
+pub const COMPANY_POSITIONAL: &str = "company-positional";
+
+/// `oscar companies get [COMPANY]`: the generated command, with the company as an optional
+/// positional argument too. It is resolved like `-c/--company`.
+fn companies_get(command: Command) -> Command {
+    command.arg(Arg::new(COMPANY_POSITIONAL).value_name("COMPANY").help(
+        "The company: its id, registry code or the start of its name [default: -c, \
+                 else the profile's]",
+    ))
+}
+
+/// The value an operation with an `ordering` query sends when none is given: newest first.
+/// That is the descending value of the first ascending one (`invoice_date` gives
+/// `-invoice_date`), else the first descending value. `None` when the operation has no
+/// `ordering`, or it has no descending value.
+pub fn default_ordering(operation: &generated::Command) -> Option<&'static str> {
+    let flag = operation
+        .flags
+        .iter()
+        .find(|flag| flag.name == "ordering")?;
+    let ValueKind::Enum(values) = flag.kind else {
+        return None;
+    };
+    let descending = |value: &&&str| value.starts_with('-');
+    if let Some(first) = values.iter().find(|value| !descending(value)) {
+        let wanted = format!("-{first}");
+        if let Some(value) = values.iter().find(|value| **value == wanted) {
+            return Some(value);
+        }
+    }
+    values.iter().find(descending).copied()
+}
+
+/// The long help of an operation: the API description, and, when the CLI sends a default
+/// `--ordering`, one paragraph that says so. The API default in the description stays oldest
+/// first for other clients, so the CLI states its own default after it.
+fn long_about(operation: &generated::Command) -> String {
+    let Some(default) = default_ordering(operation) else {
+        return operation.description.to_owned();
+    };
+    let note = format!(
+        "The CLI lists newest first: with no --ordering it sends --ordering {default}. The API \
+         default above applies only to other clients."
+    );
+    if operation.description.is_empty() {
+        note
+    } else {
+        format!("{}\n\n{note}", operation.description)
+    }
+}
+
+/// The help of `--ordering` when the CLI sends a default: the values and the default.
+fn ordering_help(flag: &generated::Flag, default: &str) -> String {
+    let values = match flag.kind {
+        ValueKind::Enum(values) => values.join(", "),
+        _ => String::new(),
+    };
+    format!(
+        "The order of the list; a leading - is descending [default: {default}, newest first] \
+         One of: {values}"
+    )
+}
+
 /// `oscar companies use <x>`: the hand-written command of the group `companies`.
 fn companies_use() -> Command {
     common(
@@ -527,7 +597,7 @@ fn companies_use() -> Command {
                  code, or the start of its name (any case).",
             )
             .arg(
-                Arg::new("company")
+                Arg::new(COMPANY_POSITIONAL)
                     .required(true)
                     .value_name("COMPANY")
                     .help("The id, the registry code, or the start of the name"),
@@ -570,7 +640,9 @@ fn resources() -> Vec<Command> {
         .into_iter()
         .map(|group| {
             let group = if group.get_name() == "companies" {
-                group.subcommand(companies_use())
+                group
+                    .mut_subcommand("get", companies_get)
+                    .subcommand(companies_use())
             } else {
                 group
             };
@@ -619,7 +691,7 @@ pub fn visible_subcommands(group: &Command) -> Vec<&str> {
 fn itself(group: Command, operation: &'static generated::Command, command: Command) -> Command {
     let mut group = group
         .about(operation.summary)
-        .long_about(operation.description)
+        .long_about(long_about(operation))
         .subcommand_required(false)
         .arg_required_else_help(false)
         .args_conflicts_with_subcommands(true);
@@ -676,15 +748,20 @@ fn operation_command(operation: &'static generated::Command) -> Command {
     };
     let mut command = Command::new(name)
         .about(operation.summary)
-        .long_about(operation.description);
+        .long_about(long_about(operation));
     if name != operation.method {
         command = command.alias(operation.method);
     }
     for arg in operation.args {
         command = command.arg(path_arg(operation, arg));
     }
+    let ordering = default_ordering(operation);
     for flag in operation.flags {
-        command = command.arg(flag_arg("query", flag));
+        let arg = flag_arg("query", flag);
+        command = command.arg(match ordering {
+            Some(default) if flag.name == "ordering" => arg.help(ordering_help(flag, default)),
+            _ => arg,
+        });
     }
     if let Body::Json { required, .. } = operation.body {
         command = command.arg(data_arg(required));
@@ -768,6 +845,10 @@ pub fn globals(root: &ArgMatches, leaf: &ArgMatches) -> Globals {
         api_key: string(leaf, "api-key")
             .or_else(|| string(root, "api-key"))
             .map(str::to_owned),
+        company: [leaf, root]
+            .into_iter()
+            .find_map(|matches| string(matches, "company").filter(|value| !value.trim().is_empty()))
+            .map(str::to_owned),
         output: output_options(root, leaf),
         no_input: flag(leaf, "no-input") || flag(root, "no-input"),
     }
@@ -842,10 +923,7 @@ mod tests {
         assert_eq!(about("vat-codes"), "VAT codes: list");
         assert_eq!(about("bank-transactions"), "Bank transactions: list, get");
         assert_eq!(about("companies"), "Companies: list, get, use");
-        assert_eq!(
-            about("me"),
-            "Show the user, the organization and the companies"
-        );
+        assert_eq!(about("me"), "Show the user and the companies");
         assert_eq!(group_about(&Command::new("")), ": ");
         let issue = root
             .find_subcommand("invoices")
@@ -934,6 +1012,7 @@ mod tests {
                 profile: Some("q".into()),
                 base_url: None,
                 api_key: Some("osk_root".into()),
+                company: None,
                 output: render::Options {
                     json: true,
                     ..render::Options::default()
@@ -947,6 +1026,172 @@ mod tests {
         assert_eq!(super::globals(&root, leaf).api_key, None);
         assert_eq!(string(leaf, "nothing"), None);
         assert!(!flag(leaf, "nothing"));
+    }
+
+    #[test]
+    fn the_company_flag_before_the_command() {
+        // `oscar -c X invoices list`: the root's -c is the company of the command.
+        let root = parse(&["oscar", "-c", "16978080", "invoices", "list"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(string(leaf, "company"), None);
+        assert_eq!(globals(&root, leaf).company.as_deref(), Some("16978080"));
+        let root = parse(&["oscar", "--company", "alpha", "whoami"]).unwrap();
+        let leaf = root.subcommand().unwrap().1;
+        assert_eq!(globals(&root, leaf).company.as_deref(), Some("alpha"));
+        // The leaf's -c wins over the root's; an empty leaf value does not.
+        let root = parse(&["oscar", "-c", "root", "invoices", "list", "-c", "leaf"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(globals(&root, leaf).company.as_deref(), Some("leaf"));
+        let root = parse(&["oscar", "-c", "root", "invoices", "list", "-c", " "]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(globals(&root, leaf).company.as_deref(), Some("root"));
+        // The root -c is a global option in the help.
+        let root = command();
+        let arg = root
+            .get_arguments()
+            .find(|arg| arg.get_id() == "company")
+            .unwrap();
+        assert_eq!(arg.get_short(), Some('c'));
+        assert_eq!(arg.get_help_heading(), Some(GLOBAL));
+    }
+
+    #[test]
+    fn companies_get_and_use_take_the_company_as_an_argument() {
+        let root = parse(&["oscar", "companies", "get", "16978080"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(string(leaf, COMPANY_POSITIONAL), Some("16978080"));
+        // The positional is not -c: the globals do not take it.
+        assert_eq!(globals(&root, leaf).company, None);
+        let root = parse(&["oscar", "companies", "get", "a", "-c", "b"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(string(leaf, COMPANY_POSITIONAL), Some("a"));
+        assert_eq!(string(leaf, "company"), Some("b"));
+        let root = parse(&["oscar", "companies", "get"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(string(leaf, COMPANY_POSITIONAL), None);
+        assert!(parse(&["oscar", "companies", "get", "a", "b"]).is_err());
+        let root = parse(&["oscar", "companies", "use", "beta"]).unwrap();
+        let leaf = root.subcommand().unwrap().1.subcommand().unwrap().1;
+        assert_eq!(string(leaf, COMPANY_POSITIONAL), Some("beta"));
+        assert_eq!(globals(&root, leaf).company, None);
+        // Only `companies get` has it.
+        assert!(parse(&["oscar", "invoices", "list", "x"]).is_err());
+    }
+
+    #[test]
+    fn the_default_ordering_is_newest_first() {
+        let find = |resource: &str, method: &str| {
+            generated::COMMANDS
+                .iter()
+                .find(|c| c.resource == resource && c.method == method)
+                .unwrap()
+        };
+        assert_eq!(
+            default_ordering(find("invoices", "list")),
+            Some("-invoice_date")
+        );
+        assert_eq!(
+            default_ordering(find("documents", "list")),
+            Some("-created_at")
+        );
+        assert_eq!(
+            default_ordering(find("bank-transactions", "list")),
+            Some("-booking_date")
+        );
+        assert_eq!(default_ordering(find("companies", "list")), None);
+        assert_eq!(default_ordering(find("accounts", "list")), None);
+        // The help says what the CLI sends.
+        let root = command();
+        let list = root
+            .find_subcommand("invoices")
+            .and_then(|group| group.find_subcommand("list"))
+            .unwrap();
+        let help = list
+            .get_arguments()
+            .find(|arg| arg.get_id() == "query:ordering")
+            .and_then(Arg::get_help)
+            .map(ToString::to_string)
+            .unwrap();
+        assert_eq!(
+            help,
+            "The order of the list; a leading - is descending [default: -invoice_date, newest \
+             first] One of: invoice_date, -invoice_date"
+        );
+    }
+
+    #[test]
+    fn the_long_help_states_the_default_ordering() {
+        let long_help = |resource: &str, name: &str| {
+            command()
+                .find_subcommand_mut(resource)
+                .and_then(|group| group.find_subcommand_mut(name))
+                .unwrap()
+                .render_long_help()
+                .to_string()
+        };
+        let invoices = long_help("invoices", "list");
+        assert!(invoices.contains("newest first"), "{invoices}");
+        assert!(
+            invoices.contains("with no --ordering it sends --ordering -invoice_date."),
+            "{invoices}"
+        );
+        // The generated description stays, before the note.
+        let description = generated::COMMANDS
+            .iter()
+            .find(|c| c.resource == "invoices" && c.method == "list")
+            .unwrap()
+            .description;
+        let first_line = description.lines().next().unwrap();
+        assert!(
+            invoices.find(first_line).unwrap() < invoices.find("The CLI lists newest").unwrap()
+        );
+        let documents = long_help("documents", "list");
+        assert!(documents.contains("--ordering -created_at."), "{documents}");
+        let accounts = long_help("accounts", "list");
+        assert!(!accounts.contains("The CLI lists newest"), "{accounts}");
+    }
+
+    #[test]
+    fn default_ordering_rules() {
+        let command = |values: &'static [&'static str]| -> generated::Command {
+            let flags: &'static [generated::Flag] = Box::leak(Box::new([generated::Flag {
+                name: "ordering",
+                long: "ordering",
+                help: "",
+                required: false,
+                kind: ValueKind::Enum(values),
+            }]));
+            generated::Command {
+                flags,
+                ..*generated::COMMANDS
+                    .iter()
+                    .find(|c| c.resource == "invoices" && c.method == "list")
+                    .unwrap()
+            }
+        };
+        // The descending value of the first ascending one, not the first descending one.
+        assert_eq!(
+            default_ordering(&command(&["amount", "-name", "-amount"])),
+            Some("-amount")
+        );
+        // No match: the first descending value.
+        assert_eq!(
+            default_ordering(&command(&["amount", "-name", "-date"])),
+            Some("-name")
+        );
+        assert_eq!(default_ordering(&command(&["-date"])), Some("-date"));
+        assert_eq!(default_ordering(&command(&["amount", "name"])), None);
+        let flag = generated::Flag {
+            name: "ordering",
+            long: "ordering",
+            help: "",
+            required: false,
+            kind: ValueKind::String,
+        };
+        assert_eq!(
+            ordering_help(&flag, "-x"),
+            "The order of the list; a leading - is descending [default: -x, newest first] One of: "
+        );
     }
 
     #[test]
@@ -975,7 +1220,6 @@ mod tests {
     #[test]
     fn helps() {
         assert_eq!(path_id("company_id"), "company");
-        assert_eq!(path_id("organization_id"), "organization");
         assert_eq!(path_id("invoice_id"), "path:invoice_id");
         for (kind, name) in [
             (ValueKind::Integer, "N"),

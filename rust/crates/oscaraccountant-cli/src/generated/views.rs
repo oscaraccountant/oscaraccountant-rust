@@ -114,6 +114,48 @@ impl std::fmt::Debug for View {
     }
 }
 
+/// The view of `Absence`.
+pub static VIEW_ABSENCE: View = View {
+    name: "Absence",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Enum { values: &["holiday", "sick_leave"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "start_date",
+            label: "Start date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "end_date",
+            label: "End date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "note",
+            label: "Note",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["start_date", "end_date", "kind"],
+    wide: &["id"],
+    status: None,
+    hidden: &[],
+};
+
 /// The view of `BooksAccount`.
 pub static VIEW_BOOKS_ACCOUNT: View = View {
     name: "BooksAccount",
@@ -456,6 +498,12 @@ pub static VIEW_BOOKS_BANK_ACCOUNT: View = View {
             nullable: false,
         },
         ViewField {
+            name: "ledger_currency",
+            label: "Ledger currency",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
             name: "is_debtor",
             label: "Is debtor",
             kind: FieldKind::Bool,
@@ -466,6 +514,12 @@ pub static VIEW_BOOKS_BANK_ACCOUNT: View = View {
             label: "Active",
             kind: FieldKind::Bool,
             nullable: false,
+        },
+        ViewField {
+            name: "invoice_position",
+            label: "Invoice position",
+            kind: FieldKind::Number,
+            nullable: true,
         },
         ViewField {
             name: "created_at",
@@ -510,10 +564,28 @@ pub static VIEW_BOOKS_BANK_ACCOUNT: View = View {
             nullable: true,
         },
         ViewField {
+            name: "broker_key",
+            label: "Broker key",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "mmf_account_code",
+            label: "Mmf account code",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
             name: "transaction_count",
             label: "Transaction count",
             kind: FieldKind::Number,
             nullable: false,
+        },
+        ViewField {
+            name: "first_booking_date",
+            label: "First booking date",
+            kind: FieldKind::Date,
+            nullable: true,
         },
         ViewField {
             name: "last_booking_date",
@@ -522,9 +594,15 @@ pub static VIEW_BOOKS_BANK_ACCOUNT: View = View {
             nullable: true,
         },
         ViewField {
+            name: "booked_months",
+            label: "Booked months",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+        ViewField {
             name: "ledger_balance_minor",
             label: "Ledger balance",
-            kind: FieldKind::Money { currency_field: "currency" },
+            kind: FieldKind::Money { currency_field: "ledger_currency" },
             nullable: false,
         },
         ViewField {
@@ -542,7 +620,7 @@ pub static VIEW_BOOKS_BANK_ACCOUNT: View = View {
         ViewField {
             name: "ledger_balance_on_bank_date_minor",
             label: "Ledger balance on bank date",
-            kind: FieldKind::Money { currency_field: "currency" },
+            kind: FieldKind::Money { currency_field: "ledger_currency" },
             nullable: true,
         },
         ViewField {
@@ -577,6 +655,150 @@ pub static VIEW_BOOKS_BANK_ACCOUNT_PAGE: View = View {
         },
     ],
     columns: &["next_cursor"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksBankCoverage`.
+pub static VIEW_BOOKS_BANK_COVERAGE: View = View {
+    name: "BooksBankCoverage",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "accounts",
+            label: "Accounts",
+            kind: FieldKind::Array(&VIEW_BOOKS_BANK_COVERAGE_ACCOUNT),
+            nullable: false,
+        },
+        ViewField {
+            name: "uncovered_accounts",
+            label: "Uncovered accounts",
+            kind: FieldKind::Array(&VIEW_BOOKS_BANK_COVERAGE_UNCOVERED),
+            nullable: false,
+        },
+        ViewField {
+            name: "checked_from",
+            label: "Checked from",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "checked_to",
+            label: "Checked to",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+    ],
+    columns: &["checked_from", "checked_to"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksBankCoverageAccount`.
+pub static VIEW_BOOKS_BANK_COVERAGE_ACCOUNT: View = View {
+    name: "BooksBankCoverageAccount",
+    title: "name",
+    fields: &[
+        ViewField {
+            name: "bank_account_id",
+            label: "Bank account ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "name",
+            label: "Name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "iban",
+            label: "IBAN",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "transaction_count",
+            label: "Transaction count",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "first_booking_date",
+            label: "First booking date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "last_booking_date",
+            label: "Last booking date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "booked_months",
+            label: "Booked months",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+        ViewField {
+            name: "gap_months",
+            label: "Gap months",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+    ],
+    columns: &["name", "first_booking_date", "last_booking_date", "iban", "currency"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksBankCoverageUncovered`.
+pub static VIEW_BOOKS_BANK_COVERAGE_UNCOVERED: View = View {
+    name: "BooksBankCoverageUncovered",
+    title: "name",
+    fields: &[
+        ViewField {
+            name: "bank_account_id",
+            label: "Bank account ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "name",
+            label: "Name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "iban",
+            label: "IBAN",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "reason",
+            label: "Reason",
+            kind: FieldKind::Enum { values: &["no_bank_lines", "feed_not_linked"] },
+            nullable: false,
+        },
+    ],
+    columns: &["name", "iban", "currency", "reason"],
     wide: &[],
     status: None,
     hidden: &[],
@@ -770,8 +992,14 @@ pub static VIEW_BOOKS_BANK_TRANSACTION: View = View {
         ViewField {
             name: "status",
             label: "Status",
-            kind: FieldKind::Enum { values: &["unmatched", "part_matched", "matched", "exempted", "classified", "transfer_matched", "transfer_unmatched", "posted"] },
+            kind: FieldKind::Enum { values: &["migrated", "retracted", "unmatched", "part_matched", "matched", "exempted", "classified", "transfer_matched", "transfer_unmatched", "posted"] },
             nullable: false,
+        },
+        ViewField {
+            name: "migrated_event_id",
+            label: "Migrated event ID",
+            kind: FieldKind::Ref,
+            nullable: true,
         },
         ViewField {
             name: "has_document",
@@ -785,10 +1013,40 @@ pub static VIEW_BOOKS_BANK_TRANSACTION: View = View {
             kind: FieldKind::List,
             nullable: false,
         },
+        ViewField {
+            name: "retraction",
+            label: "Retraction",
+            kind: FieldKind::Object(&VIEW_BOOKS_BANK_TRANSACTION_RETRACTION),
+            nullable: true,
+        },
+        ViewField {
+            name: "receipt_state",
+            label: "Receipt state",
+            kind: FieldKind::Enum { values: &["missing", "receipt_not_booked", "invoice_not_matched"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "receipt_detail",
+            label: "Receipt detail",
+            kind: FieldKind::Enum { values: &["reading", "review", "recorded", "failed", "no_extraction"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "match_proposal_id",
+            label: "Match proposal ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "matched_invoice_candidates",
+            label: "Matched invoice candidates",
+            kind: FieldKind::Array(&VIEW_BOOKS_BANK_TRANSACTION_INVOICE_CANDIDATE),
+            nullable: false,
+        },
     ],
     columns: &["booking_date", "counterparty_name", "description", "total_minor", "status", "bank_account_label"],
     wide: &["reference", "party_name", "direction", "fee_minor", "id"],
-    status: Some(Status { field: "status", roles: &[("unmatched", "warn"), ("part_matched", "warn"), ("transfer_unmatched", "warn"), ("matched", "ok"), ("classified", "ok"), ("transfer_matched", "ok"), ("posted", "ok"), ("exempted", "muted")] }),
+    status: Some(Status { field: "status", roles: &[("unmatched", "warn"), ("part_matched", "warn"), ("transfer_unmatched", "warn"), ("matched", "ok"), ("classified", "ok"), ("transfer_matched", "ok"), ("posted", "ok"), ("migrated", "ok"), ("exempted", "muted"), ("retracted", "muted")] }),
     hidden: &[],
 };
 
@@ -980,8 +1238,14 @@ pub static VIEW_BOOKS_BANK_TRANSACTION_DETAIL: View = View {
         ViewField {
             name: "status",
             label: "Status",
-            kind: FieldKind::Enum { values: &["unmatched", "part_matched", "matched", "exempted", "classified", "transfer_matched", "transfer_unmatched", "posted"] },
+            kind: FieldKind::Enum { values: &["migrated", "retracted", "unmatched", "part_matched", "matched", "exempted", "classified", "transfer_matched", "transfer_unmatched", "posted"] },
             nullable: false,
+        },
+        ViewField {
+            name: "migrated_event_id",
+            label: "Migrated event ID",
+            kind: FieldKind::Ref,
+            nullable: true,
         },
         ViewField {
             name: "has_document",
@@ -993,6 +1257,36 @@ pub static VIEW_BOOKS_BANK_TRANSACTION_DETAIL: View = View {
             name: "file_ids",
             label: "File IDs",
             kind: FieldKind::List,
+            nullable: false,
+        },
+        ViewField {
+            name: "retraction",
+            label: "Retraction",
+            kind: FieldKind::Object(&VIEW_BOOKS_BANK_TRANSACTION_RETRACTION),
+            nullable: true,
+        },
+        ViewField {
+            name: "receipt_state",
+            label: "Receipt state",
+            kind: FieldKind::Enum { values: &["missing", "receipt_not_booked", "invoice_not_matched"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "receipt_detail",
+            label: "Receipt detail",
+            kind: FieldKind::Enum { values: &["reading", "review", "recorded", "failed", "no_extraction"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "match_proposal_id",
+            label: "Match proposal ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "matched_invoice_candidates",
+            label: "Matched invoice candidates",
+            kind: FieldKind::Array(&VIEW_BOOKS_BANK_TRANSACTION_INVOICE_CANDIDATE),
             nullable: false,
         },
         ViewField {
@@ -1031,10 +1325,16 @@ pub static VIEW_BOOKS_BANK_TRANSACTION_DETAIL: View = View {
             kind: FieldKind::Object(&VIEW_BOOKS_TRANSFER_MATCH),
             nullable: true,
         },
+        ViewField {
+            name: "retractable",
+            label: "Retractable",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
     ],
     columns: &["booking_date", "counterparty_name", "description", "total_minor", "status", "bank_account_label"],
     wide: &["reference", "party_name", "direction", "fee_minor", "id"],
-    status: Some(Status { field: "status", roles: &[("unmatched", "warn"), ("part_matched", "warn"), ("transfer_unmatched", "warn"), ("matched", "ok"), ("classified", "ok"), ("transfer_matched", "ok"), ("posted", "ok"), ("exempted", "muted")] }),
+    status: Some(Status { field: "status", roles: &[("unmatched", "warn"), ("part_matched", "warn"), ("transfer_unmatched", "warn"), ("matched", "ok"), ("classified", "ok"), ("transfer_matched", "ok"), ("posted", "ok"), ("migrated", "ok"), ("exempted", "muted"), ("retracted", "muted")] }),
     hidden: &[],
 };
 
@@ -1092,6 +1392,30 @@ pub static VIEW_BOOKS_BANK_TRANSACTION_ENTRY: View = View {
     hidden: &[],
 };
 
+/// The view of `BooksBankTransactionInvoiceCandidate`.
+pub static VIEW_BOOKS_BANK_TRANSACTION_INVOICE_CANDIDATE: View = View {
+    name: "BooksBankTransactionInvoiceCandidate",
+    title: "number",
+    fields: &[
+        ViewField {
+            name: "invoice_id",
+            label: "Invoice ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "number",
+            label: "Number",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+    ],
+    columns: &["number"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
 /// The view of `BooksBankTransactionPage`.
 pub static VIEW_BOOKS_BANK_TRANSACTION_PAGE: View = View {
     name: "BooksBankTransactionPage",
@@ -1109,8 +1433,44 @@ pub static VIEW_BOOKS_BANK_TRANSACTION_PAGE: View = View {
             kind: FieldKind::Text,
             nullable: true,
         },
+        ViewField {
+            name: "coverage",
+            label: "Coverage",
+            kind: FieldKind::Object(&VIEW_BOOKS_BANK_COVERAGE),
+            nullable: true,
+        },
     ],
     columns: &["next_cursor"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksBankTransactionRetraction`.
+pub static VIEW_BOOKS_BANK_TRANSACTION_RETRACTION: View = View {
+    name: "BooksBankTransactionRetraction",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "reason",
+            label: "Reason",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "duplicate_of_bank_transaction_id",
+            label: "Duplicate of bank transaction ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "retracted_at",
+            label: "Retracted at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+    ],
+    columns: &["retracted_at"],
     wide: &[],
     status: None,
     hidden: &[],
@@ -1332,9 +1692,27 @@ pub static VIEW_BOOKS_DOCUMENT: View = View {
             nullable: false,
         },
         ViewField {
+            name: "withdrawn",
+            label: "Withdrawn",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "withdrawn_at",
+            label: "Withdrawn at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
             name: "file_id",
             label: "File ID",
             kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "stored_filename",
+            label: "Stored filename",
+            kind: FieldKind::Text,
             nullable: true,
         },
         ViewField {
@@ -1434,9 +1812,27 @@ pub static VIEW_BOOKS_DOCUMENT_DETAIL: View = View {
             nullable: false,
         },
         ViewField {
+            name: "withdrawn",
+            label: "Withdrawn",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "withdrawn_at",
+            label: "Withdrawn at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
             name: "file_id",
             label: "File ID",
             kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "stored_filename",
+            label: "Stored filename",
+            kind: FieldKind::Text,
             nullable: true,
         },
         ViewField {
@@ -1468,6 +1864,36 @@ pub static VIEW_BOOKS_DOCUMENT_DETAIL: View = View {
             label: "VAT returns",
             kind: FieldKind::Array(&VIEW_BOOKS_DOCUMENT_VAT_RETURN),
             nullable: false,
+        },
+        ViewField {
+            name: "references",
+            label: "References",
+            kind: FieldKind::Array(&VIEW_BOOKS_DOCUMENT_REFERENCE),
+            nullable: false,
+        },
+        ViewField {
+            name: "withdrawable",
+            label: "Withdrawable",
+            kind: FieldKind::Enum { values: &["any", "human_with_reason", "no"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "withdraw_blocked_by",
+            label: "Withdraw blocked by",
+            kind: FieldKind::Enum { values: &["document_withdrawn", "document_legal_hold", "document_in_use"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "status_events",
+            label: "Status events",
+            kind: FieldKind::Array(&VIEW_BOOKS_DOCUMENT_STATUS_EVENT),
+            nullable: false,
+        },
+        ViewField {
+            name: "deletion",
+            label: "Deletion",
+            kind: FieldKind::Object(&VIEW_DELETION),
+            nullable: true,
         },
     ],
     columns: &["filename", "kind", "received_on", "size_bytes", "referenced"],
@@ -1572,6 +1998,78 @@ pub static VIEW_BOOKS_DOCUMENT_PAGE: View = View {
     hidden: &[],
 };
 
+/// The view of `BooksDocumentReference`.
+pub static VIEW_BOOKS_DOCUMENT_REFERENCE: View = View {
+    name: "BooksDocumentReference",
+    title: "label",
+    fields: &[
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "state",
+            label: "State",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "role",
+            label: "Role",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "revision_id",
+            label: "Revision ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "revision_no",
+            label: "Revision no",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "revision_state",
+            label: "Revision state",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "removed",
+            label: "Removed",
+            kind: FieldKind::Bool,
+            nullable: true,
+        },
+        ViewField {
+            name: "label",
+            label: "Label",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "class",
+            label: "Class",
+            kind: FieldKind::Enum { values: &["live", "permanent", "inactive"] },
+            nullable: false,
+        },
+    ],
+    columns: &["revision_no", "label", "state", "kind", "role"],
+    wide: &["removed", "class", "id"],
+    status: Some(Status { field: "state", roles: &[] }),
+    hidden: &[],
+};
+
 /// The view of `BooksDocumentStatement`.
 pub static VIEW_BOOKS_DOCUMENT_STATEMENT: View = View {
     name: "BooksDocumentStatement",
@@ -1593,6 +2091,48 @@ pub static VIEW_BOOKS_DOCUMENT_STATEMENT: View = View {
     columns: &[],
     wide: &[],
     status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksDocumentStatusEvent`.
+pub static VIEW_BOOKS_DOCUMENT_STATUS_EVENT: View = View {
+    name: "BooksDocumentStatusEvent",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["withdrawn", "reinstated"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "reason_code",
+            label: "Reason code",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "reason",
+            label: "Reason",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "created_at",
+            label: "Created at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "actor_id",
+            label: "Actor ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+    ],
+    columns: &["status"],
+    wide: &[],
+    status: Some(Status { field: "status", roles: &[] }),
     hidden: &[],
 };
 
@@ -1640,8 +2180,14 @@ pub static VIEW_BOOKS_EXEMPTION: View = View {
         ViewField {
             name: "counter_role",
             label: "Counter role",
-            kind: FieldKind::Enum { values: &["transfer_transit", "supplier_prepayment", "customer_prepayment", "vat_input", "vat_input_rc", "vat_output", "vat_output_rc", "vat_payable", "vat_non_deductible", "tax_receivable", "expense_default", "software_expense", "hosting_expense", "prof_fees", "travel_expense", "bank_charges", "income_default", "interest_income", "interest_expense", "fx_gain", "fx_loss", "rounding", "payroll_expense", "payroll_liability", "payroll_tax", "grant_liability", "grant_income", "loan_payable", "loan_receivable", "owner_capital", "owner_drawings", "accrued_expense", "prepaid_expense", "deferred_income", "opening_balance", "retained_earnings", "current_year_result", "discount_received", "discount_allowed", "writeoff", "bad_debt", "dividend_payable", "distribution_tax_expense", "distribution_tax_liability", "share_capital", "legal_reserve"] },
-            nullable: false,
+            kind: FieldKind::Enum { values: &["transfer_transit", "supplier_prepayment", "customer_prepayment", "vat_input", "vat_input_rc", "vat_output", "vat_output_rc", "vat_payable", "vat_non_deductible", "tax_receivable", "expense_default", "software_expense", "hosting_expense", "prof_fees", "travel_expense", "bank_charges", "income_default", "interest_income", "interest_expense", "fx_gain", "fx_loss", "rounding", "payroll_expense", "payroll_liability", "payroll_tax", "grant_liability", "grant_income", "loan_payable", "loan_receivable", "owner_capital", "owner_drawings", "accrued_expense", "prepaid_expense", "deferred_income", "opening_balance", "retained_earnings", "current_year_result", "discount_received", "discount_allowed", "writeoff", "bad_debt", "dividend_payable", "distribution_tax_expense", "distribution_tax_liability", "share_capital", "legal_reserve", "vat_output_oss", "vat_output_ioss", "vat_output_gb", "vat_input_gb", "vat_output_au", "vat_output_import", "vat_input_import", "vat_input_fixed_asset"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "counter_account_code",
+            label: "Counter account code",
+            kind: FieldKind::Text,
+            nullable: true,
         },
         ViewField {
             name: "reason",
@@ -1677,6 +2223,12 @@ pub static VIEW_BOOKS_GENERAL_LEDGER: View = View {
             name: "accounts",
             label: "Accounts",
             kind: FieldKind::Array(&VIEW_BOOKS_LEDGER_ACCOUNT),
+            nullable: false,
+        },
+        ViewField {
+            name: "hidden_corrections",
+            label: "Hidden corrections",
+            kind: FieldKind::Number,
             nullable: false,
         },
     ],
@@ -1962,6 +2514,12 @@ pub static VIEW_BOOKS_INVOICE: View = View {
             nullable: true,
         },
         ViewField {
+            name: "review_decision",
+            label: "Review decision",
+            kind: FieldKind::Object(&VIEW_BOOKS_INVOICE_REVIEW_DECISION),
+            nullable: true,
+        },
+        ViewField {
             name: "open_minor",
             label: "Open",
             kind: FieldKind::Money { currency_field: "currency" },
@@ -1973,11 +2531,209 @@ pub static VIEW_BOOKS_INVOICE: View = View {
             kind: FieldKind::Enum { values: &["unposted", "unpaid", "part_paid", "paid", "overdue"] },
             nullable: false,
         },
+        ViewField {
+            name: "posted_at",
+            label: "Posted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
     ],
     columns: &["number", "party_name", "invoice_date", "due_date", "gross_minor", "settlement_state"],
     wide: &["direction", "kind", "state", "open_minor", "reference_number", "id"],
     status: Some(Status { field: "settlement_state", roles: &[("paid", "ok"), ("part_paid", "warn"), ("unpaid", "warn"), ("overdue", "bad"), ("unposted", "muted")] }),
     hidden: &["sign", "origin"],
+};
+
+/// The view of `BooksInvoiceAllocation`.
+pub static VIEW_BOOKS_INVOICE_ALLOCATION: View = View {
+    name: "BooksInvoiceAllocation",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Enum { values: &["payment", "refund", "credit_offset", "prepayment_apply"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "origin",
+            label: "Origin",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "item_currency",
+            label: "Item currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "item_minor",
+            label: "Item",
+            kind: FieldKind::Money { currency_field: "item_currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "counter_currency",
+            label: "Counter currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "counter_minor",
+            label: "Counter",
+            kind: FieldKind::Money { currency_field: "counter_currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "effective_date",
+            label: "Effective date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "created_at",
+            label: "Created at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "bank_transaction_id",
+            label: "Bank transaction ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+    ],
+    columns: &["item_minor", "effective_date", "counter_minor", "kind"],
+    wide: &["id"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceBankAccount`.
+pub static VIEW_BOOKS_INVOICE_BANK_ACCOUNT: View = View {
+    name: "BooksInvoiceBankAccount",
+    title: "label",
+    fields: &[
+        ViewField {
+            name: "bank_account_id",
+            label: "Bank account ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "label",
+            label: "Label",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "iban",
+            label: "IBAN",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "bic",
+            label: "BIC",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["label", "iban", "currency"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceBankAccountProblem`.
+pub static VIEW_BOOKS_INVOICE_BANK_ACCOUNT_PROBLEM: View = View {
+    name: "BooksInvoiceBankAccountProblem",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "code",
+            label: "Code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "message",
+            label: "Message",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "bank_account_ids",
+            label: "Bank account IDs",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+    ],
+    columns: &["code"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceBankAccounts`.
+pub static VIEW_BOOKS_INVOICE_BANK_ACCOUNTS: View = View {
+    name: "BooksInvoiceBankAccounts",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "invoice_id",
+            label: "Invoice ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "revision_id",
+            label: "Revision ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "source",
+            label: "Source",
+            kind: FieldKind::Enum { values: &["override", "default", "automatic", "snapshot"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "bank_accounts",
+            label: "Bank accounts",
+            kind: FieldKind::Array(&VIEW_BOOKS_INVOICE_BANK_ACCOUNT),
+            nullable: false,
+        },
+        ViewField {
+            name: "problem",
+            label: "Problem",
+            kind: FieldKind::Object(&VIEW_BOOKS_INVOICE_BANK_ACCOUNT_PROBLEM),
+            nullable: true,
+        },
+    ],
+    columns: &["currency", "source"],
+    wide: &[],
+    status: None,
+    hidden: &[],
 };
 
 /// The view of `BooksInvoiceBaseVat`.
@@ -2286,6 +3042,12 @@ pub static VIEW_BOOKS_INVOICE_DETAIL: View = View {
             nullable: true,
         },
         ViewField {
+            name: "review_decision",
+            label: "Review decision",
+            kind: FieldKind::Object(&VIEW_BOOKS_INVOICE_REVIEW_DECISION),
+            nullable: true,
+        },
+        ViewField {
             name: "open_minor",
             label: "Open",
             kind: FieldKind::Money { currency_field: "currency" },
@@ -2296,6 +3058,12 @@ pub static VIEW_BOOKS_INVOICE_DETAIL: View = View {
             label: "Settlement state",
             kind: FieldKind::Enum { values: &["unposted", "unpaid", "part_paid", "paid", "overdue"] },
             nullable: false,
+        },
+        ViewField {
+            name: "posted_at",
+            label: "Posted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
         },
         ViewField {
             name: "revision",
@@ -2319,6 +3087,18 @@ pub static VIEW_BOOKS_INVOICE_DETAIL: View = View {
             name: "settlement",
             label: "Settlement",
             kind: FieldKind::Object(&VIEW_BOOKS_SETTLEMENT),
+            nullable: true,
+        },
+        ViewField {
+            name: "allocations",
+            label: "Allocations",
+            kind: FieldKind::Array(&VIEW_BOOKS_INVOICE_ALLOCATION),
+            nullable: false,
+        },
+        ViewField {
+            name: "migrated_from",
+            label: "Migrated from",
+            kind: FieldKind::Object(&VIEW_BOOKS_INVOICE_MIGRATED_FROM),
             nullable: true,
         },
     ],
@@ -2356,6 +3136,24 @@ pub static VIEW_BOOKS_INVOICE_DOCUMENT: View = View {
             label: "Kind",
             kind: FieldKind::Enum { values: &["invoice", "receipt", "credit_note", "statement", "contract", "other"] },
             nullable: false,
+        },
+        ViewField {
+            name: "file_id",
+            label: "File ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "download_url",
+            label: "Download URL",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "source",
+            label: "Source",
+            kind: FieldKind::Text,
+            nullable: true,
         },
     ],
     columns: &["filename", "role", "kind"],
@@ -2461,8 +3259,14 @@ pub static VIEW_BOOKS_INVOICE_LINE: View = View {
         },
         ViewField {
             name: "unit_price_minor",
-            label: "Unit price",
+            label: "Unit price amount",
             kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "unit_price",
+            label: "Unit price",
+            kind: FieldKind::Text,
             nullable: true,
         },
         ViewField {
@@ -2563,7 +3367,43 @@ pub static VIEW_BOOKS_INVOICE_LINE: View = View {
         },
     ],
     columns: &["description", "vat_code", "net_minor", "tax_minor", "gross_minor", "account_code"],
-    wide: &["line_no", "kind", "quantity", "unit_price_minor", "vat_rate_bps"],
+    wide: &["line_no", "kind", "quantity", "unit_price", "vat_rate_bps"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceMigratedFrom`.
+pub static VIEW_BOOKS_INVOICE_MIGRATED_FROM: View = View {
+    name: "BooksInvoiceMigratedFrom",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "system",
+            label: "System",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "ref",
+            label: "Ref",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "entry_id",
+            label: "Entry ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "open_line_id",
+            label: "Open line ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+    ],
+    columns: &["system", "ref"],
+    wide: &[],
     status: None,
     hidden: &[],
 };
@@ -2587,6 +3427,120 @@ pub static VIEW_BOOKS_INVOICE_PAGE: View = View {
         },
     ],
     columns: &["next_cursor"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceRemovedDocument`.
+pub static VIEW_BOOKS_INVOICE_REMOVED_DOCUMENT: View = View {
+    name: "BooksInvoiceRemovedDocument",
+    title: "filename",
+    fields: &[
+        ViewField {
+            name: "document_id",
+            label: "Document ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "role",
+            label: "Role",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "replaced_by_document_id",
+            label: "Replaced by document ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "reason_code",
+            label: "Reason code",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "reason",
+            label: "Reason",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "removed_at",
+            label: "Removed at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "actor_id",
+            label: "Actor ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "file_id",
+            label: "File ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "filename",
+            label: "Filename",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "replacement_file_id",
+            label: "Replacement file ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "replacement_filename",
+            label: "Replacement filename",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["filename", "removed_at", "role"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `BooksInvoiceReviewDecision`.
+pub static VIEW_BOOKS_INVOICE_REVIEW_DECISION: View = View {
+    name: "BooksInvoiceReviewDecision",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "decided_by",
+            label: "Decided by",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "decided_by_name",
+            label: "Decided by name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "decided_at",
+            label: "Decided at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "note",
+            label: "Note",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+    ],
+    columns: &["decided_at"],
     wide: &[],
     status: None,
     hidden: &[],
@@ -2772,6 +3726,12 @@ pub static VIEW_BOOKS_INVOICE_REVISION: View = View {
             nullable: true,
         },
         ViewField {
+            name: "review_decision",
+            label: "Review decision",
+            kind: FieldKind::Object(&VIEW_BOOKS_INVOICE_REVIEW_DECISION),
+            nullable: true,
+        },
+        ViewField {
             name: "reason",
             label: "Reason",
             kind: FieldKind::Text,
@@ -2780,6 +3740,30 @@ pub static VIEW_BOOKS_INVOICE_REVISION: View = View {
         ViewField {
             name: "customer_note",
             label: "Customer note",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "buyer_contact_name",
+            label: "Buyer contact name",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "order_number",
+            label: "Order number",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "contract_number",
+            label: "Contract number",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "buyer_reference",
+            label: "Buyer reference",
             kind: FieldKind::Text,
             nullable: true,
         },
@@ -2793,6 +3777,12 @@ pub static VIEW_BOOKS_INVOICE_REVISION: View = View {
             name: "language",
             label: "Language",
             kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "bank_account_ids",
+            label: "Bank account IDs",
+            kind: FieldKind::List,
             nullable: true,
         },
         ViewField {
@@ -2829,6 +3819,12 @@ pub static VIEW_BOOKS_INVOICE_REVISION: View = View {
             name: "documents",
             label: "Documents",
             kind: FieldKind::Array(&VIEW_BOOKS_INVOICE_DOCUMENT),
+            nullable: false,
+        },
+        ViewField {
+            name: "removed_documents",
+            label: "Removed documents",
+            kind: FieldKind::Array(&VIEW_BOOKS_INVOICE_REMOVED_DOCUMENT),
             nullable: false,
         },
     ],
@@ -2925,6 +3921,12 @@ pub static VIEW_BOOKS_LEDGER_ACCOUNT: View = View {
             name: "closing_base_minor",
             label: "Closing base",
             kind: FieldKind::Money { currency_field: "base_currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "hidden_corrections",
+            label: "Hidden corrections",
+            kind: FieldKind::Number,
             nullable: false,
         },
         ViewField {
@@ -3353,6 +4355,12 @@ pub static VIEW_BOOKS_PARTY: View = View {
             kind: FieldKind::Text,
             nullable: true,
         },
+        ViewField {
+            name: "roles",
+            label: "Roles",
+            kind: FieldKind::List,
+            nullable: false,
+        },
     ],
     columns: &["name", "kind", "reg_code", "vat_number", "country"],
     wide: &["vat_area", "is_confirmed", "id"],
@@ -3389,8 +4397,14 @@ pub static VIEW_BOOKS_PARTY_DEFAULTS: View = View {
             kind: FieldKind::Number,
             nullable: true,
         },
+        ViewField {
+            name: "language",
+            label: "Language",
+            kind: FieldKind::Enum { values: &["et", "en"] },
+            nullable: true,
+        },
     ],
-    columns: &["currency"],
+    columns: &["currency", "language"],
     wide: &[],
     status: None,
     hidden: &[],
@@ -3520,6 +4534,12 @@ pub static VIEW_BOOKS_PARTY_DETAIL: View = View {
             label: "Phone",
             kind: FieldKind::Text,
             nullable: true,
+        },
+        ViewField {
+            name: "roles",
+            label: "Roles",
+            kind: FieldKind::List,
+            nullable: false,
         },
         ViewField {
             name: "defaults",
@@ -4184,7 +5204,7 @@ pub static VIEW_BOOKS_VAT_CODE: View = View {
         ViewField {
             name: "treatment",
             label: "Treatment",
-            kind: FieldKind::Enum { values: &["standard", "reduced", "zero", "exempt", "out_of_scope", "rc_eu_services", "rc_eu_goods", "rc_domestic", "rc_non_eu", "foreign_vat", "oss", "unknown"] },
+            kind: FieldKind::Enum { values: &["standard", "reduced", "zero", "exempt", "out_of_scope", "rc_eu_services", "rc_eu_goods", "rc_domestic", "rc_non_eu", "foreign_vat", "oss", "foreign_scheme", "import", "unknown"] },
             nullable: false,
         },
         ViewField {
@@ -4227,6 +5247,36 @@ pub static VIEW_BOOKS_VAT_CODE: View = View {
             name: "exempt_category",
             label: "Exempt category",
             kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "special_scheme",
+            label: "Special scheme",
+            kind: FieldKind::Enum { values: &["oss_union", "ioss", "gb_vat", "au_gst"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "member_state",
+            label: "Member state",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "supply_kind",
+            label: "Supply kind",
+            kind: FieldKind::Enum { values: &["goods", "services"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "rate_type",
+            label: "Rate type",
+            kind: FieldKind::Enum { values: &["standard", "reduced", "zero"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "goods_location",
+            label: "Goods location",
+            kind: FieldKind::Enum { values: &["abroad", "in_country"] },
             nullable: true,
         },
         ViewField {
@@ -4325,9 +5375,15 @@ pub static VIEW_BOOKS_VAT_PREVIEW: View = View {
             kind: FieldKind::Number,
             nullable: false,
         },
+        ViewField {
+            name: "due_date",
+            label: "Due date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
     ],
-    columns: &["period_from", "period_to", "form", "base_currency"],
-    wide: &[],
+    columns: &["due_date", "period_from", "form", "base_currency"],
+    wide: &["period_to"],
     status: None,
     hidden: &[],
 };
@@ -4428,12 +5484,6 @@ pub static VIEW_COMPANY: View = View {
             nullable: false,
         },
         ViewField {
-            name: "organization_id",
-            label: "Organization ID",
-            kind: FieldKind::Ref,
-            nullable: false,
-        },
-        ViewField {
             name: "name",
             label: "Name",
             kind: FieldKind::Text,
@@ -4478,7 +5528,7 @@ pub static VIEW_COMPANY: View = View {
         ViewField {
             name: "state",
             label: "State",
-            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed"] },
+            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed", "deleted"] },
             nullable: false,
         },
         ViewField {
@@ -4507,8 +5557,8 @@ pub static VIEW_COMPANY: View = View {
         },
     ],
     columns: &["name", "registry_code", "legal_form", "vat_status", "state"],
-    wide: &["vat_number", "base_currency", "organization_id", "id"],
-    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad")] }),
+    wide: &["vat_number", "base_currency", "id"],
+    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad"), ("deleted", "muted")] }),
     hidden: &[],
 };
 
@@ -4521,12 +5571,6 @@ pub static VIEW_COMPANY_DETAIL: View = View {
             name: "id",
             label: "ID",
             kind: FieldKind::Id,
-            nullable: false,
-        },
-        ViewField {
-            name: "organization_id",
-            label: "Organization ID",
-            kind: FieldKind::Ref,
             nullable: false,
         },
         ViewField {
@@ -4574,7 +5618,7 @@ pub static VIEW_COMPANY_DETAIL: View = View {
         ViewField {
             name: "state",
             label: "State",
-            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed"] },
+            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed", "deleted"] },
             nullable: false,
         },
         ViewField {
@@ -4633,8 +5677,8 @@ pub static VIEW_COMPANY_DETAIL: View = View {
         },
     ],
     columns: &["name", "registry_code", "legal_form", "vat_status", "state"],
-    wide: &["vat_number", "base_currency", "organization_id", "id"],
-    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad")] }),
+    wide: &["vat_number", "base_currency", "id"],
+    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad"), ("deleted", "muted")] }),
     hidden: &[],
 };
 
@@ -4686,6 +5730,24 @@ pub static VIEW_COMPANY_STATUS: View = View {
             nullable: true,
         },
         ViewField {
+            name: "vat_months_not_checked",
+            label: "VAT months not checked",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "vat_not_checked_from",
+            label: "VAT not checked from",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "vat_not_checked_to",
+            label: "VAT not checked to",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
             name: "last_bank_import_at",
             label: "Last bank import at",
             kind: FieldKind::DateTime,
@@ -4716,8 +5778,8 @@ pub static VIEW_COMPANY_STATUS: View = View {
             nullable: false,
         },
     ],
-    columns: &["overdue_receivables_minor", "next_vat_due_date"],
-    wide: &[],
+    columns: &["overdue_receivables_minor", "next_vat_due_date", "vat_not_checked_from"],
+    wide: &["vat_not_checked_to"],
     status: None,
     hidden: &[],
 };
@@ -4794,6 +5856,480 @@ pub static VIEW_CREATE_PARTY_RESULT: View = View {
     hidden: &[],
 };
 
+/// The view of `Deletion`.
+pub static VIEW_DELETION: View = View {
+    name: "Deletion",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "deletable",
+            label: "Deletable",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "staff_deletable",
+            label: "Staff deletable",
+            kind: FieldKind::Bool,
+            nullable: true,
+        },
+        ViewField {
+            name: "blocked_by",
+            label: "Blocked by",
+            kind: FieldKind::Array(&VIEW_DELETION_BLOCKER),
+            nullable: false,
+        },
+    ],
+    columns: &["deletable", "staff_deletable"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `DeletionBlocker`.
+pub static VIEW_DELETION_BLOCKER: View = View {
+    name: "DeletionBlocker",
+    title: "label",
+    fields: &[
+        ViewField {
+            name: "code",
+            label: "Code",
+            kind: FieldKind::Enum { values: &["company_data_deleted", "document_legal_hold", "document_system", "document_in_use"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: true,
+        },
+        ViewField {
+            name: "state",
+            label: "State",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "label",
+            label: "Label",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+    ],
+    columns: &["code", "label", "state", "kind"],
+    wide: &["id"],
+    status: Some(Status { field: "state", roles: &[] }),
+    hidden: &[],
+};
+
+/// The view of `Employee`.
+pub static VIEW_EMPLOYEE: View = View {
+    name: "Employee",
+    title: "last_name",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "first_name",
+            label: "First name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "last_name",
+            label: "Last name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "personal_code",
+            label: "Personal code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "birth_date",
+            label: "Birth date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "citizenship",
+            label: "Citizenship",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "iban",
+            label: "IBAN",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "email",
+            label: "Email",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption",
+            label: "Basic exemption",
+            kind: FieldKind::Enum { values: &["none", "full", "partial"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption_minor",
+            label: "Basic exemption amount",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "pension_rate",
+            label: "Pension rate",
+            kind: FieldKind::Enum { values: &["none", "2", "4", "6"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "source",
+            label: "Source",
+            kind: FieldKind::Enum { values: &["oscar", "tor_external"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "employment_type",
+            label: "Employment type",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "start_date",
+            label: "Start date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "end_date",
+            label: "End date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["draft", "submitted", "approved", "registered", "rejected", "ended", "cancelled"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "registered_outside",
+            label: "Registered outside",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "created_at",
+            label: "Created at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+    ],
+    columns: &["last_name", "first_name", "personal_code", "employment_type", "start_date", "status"],
+    wide: &["end_date", "source", "registered_outside", "id"],
+    status: Some(Status { field: "status", roles: &[("registered", "ok"), ("submitted", "warn"), ("approved", "warn"), ("draft", "muted"), ("rejected", "bad"), ("ended", "muted")] }),
+    hidden: &[],
+};
+
+/// The view of `EmployeeDetail`.
+pub static VIEW_EMPLOYEE_DETAIL: View = View {
+    name: "EmployeeDetail",
+    title: "last_name",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "first_name",
+            label: "First name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "last_name",
+            label: "Last name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "personal_code",
+            label: "Personal code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "birth_date",
+            label: "Birth date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "citizenship",
+            label: "Citizenship",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "iban",
+            label: "IBAN",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "email",
+            label: "Email",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption",
+            label: "Basic exemption",
+            kind: FieldKind::Enum { values: &["none", "full", "partial"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption_minor",
+            label: "Basic exemption amount",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "pension_rate",
+            label: "Pension rate",
+            kind: FieldKind::Enum { values: &["none", "2", "4", "6"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "source",
+            label: "Source",
+            kind: FieldKind::Enum { values: &["oscar", "tor_external"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "employment_type",
+            label: "Employment type",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "start_date",
+            label: "Start date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "end_date",
+            label: "End date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["draft", "submitted", "approved", "registered", "rejected", "ended", "cancelled"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "registered_outside",
+            label: "Registered outside",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "created_at",
+            label: "Created at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "employments",
+            label: "Employments",
+            kind: FieldKind::Array(&VIEW_EMPLOYMENT),
+            nullable: false,
+        },
+        ViewField {
+            name: "absences",
+            label: "Absences",
+            kind: FieldKind::Array(&VIEW_ABSENCE),
+            nullable: false,
+        },
+    ],
+    columns: &["last_name", "first_name", "personal_code", "employment_type", "start_date", "status"],
+    wide: &["end_date", "source", "registered_outside", "id"],
+    status: Some(Status { field: "status", roles: &[("registered", "ok"), ("submitted", "warn"), ("approved", "warn"), ("draft", "muted"), ("rejected", "bad"), ("ended", "muted")] }),
+    hidden: &[],
+};
+
+/// The view of `Employment`.
+pub static VIEW_EMPLOYMENT: View = View {
+    name: "Employment",
+    title: "employment_type",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "toot_id",
+            label: "Toot ID",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "employment_type",
+            label: "Employment type",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "employment_type_name",
+            label: "Employment type name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "start_date",
+            label: "Start date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "end_date",
+            label: "End date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "end_reason_code",
+            label: "End reason code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "work_time_rate",
+            label: "Work time rate",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "occupation_code",
+            label: "Occupation code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "occupation_name",
+            label: "Occupation name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "workplace_address_id",
+            label: "Workplace address ID",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "workplace_address",
+            label: "Workplace address",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "contract_ref",
+            label: "Contract ref",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "gross_salary_minor",
+            label: "Gross salary",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "board_fee_minor",
+            label: "Board fee",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "suspensions",
+            label: "Suspensions",
+            kind: FieldKind::Array(&VIEW_SUSPENSION),
+            nullable: false,
+        },
+        ViewField {
+            name: "tor_state_code",
+            label: "Tor state code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "tor_state_name",
+            label: "Tor state name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "tor_seen_at",
+            label: "Tor seen at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "source",
+            label: "Source",
+            kind: FieldKind::Enum { values: &["oscar", "tor_external"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["draft", "submitted", "approved", "registered", "rejected", "ended", "cancelled"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "registered_outside",
+            label: "Registered outside",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+    ],
+    columns: &["employment_type", "start_date", "end_date", "status", "source", "toot_id"],
+    wide: &["work_time_rate", "occupation_code", "gross_salary_minor", "board_fee_minor", "id"],
+    status: Some(Status { field: "status", roles: &[("registered", "ok"), ("submitted", "warn"), ("approved", "warn"), ("draft", "muted"), ("rejected", "bad"), ("ended", "muted")] }),
+    hidden: &[],
+};
+
 /// The view of `ForwardingConfirmation`.
 pub static VIEW_FORWARDING_CONFIRMATION: View = View {
     name: "ForwardingConfirmation",
@@ -4827,6 +6363,36 @@ pub static VIEW_FORWARDING_CONFIRMATION: View = View {
     columns: &["status", "sent_at"],
     wide: &["forwarding_works"],
     status: Some(Status { field: "status", roles: &[] }),
+    hidden: &[],
+};
+
+/// The view of `HistoryMonth`.
+pub static VIEW_HISTORY_MONTH: View = View {
+    name: "HistoryMonth",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "month",
+            label: "Month",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "wages_minor",
+            label: "Wages",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "days",
+            label: "Days",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+    ],
+    columns: &["wages_minor"],
+    wide: &[],
+    status: None,
     hidden: &[],
 };
 
@@ -5202,12 +6768,6 @@ pub static VIEW_ME: View = View {
             nullable: false,
         },
         ViewField {
-            name: "organizations",
-            label: "Organizations",
-            kind: FieldKind::Array(&VIEW_ME_ORGANIZATION),
-            nullable: false,
-        },
-        ViewField {
             name: "companies",
             label: "Companies",
             kind: FieldKind::Array(&VIEW_ME_COMPANY),
@@ -5244,12 +6804,6 @@ pub static VIEW_ME_COMPANY: View = View {
             nullable: false,
         },
         ViewField {
-            name: "organization_id",
-            label: "Organization ID",
-            kind: FieldKind::Ref,
-            nullable: false,
-        },
-        ViewField {
             name: "name",
             label: "Name",
             kind: FieldKind::Text,
@@ -5276,13 +6830,25 @@ pub static VIEW_ME_COMPANY: View = View {
         ViewField {
             name: "state",
             label: "State",
-            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed"] },
+            kind: FieldKind::Enum { values: &["provisioning", "ready", "failed", "deleted"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "role",
+            label: "Role",
+            kind: FieldKind::Enum { values: &["owner", "member", "viewer"] },
+            nullable: true,
+        },
+        ViewField {
+            name: "is_member",
+            label: "Is member",
+            kind: FieldKind::Bool,
             nullable: false,
         },
     ],
     columns: &["name", "registry_code", "legal_form", "state"],
-    wide: &["vat_number", "organization_id", "id"],
-    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad")] }),
+    wide: &["vat_number", "id"],
+    status: Some(Status { field: "state", roles: &[("ready", "ok"), ("provisioning", "warn"), ("failed", "bad"), ("deleted", "muted")] }),
     hidden: &[],
 };
 
@@ -5333,45 +6899,45 @@ pub static VIEW_ME_FEATURES: View = View {
             kind: FieldKind::Bool,
             nullable: false,
         },
-    ],
-    columns: &["agent", "inbox"],
-    wide: &[],
-    status: None,
-    hidden: &[],
-};
-
-/// The view of `MeOrganization`.
-pub static VIEW_ME_ORGANIZATION: View = View {
-    name: "MeOrganization",
-    title: "name",
-    fields: &[
         ViewField {
-            name: "id",
-            label: "ID",
-            kind: FieldKind::Id,
+            name: "employees",
+            label: "Employees",
+            kind: FieldKind::Bool,
             nullable: false,
         },
         ViewField {
-            name: "name",
-            label: "Name",
-            kind: FieldKind::Text,
+            name: "payroll",
+            label: "Payroll",
+            kind: FieldKind::Bool,
             nullable: false,
         },
         ViewField {
-            name: "role",
-            label: "Role",
-            kind: FieldKind::Enum { values: &["owner", "member", "viewer"] },
-            nullable: true,
+            name: "kmd_submission",
+            label: "Kmd submission",
+            kind: FieldKind::Bool,
+            nullable: false,
         },
         ViewField {
-            name: "is_member",
-            label: "Is member",
+            name: "foreign_tax_gb",
+            label: "Foreign tax gb",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "foreign_tax_au",
+            label: "Foreign tax au",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "lightyear",
+            label: "Lightyear",
             kind: FieldKind::Bool,
             nullable: false,
         },
     ],
-    columns: &["name", "role"],
-    wide: &["is_member", "id"],
+    columns: &["agent", "inbox", "employees", "payroll", "kmd_submission", "foreign_tax_gb"],
+    wide: &["foreign_tax_au", "lightyear"],
     status: None,
     hidden: &[],
 };
@@ -5418,10 +6984,10 @@ pub static VIEW_ME_USER: View = View {
     hidden: &[],
 };
 
-/// The view of `Organization`.
-pub static VIEW_ORGANIZATION: View = View {
-    name: "Organization",
-    title: "name",
+/// The view of `NetPayment`.
+pub static VIEW_NET_PAYMENT: View = View {
+    name: "NetPayment",
+    title: "",
     fields: &[
         ViewField {
             name: "id",
@@ -5430,45 +6996,39 @@ pub static VIEW_ORGANIZATION: View = View {
             nullable: false,
         },
         ViewField {
-            name: "name",
-            label: "Name",
+            name: "state",
+            label: "State",
             kind: FieldKind::Text,
             nullable: false,
         },
         ViewField {
-            name: "role",
-            label: "Role",
-            kind: FieldKind::Enum { values: &["owner", "member", "viewer"] },
+            name: "effective_date",
+            label: "Effective date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "amount_minor",
+            label: "Amount",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "bank_transaction_id",
+            label: "Bank transaction ID",
+            kind: FieldKind::Ref,
             nullable: true,
         },
-        ViewField {
-            name: "permissions",
-            label: "Permissions",
-            kind: FieldKind::List,
-            nullable: false,
-        },
-        ViewField {
-            name: "companies",
-            label: "Companies",
-            kind: FieldKind::Array(&VIEW_COMPANY),
-            nullable: false,
-        },
-        ViewField {
-            name: "created_at",
-            label: "Created at",
-            kind: FieldKind::DateTime,
-            nullable: false,
-        },
-        ViewField {
-            name: "updated_at",
-            label: "Updated at",
-            kind: FieldKind::DateTime,
-            nullable: false,
-        },
     ],
-    columns: &["name", "role"],
+    columns: &["state", "amount_minor", "effective_date", "currency"],
     wide: &["id"],
-    status: None,
+    status: Some(Status { field: "state", roles: &[] }),
     hidden: &[],
 };
 
@@ -5481,6 +7041,30 @@ pub static VIEW_PAGINATED_COMPANY_LIST: View = View {
             name: "items",
             label: "Items",
             kind: FieldKind::Array(&VIEW_COMPANY),
+            nullable: false,
+        },
+        ViewField {
+            name: "next_cursor",
+            label: "Next cursor",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+    ],
+    columns: &["next_cursor"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `PaginatedEmployeeList`.
+pub static VIEW_PAGINATED_EMPLOYEE_LIST: View = View {
+    name: "PaginatedEmployeeList",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "items",
+            label: "Items",
+            kind: FieldKind::Array(&VIEW_EMPLOYEE),
             nullable: false,
         },
         ViewField {
@@ -5520,15 +7104,15 @@ pub static VIEW_PAGINATED_INBOUND_EMAIL_LIST: View = View {
     hidden: &[],
 };
 
-/// The view of `PaginatedOrganizationList`.
-pub static VIEW_PAGINATED_ORGANIZATION_LIST: View = View {
-    name: "PaginatedOrganizationList",
+/// The view of `PaginatedPayRunList`.
+pub static VIEW_PAGINATED_PAY_RUN_LIST: View = View {
+    name: "PaginatedPayRunList",
     title: "",
     fields: &[
         ViewField {
             name: "items",
             label: "Items",
-            kind: FieldKind::Array(&VIEW_ORGANIZATION),
+            kind: FieldKind::Array(&VIEW_PAY_RUN),
             nullable: false,
         },
         ViewField {
@@ -5564,6 +7148,396 @@ pub static VIEW_PAGINATED_STORED_DOCUMENT_LIST: View = View {
     ],
     columns: &["next_cursor"],
     wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `PaginatedSubmissionList`.
+pub static VIEW_PAGINATED_SUBMISSION_LIST: View = View {
+    name: "PaginatedSubmissionList",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "items",
+            label: "Items",
+            kind: FieldKind::Array(&VIEW_SUBMISSION),
+            nullable: false,
+        },
+        ViewField {
+            name: "next_cursor",
+            label: "Next cursor",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+    ],
+    columns: &["next_cursor"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `PayRun`.
+pub static VIEW_PAY_RUN: View = View {
+    name: "PayRun",
+    title: "month",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "month",
+            label: "Month",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "payday",
+            label: "Payday",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["draft", "approved", "posting", "posted"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_count",
+            label: "Employee count",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "gross_minor",
+            label: "Gross",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "net_minor",
+            label: "Net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "withheld_minor",
+            label: "Withheld",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "employer_tax_minor",
+            label: "Employer tax",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "expense_minor",
+            label: "Expense",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "open_net_minor",
+            label: "Open net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "calculation_error",
+            label: "Calculation error",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "pay_run_id",
+            label: "Pay run ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "approved_at",
+            label: "Approved at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "posted_at",
+            label: "Posted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+    ],
+    columns: &["month", "status", "payday", "employee_count", "net_minor", "open_net_minor"],
+    wide: &["gross_minor", "employer_tax_minor", "expense_minor", "id"],
+    status: Some(Status { field: "status", roles: &[("posted", "ok"), ("approved", "warn"), ("draft", "muted")] }),
+    hidden: &[],
+};
+
+/// The view of `PayRunDetail`.
+pub static VIEW_PAY_RUN_DETAIL: View = View {
+    name: "PayRunDetail",
+    title: "month",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "month",
+            label: "Month",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "payday",
+            label: "Payday",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["draft", "approved", "posting", "posted"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_count",
+            label: "Employee count",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "gross_minor",
+            label: "Gross",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "net_minor",
+            label: "Net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "withheld_minor",
+            label: "Withheld",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "employer_tax_minor",
+            label: "Employer tax",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "expense_minor",
+            label: "Expense",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "open_net_minor",
+            label: "Open net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "calculation_error",
+            label: "Calculation error",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "pay_run_id",
+            label: "Pay run ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "approved_at",
+            label: "Approved at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "posted_at",
+            label: "Posted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "employees",
+            label: "Employees",
+            kind: FieldKind::Array(&VIEW_PAY_RUN_EMPLOYEE),
+            nullable: false,
+        },
+    ],
+    columns: &["month", "status", "payday", "employee_count", "net_minor", "open_net_minor"],
+    wide: &["gross_minor", "employer_tax_minor", "expense_minor", "id"],
+    status: Some(Status { field: "status", roles: &[("posted", "ok"), ("approved", "warn"), ("draft", "muted")] }),
+    hidden: &[],
+};
+
+/// The view of `PayRunEmployee`.
+pub static VIEW_PAY_RUN_EMPLOYEE: View = View {
+    name: "PayRunEmployee",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_id",
+            label: "Employee ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_name",
+            label: "Employee name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "currency",
+            label: "Currency",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "salary_minor",
+            label: "Salary",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "bonus_minor",
+            label: "Bonus",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "board_fee_minor",
+            label: "Board fee",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "fringe_benefit_minor",
+            label: "Fringe benefit",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: false,
+        },
+        ViewField {
+            name: "fringe_benefit_code",
+            label: "Fringe benefit code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "holiday_days",
+            label: "Holiday days",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "sick_leaves",
+            label: "Sick leaves",
+            kind: FieldKind::Array(&VIEW_SICK_LEAVE),
+            nullable: false,
+        },
+        ViewField {
+            name: "pay_history",
+            label: "Pay history",
+            kind: FieldKind::Array(&VIEW_HISTORY_MONTH),
+            nullable: true,
+        },
+        ViewField {
+            name: "pension_rate_bps",
+            label: "Pension rate",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption",
+            label: "Basic exemption",
+            kind: FieldKind::Enum { values: &["none", "full", "partial"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "basic_exemption_minor",
+            label: "Basic exemption amount",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "social_tax_minimum",
+            label: "Social tax minimum",
+            kind: FieldKind::Enum { values: &["full", "prorated", "none"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "social_tax_minimum_days",
+            label: "Social tax minimum days",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "unemployment_insurance_employee",
+            label: "Unemployment insurance employee",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "gross_minor",
+            label: "Gross",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "net_minor",
+            label: "Net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "open_net_minor",
+            label: "Open net",
+            kind: FieldKind::Money { currency_field: "currency" },
+            nullable: true,
+        },
+        ViewField {
+            name: "payments",
+            label: "Payments",
+            kind: FieldKind::Array(&VIEW_NET_PAYMENT),
+            nullable: false,
+        },
+    ],
+    columns: &["gross_minor", "net_minor", "currency", "basic_exemption", "social_tax_minimum"],
+    wide: &["unemployment_insurance_employee", "id"],
     status: None,
     hidden: &[],
 };
@@ -5688,6 +7662,240 @@ pub static VIEW_RECORD_INVOICE_RESULT: View = View {
     hidden: &[],
 };
 
+/// The view of `SetDefaultInvoiceBankAccountsOutcome`.
+pub static VIEW_SET_DEFAULT_INVOICE_BANK_ACCOUNTS_OUTCOME: View = View {
+    name: "SetDefaultInvoiceBankAccountsOutcome",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "command",
+            label: "Command",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "command_id",
+            label: "Command ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "commit_seq",
+            label: "Commit seq",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "replayed",
+            label: "Replayed",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "result",
+            label: "Result",
+            kind: FieldKind::Object(&VIEW_SET_DEFAULT_INVOICE_BANK_ACCOUNTS_RESULT),
+            nullable: false,
+        },
+    ],
+    columns: &["command", "commit_seq", "replayed"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SetDefaultInvoiceBankAccountsResult`.
+pub static VIEW_SET_DEFAULT_INVOICE_BANK_ACCOUNTS_RESULT: View = View {
+    name: "SetDefaultInvoiceBankAccountsResult",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "bank_account_ids",
+            label: "Bank account IDs",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+        ViewField {
+            name: "changed",
+            label: "Changed",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+    ],
+    columns: &["changed"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SetInvoiceBankAccountsOutcome`.
+pub static VIEW_SET_INVOICE_BANK_ACCOUNTS_OUTCOME: View = View {
+    name: "SetInvoiceBankAccountsOutcome",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "command",
+            label: "Command",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "command_id",
+            label: "Command ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "commit_seq",
+            label: "Commit seq",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "replayed",
+            label: "Replayed",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "result",
+            label: "Result",
+            kind: FieldKind::Object(&VIEW_SET_INVOICE_BANK_ACCOUNTS_RESULT),
+            nullable: false,
+        },
+    ],
+    columns: &["command", "commit_seq", "replayed"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SetInvoiceBankAccountsResult`.
+pub static VIEW_SET_INVOICE_BANK_ACCOUNTS_RESULT: View = View {
+    name: "SetInvoiceBankAccountsResult",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "bank_account_ids",
+            label: "Bank account IDs",
+            kind: FieldKind::List,
+            nullable: true,
+        },
+        ViewField {
+            name: "changed",
+            label: "Changed",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "invoice_id",
+            label: "Invoice ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "revision_id",
+            label: "Revision ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+    ],
+    columns: &["changed"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SetPartyAddressOutcome`.
+pub static VIEW_SET_PARTY_ADDRESS_OUTCOME: View = View {
+    name: "SetPartyAddressOutcome",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "command",
+            label: "Command",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "command_id",
+            label: "Command ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "commit_seq",
+            label: "Commit seq",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "replayed",
+            label: "Replayed",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "result",
+            label: "Result",
+            kind: FieldKind::Object(&VIEW_SET_PARTY_ADDRESS_RESULT),
+            nullable: false,
+        },
+    ],
+    columns: &["command", "commit_seq", "replayed"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SetPartyAddressResult`.
+pub static VIEW_SET_PARTY_ADDRESS_RESULT: View = View {
+    name: "SetPartyAddressResult",
+    title: "address",
+    fields: &[
+        ViewField {
+            name: "address",
+            label: "Address",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "party_id",
+            label: "Party ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+    ],
+    columns: &["address"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `SickLeave`.
+pub static VIEW_SICK_LEAVE: View = View {
+    name: "SickLeave",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "from_day",
+            label: "From day",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "to_day",
+            label: "To day",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+    ],
+    columns: &["from_day", "to_day"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
 /// The view of `SkippedAttachment`.
 pub static VIEW_SKIPPED_ATTACHMENT: View = View {
     name: "SkippedAttachment",
@@ -5795,9 +8003,525 @@ pub static VIEW_STORED_DOCUMENT: View = View {
             kind: FieldKind::DateTime,
             nullable: false,
         },
+        ViewField {
+            name: "deleted_at",
+            label: "Deleted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
     ],
     columns: &["name", "kind", "received_on", "size_bytes", "content_type"],
     wide: &["origin", "uploaded_by", "created_at", "id"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `StoredDocumentDetail`.
+pub static VIEW_STORED_DOCUMENT_DETAIL: View = View {
+    name: "StoredDocumentDetail",
+    title: "name",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Enum { values: &["invoice", "receipt", "credit_note", "statement", "contract", "other"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "name",
+            label: "Name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "content_type",
+            label: "Content type",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "size_bytes",
+            label: "Size",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "sha256",
+            label: "SHA-256",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "received_on",
+            label: "Received on",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "core_document_id",
+            label: "Core document ID",
+            kind: FieldKind::Ref,
+            nullable: true,
+        },
+        ViewField {
+            name: "bank_transaction_ids",
+            label: "Bank transaction IDs",
+            kind: FieldKind::List,
+            nullable: false,
+        },
+        ViewField {
+            name: "uploaded_by",
+            label: "Uploaded by",
+            kind: FieldKind::Text,
+            nullable: true,
+        },
+        ViewField {
+            name: "origin",
+            label: "Origin",
+            kind: FieldKind::Object(&VIEW_INBOX_ORIGIN),
+            nullable: true,
+        },
+        ViewField {
+            name: "created_at",
+            label: "Created at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "deleted_at",
+            label: "Deleted at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "deletion",
+            label: "Deletion",
+            kind: FieldKind::Object(&VIEW_DELETION),
+            nullable: false,
+        },
+    ],
+    columns: &["name", "kind", "received_on", "size_bytes", "content_type"],
+    wide: &["origin", "uploaded_by", "created_at", "id"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `Submission`.
+pub static VIEW_SUBMISSION: View = View {
+    name: "Submission",
+    title: "kind",
+    fields: &[
+        ViewField {
+            name: "id",
+            label: "ID",
+            kind: FieldKind::Id,
+            nullable: false,
+        },
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Enum { values: &["new_employee", "new_employment", "change", "suspension", "end"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "status",
+            label: "Status",
+            kind: FieldKind::Enum { values: &["submitted", "approved", "registered", "applied", "rejected"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "event_date",
+            label: "Event date",
+            kind: FieldKind::Date,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_id",
+            label: "Employee ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "employee_name",
+            label: "Employee name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "employment_id",
+            label: "Employment ID",
+            kind: FieldKind::Ref,
+            nullable: false,
+        },
+        ViewField {
+            name: "data",
+            label: "Data",
+            kind: FieldKind::Json,
+            nullable: false,
+        },
+        ViewField {
+            name: "names",
+            label: "Names",
+            kind: FieldKind::Object(&VIEW_SUBMISSION_NAMES),
+            nullable: false,
+        },
+        ViewField {
+            name: "submitted_at",
+            label: "Submitted at",
+            kind: FieldKind::DateTime,
+            nullable: false,
+        },
+        ViewField {
+            name: "submitted_by_staff",
+            label: "Submitted by staff",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+        ViewField {
+            name: "reviewed_at",
+            label: "Reviewed at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "review_reason",
+            label: "Review reason",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "toot_id",
+            label: "Toot ID",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "tor_messages",
+            label: "Tor messages",
+            kind: FieldKind::Array(&VIEW_TOR_MESSAGE),
+            nullable: false,
+        },
+        ViewField {
+            name: "tor_error_code",
+            label: "Tor error code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "registered_at",
+            label: "Registered at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+    ],
+    columns: &["kind", "status", "event_date", "employee_name", "submitted_at", "review_reason"],
+    wide: &["employment_id", "tor_error_code", "reviewed_at", "id"],
+    status: Some(Status { field: "status", roles: &[("registered", "ok"), ("applied", "ok"), ("submitted", "warn"), ("approved", "warn"), ("rejected", "bad")] }),
+    hidden: &[],
+};
+
+/// The view of `SubmissionNames`.
+pub static VIEW_SUBMISSION_NAMES: View = View {
+    name: "SubmissionNames",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "occupation_name",
+            label: "Occupation name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "workplace_address",
+            label: "Workplace address",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["occupation_name", "workplace_address"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `Suspension`.
+pub static VIEW_SUSPENSION: View = View {
+    name: "Suspension",
+    title: "",
+    fields: &[
+        ViewField {
+            name: "suspension_id",
+            label: "Suspension ID",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "start",
+            label: "Start",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "end",
+            label: "End",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "reason_code",
+            label: "Reason code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "reason_name",
+            label: "Reason name",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["start", "end"],
+    wide: &[],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `TaxAccountBalance`.
+pub static VIEW_TAX_ACCOUNT_BALANCE: View = View {
+    name: "TaxAccountBalance",
+    title: "access_status",
+    fields: &[
+        ViewField {
+            name: "access_status",
+            label: "Access status",
+            kind: FieldKind::Enum { values: &["never", "ok", "rights_missing", "failed"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "access_error_code",
+            label: "Access error code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "last_attempt_at",
+            label: "Last attempt at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "last_success_at",
+            label: "Last success at",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "as_of",
+            label: "As of",
+            kind: FieldKind::DateTime,
+            nullable: true,
+        },
+        ViewField {
+            name: "request_date",
+            label: "Request date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "total",
+            label: "Total",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "interest",
+            label: "Interest",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "prepayment_balance",
+            label: "Prepayment balance",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "account_balances",
+            label: "Account balances",
+            kind: FieldKind::Json,
+            nullable: false,
+        },
+        ViewField {
+            name: "claims",
+            label: "Claims",
+            kind: FieldKind::Array(&VIEW_TAX_ACCOUNT_CLAIM),
+            nullable: false,
+        },
+        ViewField {
+            name: "notices",
+            label: "Notices",
+            kind: FieldKind::Array(&VIEW_TAX_ACCOUNT_NOTICE),
+            nullable: false,
+        },
+        ViewField {
+            name: "refresh_pending",
+            label: "Refresh pending",
+            kind: FieldKind::Bool,
+            nullable: false,
+        },
+    ],
+    columns: &["as_of", "access_status", "total", "interest", "prepayment_balance"],
+    wide: &["request_date", "last_success_at", "last_attempt_at", "access_error_code"],
+    status: Some(Status { field: "access_status", roles: &[("ok", "ok"), ("never", "muted"), ("rights_missing", "warn"), ("failed", "bad")] }),
+    hidden: &[],
+};
+
+/// The view of `TaxAccountClaim`.
+pub static VIEW_TAX_ACCOUNT_CLAIM: View = View {
+    name: "TaxAccountClaim",
+    title: "tax_period_code",
+    fields: &[
+        ViewField {
+            name: "claim_type_code",
+            label: "Claim type code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "tax_period_code",
+            label: "Tax period code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "document_nr",
+            label: "Document nr",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "document_type_code",
+            label: "Document type code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "claim_identifier",
+            label: "Claim identifier",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "balance",
+            label: "Balance",
+            kind: FieldKind::Number,
+            nullable: true,
+        },
+        ViewField {
+            name: "tax_period_end",
+            label: "Tax period end",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "due_date",
+            label: "Due date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+    ],
+    columns: &["tax_period_code", "claim_type_code", "document_type_code", "balance", "due_date"],
+    wide: &["document_nr", "claim_identifier", "tax_period_end"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `TaxAccountNotice`.
+pub static VIEW_TAX_ACCOUNT_NOTICE: View = View {
+    name: "TaxAccountNotice",
+    title: "kind",
+    fields: &[
+        ViewField {
+            name: "kind",
+            label: "Kind",
+            kind: FieldKind::Enum { values: &["debt", "claim_due_soon"] },
+            nullable: false,
+        },
+        ViewField {
+            name: "amount",
+            label: "Amount",
+            kind: FieldKind::Number,
+            nullable: false,
+        },
+        ViewField {
+            name: "due_date",
+            label: "Due date",
+            kind: FieldKind::Date,
+            nullable: true,
+        },
+        ViewField {
+            name: "claim_type_code",
+            label: "Claim type code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "tax_period_code",
+            label: "Tax period code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "document_nr",
+            label: "Document nr",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["kind", "amount", "due_date", "claim_type_code", "tax_period_code"],
+    wide: &["document_nr"],
+    status: None,
+    hidden: &[],
+};
+
+/// The view of `TorMessage`.
+pub static VIEW_TOR_MESSAGE: View = View {
+    name: "TorMessage",
+    title: "description",
+    fields: &[
+        ViewField {
+            name: "type",
+            label: "Type",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "field",
+            label: "Field",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "code",
+            label: "Code",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+        ViewField {
+            name: "description",
+            label: "Description",
+            kind: FieldKind::Text,
+            nullable: false,
+        },
+    ],
+    columns: &["code", "description"],
+    wide: &[],
     status: None,
     hidden: &[],
 };

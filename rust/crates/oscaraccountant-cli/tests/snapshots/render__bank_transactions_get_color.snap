@@ -29,6 +29,9 @@ expression: bank-transactions get 01J90000000000000000000029 --company cmp000000
 [90mSuspense residual[0m     0.01 EUR
 [90mHas document[0m          [90mno[0m
 [90mFile IDs[0m              file_ids
+[90mRetractable[0m           [90mno[0m
+
+[1mBooked invoices that fit[0m [2m(none)[0m
 
 [1mEntries[0m [2m(1)[0m
   [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE KIND[0m
@@ -84,6 +87,9 @@ expression: bank-transactions get 01J90000000000000000000029 --company cmp000000
 [90mSuspense residual[0m     0.01 EUR
 [90mHas document[0m          [90mno[0m
 [90mFile IDs[0m              file_ids
+[90mRetractable[0m           [90mno[0m
+
+[1mBooked invoices that fit[0m [2m(none)[0m
 
 [1mEntries[0m [2m(1)[0m
   [1mENTRY NO[0m  [1mSTATE[0m     [1mECONOMIC DATE[0m  [1mJOURNAL[0m    [1mSOURCE KIND[0m

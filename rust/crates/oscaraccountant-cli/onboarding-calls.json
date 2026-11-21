@@ -9,8 +9,6 @@
       "request": [],
       "response": [
         "user.email",
-        "organizations[].id",
-        "organizations[].name",
         "companies[].id",
         "companies[].name",
         "cli_min_version"
@@ -29,7 +27,6 @@
         "company.id",
         "company.name",
         "company.registry_code",
-        "company.organization.name",
         "blocked_reason",
         "draft.registry_code"
       ]
@@ -46,10 +43,15 @@
         "books_software",
         "books_software_other",
         "website",
-        "no_website"
+        "no_website",
+        "is_pep",
+        "is_pep_related",
+        "pep_details"
       ],
       "response": [
         "draft.registry_code",
+        "draft.is_pep",
+        "draft.is_pep_related",
         "draft.books_today",
         "draft.website",
         "draft.prefill.registry_code",
@@ -132,6 +134,7 @@
         "supplier_countries",
         "expected_turnover",
         "cash_usage",
+        "cash_share_percent",
         "uses_crypto_assets",
         "needs_licence",
         "licence_description",
@@ -139,6 +142,9 @@
         "residence_countries",
         "e_resident",
         "estonia_reason",
+        "bearer_shares",
+        "trust_in_chain",
+        "nominees",
         "startup_funds_source",
         "acts_for_others",
         "acts_for_others_reason",
@@ -148,6 +154,7 @@
         "register_website",
         "asked.estonia_reason",
         "asked.startup_funds_source",
+        "asked.structure",
         "register_activity",
         "register_activity_names.code",
         "register_activity_names.en",
@@ -168,6 +175,7 @@
         "supplier_countries",
         "expected_turnover",
         "cash_usage",
+        "cash_share_percent",
         "uses_crypto_assets",
         "needs_licence",
         "licence_description",
@@ -175,6 +183,9 @@
         "residence_countries",
         "e_resident",
         "estonia_reason",
+        "bearer_shares",
+        "trust_in_chain",
+        "nominees",
         "startup_funds_source",
         "acts_for_others",
         "acts_for_others_reason",
@@ -182,7 +193,8 @@
       ],
       "response": [
         "asked.estonia_reason",
-        "asked.startup_funds_source"
+        "asked.startup_funds_source",
+        "asked.structure"
       ]
     },
     {
@@ -198,6 +210,7 @@
         "supplier_countries",
         "expected_turnover",
         "cash_usage",
+        "cash_share_percent",
         "uses_crypto_assets",
         "needs_licence",
         "licence_description",
@@ -205,6 +218,9 @@
         "residence_countries",
         "e_resident",
         "estonia_reason",
+        "bearer_shares",
+        "trust_in_chain",
+        "nominees",
         "startup_funds_source",
         "acts_for_others",
         "acts_for_others_reason",
@@ -257,6 +273,7 @@
       "request": [
         "language",
         "consent",
+        "consent_text",
         "is_pep",
         "is_pep_related",
         "pep_details"

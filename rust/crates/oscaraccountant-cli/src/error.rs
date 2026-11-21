@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn a_body_that_is_not_a_problem_is_summed_up() {
-        // Self-test N2-2: the whole Django 404 page after `error: 404 unknown:`.
+        // Regression: the whole HTML 404 page after `error: 404 unknown:`.
         let page = format!(
             "<!DOCTYPE html>\n<html><head><title>Page not found at /api/companies/me/</title></head><body>{}</body></html>",
             "<p>line</p>\n".repeat(400)

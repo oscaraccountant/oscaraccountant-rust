@@ -1,0 +1,46 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employee-submissions get sub0000001 --company cmp0000001
+---
+=== 80 columns
+[1mnew employee[0m  [32m● [0m[32mregistered[0m
+
+[90mEvent date[0m          2026-09-01
+[90mEmployee name[0m       Mari Mock
+[90mSubmitted at[0m        2026-08-25
+[90mSubmitted by staff[0m  [90mno[0m
+[90mReviewed at[0m         2026-08-26
+[90mToot ID[0m             123456
+[90mRegistered at[0m       2026-08-26
+
+[1mData[0m
+  [90mEmployee[0m    Mari Mock
+  [90mEmployment[0m  1
+
+[1mTor messages[0m [2m(none)[0m
+
+[2mMeta[0m
+  [2mID             sub0000001[0m
+  [2mEmployee ID    emp0000001[0m
+  [2mEmployment ID  emt0000001[0m
+=== 120 columns
+[1mnew employee[0m  [32m● [0m[32mregistered[0m
+
+[90mEvent date[0m          2026-09-01
+[90mEmployee name[0m       Mari Mock
+[90mSubmitted at[0m        2026-08-25
+[90mSubmitted by staff[0m  [90mno[0m
+[90mReviewed at[0m         2026-08-26
+[90mToot ID[0m             123456
+[90mRegistered at[0m       2026-08-26
+
+[1mData[0m
+  [90mEmployee[0m    Mari Mock
+  [90mEmployment[0m  1
+
+[1mTor messages[0m [2m(none)[0m
+
+[2mMeta[0m
+  [2mID             sub0000001[0m
+  [2mEmployee ID    emp0000001[0m
+  [2mEmployment ID  emt0000001[0m

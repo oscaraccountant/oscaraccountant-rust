@@ -48,7 +48,8 @@ test('says what to do when the binary is missing', () => {
   const message = shim.missingMessage('linux', 'x64', '@oscaraccountant/cli-linux-x64');
   assert.match(message, /@oscaraccountant\/cli-linux-x64 is not installed/);
   assert.match(message, /npm\/cli\/issues\/4828/);
-  assert.match(message, /npx @oscaraccountant\/cli@0\.1\.0/);
+  const version = require('../cli/package.json').version;
+  assert.ok(message.includes(`npx @oscaraccountant/cli@${version}`));
   assert.match(shim.missingMessage('sunos', 'x64', null), /no oscar binary for sunos-x64/);
   assert.equal(shim.version(), require('../cli/package.json').version);
   const run = runShim(['--version'], { OSCAR_CLI_BINARY: '' });

@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: pay-runs list --company cmp0000001
+---
+=== 80 columns
+[1mMONTH[0m    [1mSTATUS[0m    [1mPAYDAY[0m      [1mEMPLOYEE COUNT[0m           [1mNET[0m  [1mOPEN NET[0m
+2026-09  [32m● [0m[32mposted[0m  2026-10-05               1  2 050.40 EUR  0.00 EUR
+2026-10  [90m● [0m[90mdraft[0m   2026-11-05               1
+=== 120 columns
+[1mMONTH[0m    [1mSTATUS[0m    [1mPAYDAY[0m      [1mEMPLOYEE COUNT[0m           [1mNET[0m  [1mOPEN NET[0m
+2026-09  [32m● [0m[32mposted[0m  2026-10-05               1  2 050.40 EUR  0.00 EUR
+2026-10  [90m● [0m[90mdraft[0m   2026-11-05               1

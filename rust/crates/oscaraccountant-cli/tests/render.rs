@@ -28,7 +28,12 @@ const COMMANDS: &[(&str, &[&str])] = &[
     ("vat_codes_list", &["vat-codes", "list"]),
     ("files_list", &["files", "list"]),
     ("inbox_list_emails", &["inbox", "list-emails"]),
-    ("organizations_list", &["organizations", "list"]),
+    ("employees_list", &["employees", "list"]),
+    (
+        "employee_submissions_list",
+        &["employee-submissions", "list"],
+    ),
+    ("pay_runs_list", &["pay-runs", "list"]),
     ("companies_list", &["companies", "list"]),
     (
         "bank_transactions_get",
@@ -43,17 +48,24 @@ const COMMANDS: &[(&str, &[&str])] = &[
         &["invoices", "get", "01J90000000000000000000116"],
     ),
     (
+        "invoices_bank_accounts",
+        &["invoices", "bank-accounts", "01J90000000000000000000116"],
+    ),
+    (
         "parties_get",
         &["parties", "get", "01J90000000000000000000179"],
     ),
     ("files_get", &["files", "get", "fil0000001"]),
-    ("companies_get", &["companies", "get"]),
+    ("employees_get", &["employees", "get", "emp0000001"]),
     (
-        "organizations_get",
-        &["organizations", "get", "--organization", "org0000001"],
+        "employee_submissions_get",
+        &["employee-submissions", "get", "sub0000001"],
     ),
+    ("pay_runs_get", &["pay-runs", "get", "pyr0000001"]),
+    ("companies_get", &["companies", "get"]),
     ("me", &["me"]),
     ("inbox", &["inbox"]),
+    ("tax_account_balance", &["tax-account", "balance"]),
     (
         "general_ledger",
         &[
@@ -129,13 +141,8 @@ async fn every_list_and_detail_command() {
     let (_mock, mut user) = logged_in().await;
     for (name, args) in COMMANDS {
         let mut args: Vec<&str> = args.to_vec();
-        if !matches!(args[0], "organizations" | "companies" | "me")
-            || (args[0] == "companies" && args[1] == "get")
-        {
+        if !matches!(args[0], "companies" | "me") || (args[0] == "companies" && args[1] == "get") {
             args.extend(["--company", COMPANY]);
-        }
-        if args[0] == "companies" && args[1] == "list" {
-            args.extend(["--organization", "org0000001"]);
         }
         for color in [false, true] {
             let mut text = String::new();
@@ -263,8 +270,8 @@ async fn output_options() {
 
 #[tokio::test]
 async fn a_write_takes_the_short_id_and_names_its_object() {
-    // Self-test P1-5: `oscar invoices issue KTHAGV0H` gave a 404 although `get` took it.
-    // Self-test P2-16: the success line named the short id, not the number, and no amount.
+    // Regression: `oscar invoices issue KTHAGV0H` gave a 404 although `get` took it.
+    // Regression: the success line named the short id, not the number, and no amount.
     let (mock, user) = logged_in().await;
     let full = "01J90000000000000000000116";
     for (method, data) in [("issue", "{}"), ("cancel", r#"{"reason": "x"}"#)] {
@@ -349,5 +356,130 @@ async fn a_write_prints_one_success_line() {
         run.stderr.starts_with("v Cancelled invoice"),
         "{}",
         run.stderr
+    );
+}
+
+/// A bank transaction of the payments to explain, as a server with receipt states answers it.
+fn payment(
+    id: &str,
+    date: &str,
+    name: &str,
+    total_minor: i64,
+    state: &str,
+    detail: Option<&str>,
+) -> serde_json::Value {
+    let candidates = if state == "invoice_not_matched" {
+        serde_json::json!([{"invoice_id": "01J90000000000000000000116", "number": "INV-0042"}])
+    } else {
+        serde_json::json!([])
+    };
+    serde_json::json!({
+        "id": id, "bank_account_id": "01J90000000000000000000001",
+        "bank_account_label": "Main account", "currency": "EUR", "booking_date": date,
+        "direction": "out", "amount_minor": total_minor, "fee_minor": 0,
+        "total_minor": total_minor, "counterparty_name": name, "description": "Card payment",
+        "status": "unmatched", "has_document": detail.is_some(), "file_ids": [],
+        "receipt_state": state, "receipt_detail": detail, "match_proposal_id": null,
+        "matched_invoice_candidates": candidates,
+    })
+}
+
+/// The coverage of the payments to explain: one account with a gap month, one with no bank
+/// lines, one bank feed account the books do not have.
+fn coverage() -> serde_json::Value {
+    serde_json::json!({
+        "accounts": [
+            {"bank_account_id": "01J90000000000000000000001", "name": "Main account",
+             "iban": "EE001", "currency": "EUR", "transaction_count": 120,
+             "first_booking_date": "2026-09-01", "last_booking_date": "2026-11-18",
+             "booked_months": ["2026-09", "2026-11"], "gap_months": ["2026-10"]}
+        ],
+        "uncovered_accounts": [
+            {"bank_account_id": "01J90000000000000000000002", "name": "Savings account",
+             "iban": "EE003", "currency": "EUR", "reason": "no_bank_lines"},
+            {"bank_account_id": null, "name": "Broker account", "iban": "EE004",
+             "currency": "EUR", "reason": "feed_not_linked"}
+        ],
+        "checked_from": "2026-09-01",
+        "checked_to": "2026-11-18"
+    })
+}
+
+/// Script the two pages of the payments to explain, `times` times each.
+async fn script_payments_to_explain(mock: &Mock, times: usize) {
+    let first = serde_json::json!({
+        "items": [
+            payment("01J90000000000000000000801", "2026-09-04", "Example SMS Inc", -1896,
+                    "invoice_not_matched", None),
+            payment("01J90000000000000000000802", "2026-09-02", "Example Cloud Ltd", -4321,
+                    "receipt_not_booked", Some("review")),
+        ],
+        "next_cursor": "c2",
+        "coverage": coverage(),
+    });
+    let second = serde_json::json!({
+        "items": [payment("01J90000000000000000000803", "2026-09-01", "Example Hosting OÜ",
+                          -990, "missing", None)],
+        "next_cursor": null,
+        "coverage": coverage(),
+    });
+    let mut responses = Vec::new();
+    for _ in 0..times {
+        for page in [&first, &second] {
+            responses.push(serde_json::json!({
+                "match": {"operation_id": "books_bank_transactions_list"},
+                "response": {"status": 200, "body": {"kind": "json", "value": page}},
+            }));
+        }
+    }
+    mock.control(
+        "POST",
+        "/_mock/responses",
+        Some(serde_json::json!({ "responses": responses })),
+    )
+    .await;
+}
+
+#[tokio::test]
+async fn the_payments_to_explain_with_their_receipt_and_coverage() {
+    let (mock, mut user) = logged_in().await;
+    let args = [
+        "bank-transactions",
+        "list",
+        "--to-explain",
+        "true",
+        "--all",
+        "--company",
+        COMPANY,
+    ];
+    // A table at 80 and 120 columns: the receipt of each payment, then the coverage.
+    script_payments_to_explain(&mock, 2).await;
+    let mut text = String::new();
+    for columns in ["80", "120"] {
+        text.push_str(&format!("=== {columns} columns\n"));
+        text.push_str(&shown(&mut user, &args, columns, false).await);
+    }
+    insta::assert_snapshot!("bank_transactions_to_explain", text, &args.join(" "));
+
+    // `--json` with `--all`: every item, and the coverage of the first page.
+    script_payments_to_explain(&mock, 1).await;
+    let mut json_args = args.to_vec();
+    json_args.push("--json");
+    let page = user.run(&json_args).await.expect(0).json();
+    assert_eq!(page["items"].as_array().map(Vec::len), Some(3), "{page}");
+    assert_eq!(page["next_cursor"], serde_json::Value::Null);
+    assert_eq!(page["coverage"], coverage());
+
+    // NDJSON: one payment per line, no coverage line.
+    script_payments_to_explain(&mock, 1).await;
+    let mut ndjson_args = args.to_vec();
+    ndjson_args.extend(["-o", "ndjson"]);
+    let run = user.run(&ndjson_args).await.expect(0);
+    let lines: Vec<&str> = run.stdout.lines().collect();
+    assert_eq!(lines.len(), 3, "{}", run.stdout);
+    assert!(
+        lines.iter().all(|line| line.contains("\"receipt_state\"")),
+        "{}",
+        run.stdout
     );
 }

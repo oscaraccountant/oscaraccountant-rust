@@ -6,6 +6,7 @@ use clap::ArgMatches;
 use serde_json::json;
 
 use super::string;
+use crate::cli;
 use crate::company;
 use crate::error::{CliError, LOGIN_HINT, Result};
 use crate::render;
@@ -14,7 +15,9 @@ use crate::session::App;
 /// Resolve `<x>` (an id, a registry code, or the start of a name) and store it as the default
 /// company of the profile.
 pub async fn use_company(app: &mut App, leaf: &ArgMatches) -> Result<()> {
-    let value = string(leaf, "company").unwrap_or_default().to_owned();
+    let value = string(leaf, cli::COMPANY_POSITIONAL)
+        .unwrap_or_default()
+        .to_owned();
     let selection = app.select(&app.config()?)?;
     if let Some(refused) = &selection.refused {
         return Err(CliError::usage(refused.clone()));
@@ -51,7 +54,6 @@ mod tests {
     use serde_json::Map;
 
     use super::*;
-    use crate::cli;
     use crate::company::tests::company;
     use crate::config::{AuthKind, Config, Profile};
     use crate::session::tests::app;
@@ -74,7 +76,6 @@ mod tests {
             Profile {
                 base_url: "https://a.test".into(),
                 auth: AuthKind::ApiKey,
-                organization: None,
                 company: Some("c1".into()),
                 companies: Some(vec![
                     company("c1", "Alpha OÜ", "11111111"),

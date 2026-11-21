@@ -15,7 +15,9 @@ expression: documents get 01J90000000000000000000096 --company cmp0000001
 [90mRetention until[0m  2026-09-01
 [90mLegal hold[0m       [90mno[0m
 [90mReferenced[0m       [90mno[0m
+[90mWithdrawn[0m        [90mno[0m
 [90mDownload URL[0m     download_url
+[90mWithdrawable[0m     any
 
 [1mInvoices[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mROLE[0m
@@ -32,6 +34,14 @@ expression: documents get 01J90000000000000000000096 --company cmp0000001
 [1mVAT returns[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mPERIOD FROM[0m  [1mFORM[0m
             1  2026-09-01   form
+
+[1mReferences[0m [2m(1)[0m
+  [1mLABEL[0m     [1mKIND[0m
+  [2m00000303[0m  kind
+
+[1mStatus events[0m [2m(1)[0m
+  [1mSTATUS[0m
+  [2m● [0mwithdrawn
 
 [2mMeta[0m
   [2mID          01J90000000000000000000096[0m
@@ -50,7 +60,9 @@ expression: documents get 01J90000000000000000000096 --company cmp0000001
 [90mRetention until[0m  2026-09-01
 [90mLegal hold[0m       [90mno[0m
 [90mReferenced[0m       [90mno[0m
+[90mWithdrawn[0m        [90mno[0m
 [90mDownload URL[0m     download_url
+[90mWithdrawable[0m     any
 
 [1mInvoices[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mROLE[0m
@@ -67,6 +79,14 @@ expression: documents get 01J90000000000000000000096 --company cmp0000001
 [1mVAT returns[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mPERIOD FROM[0m  [1mFORM[0m
             1  2026-09-01   form
+
+[1mReferences[0m [2m(1)[0m
+  [1mLABEL[0m     [1mKIND[0m
+  [2m00000303[0m  kind
+
+[1mStatus events[0m [2m(1)[0m
+  [1mSTATUS[0m
+  [2m● [0mwithdrawn
 
 [2mMeta[0m
   [2mID          01J90000000000000000000096[0m

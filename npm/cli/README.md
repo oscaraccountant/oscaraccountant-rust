@@ -11,7 +11,7 @@ npx @oscaraccountant/cli invoices list --all
 Or install it once: `npm install --global @oscaraccountant/cli`, then run `oscar`.
 
 `oscar login` stores its credential in the keychain of the OS. On a server or
-in CI, set `OSCAR_API_KEY` to an organization API key instead: it wins over
+in CI, set `OSCAR_API_KEY` to a company API key instead: it wins over
 the login.
 
 The package holds a small Node script. The binary itself comes in one optional package per

@@ -1,0 +1,5 @@
+---
+source: crates/oscaraccountant-cli/tests/cli.rs
+expression: run.stderr
+---
+error: Give the company once: `12345678` or -c `alpha`, not both.

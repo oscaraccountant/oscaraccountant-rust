@@ -11,9 +11,17 @@ use wiremock::matchers::{
 };
 use wiremock::{Mock, MockServer, Request, ResponseTemplate};
 
-fn organization(id: &str) -> serde_json::Value {
-    json!({"id": id, "name": "Org", "role": null, "permissions": [], "companies": [],
-           "created_at": "2026-09-27T10:00:00Z", "updated_at": "2026-09-27T10:00:00Z"})
+fn company(id: &str) -> serde_json::Value {
+    json!({"id": id, "name": format!("Company {id}"), "registry_code": "12345678", "vat_number": "",
+           "vat_status": "unregistered", "vat_status_from": null, "legal_form": "ou",
+           "files_tsd_monthly": false, "state": "ready", "core_company_id": null, "base_currency": "EUR",
+           "created_at": "2026-09-27T10:00:00Z", "updated_at": "2026-09-27T10:00:00Z",
+           "role": "owner", "permissions": [], "view_as": "owner", "refresh_pending": false,
+           "status": {"bank_lines_to_classify": 0, "payments_to_explain": 0, "documents_to_book": 0,
+                      "pending_proposals": 0, "open_periods": 0, "vat_returns_due": 0,
+                      "next_vat_due_date": null, "last_bank_import_at": null, "overdue_receivables": 0,
+                      "overdue_receivables_minor": 0, "refreshed_at": null, "refresh_error": "",
+                      "vat_months_not_checked": 0, "vat_not_checked_from": null, "vat_not_checked_to": null}})
 }
 
 fn builder(server: &MockServer) -> ClientBuilder {
@@ -28,14 +36,14 @@ fn builder(server: &MockServer) -> ClientBuilder {
 async fn a_get_over_http() {
     let server = MockServer::start().await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/"))
+        .and(path("/api/companies/"))
         .and(query_param("limit", "10"))
         .and(header("authorization", "Bearer osk_test"))
         .and(header("accept", "application/json"))
         .and(header_exists("user-agent"))
         .respond_with(
             ResponseTemplate::new(200)
-                .set_body_json(json!({"items": [organization("o1")], "next_cursor": null})),
+                .set_body_json(json!({"items": [company("o1")], "next_cursor": null})),
         )
         .expect(1)
         .mount(&server)
@@ -43,7 +51,7 @@ async fn a_get_over_http() {
     let page = builder(&server)
         .build()
         .unwrap()
-        .organizations()
+        .companies()
         .list()
         .limit(10)
         .send()
@@ -81,7 +89,7 @@ async fn a_json_post_with_its_key() {
 async fn a_problem_and_a_retry() {
     let server = MockServer::start().await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/o1/"))
+        .and(path("/api/companies/o1/"))
         .respond_with(
             ResponseTemplate::new(503)
                 .insert_header("x-request-id", "req-1")
@@ -96,28 +104,17 @@ async fn a_problem_and_a_retry() {
         .mount(&server)
         .await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/o1/"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(organization("o1")))
+        .and(path("/api/companies/o1/"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(company("o1")))
         .mount(&server)
         .await;
     let client = builder(&server).build().unwrap();
     assert_eq!(
-        client
-            .organizations()
-            .retrieve("o1")
-            .send()
-            .await
-            .unwrap()
-            .id,
+        client.companies().retrieve("o1").send().await.unwrap().id,
         "o1"
     );
 
-    let error = client
-        .organizations()
-        .retrieve("o2")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o2").send().await.unwrap_err();
     assert!(matches!(error, Error::NotFound(_)));
     assert_eq!(error.code(), Some("unknown"));
     assert_eq!(server.received_requests().await.unwrap().len(), 3);
@@ -184,28 +181,28 @@ async fn an_upload_and_a_download() {
 async fn every_page_over_http() {
     let server = MockServer::start().await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/"))
+        .and(path("/api/companies/"))
         .and(query_param("cursor", "c2"))
         .respond_with(
             ResponseTemplate::new(200)
-                .set_body_json(json!({"items": [organization("o2")], "next_cursor": null})),
+                .set_body_json(json!({"items": [company("o2")], "next_cursor": null})),
         )
         .with_priority(1)
         .mount(&server)
         .await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/"))
+        .and(path("/api/companies/"))
         .and(query_param_is_missing("cursor"))
         .respond_with(
             ResponseTemplate::new(200)
-                .set_body_json(json!({"items": [organization("o1")], "next_cursor": "c2"})),
+                .set_body_json(json!({"items": [company("o1")], "next_cursor": "c2"})),
         )
         .mount(&server)
         .await;
     let items: Vec<_> = builder(&server)
         .build()
         .unwrap()
-        .organizations()
+        .companies()
         .list()
         .stream()
         .try_collect()

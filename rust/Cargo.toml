@@ -8,7 +8,7 @@ resolver = "3"
 
 [workspace.package]
 # Equal to the file VERSION of the clients. A test of the SDK checks it.
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 # A MINIMUM, not a pin. The SDK builds with 1.87 on the locked tree (the
 # transitive yoke-derive 0.8 needs 1.87); the tests need 1.88 (wiremock).

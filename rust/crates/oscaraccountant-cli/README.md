@@ -10,8 +10,10 @@ npx @oscaraccountant/cli invoices list --all
 
 `cargo install oscaraccountant-cli` installs the same binary.
 
-Log in once in the browser with `oscar login`. The login stores your
-organization and a default company (it asks which one when it sees several):
+Log in once in the browser with `oscar login`. On the consent page, choose
+the companies the login may reach (with one company, there is no choice).
+The login stores those companies and a default company (it asks which one
+when it sees several):
 
 ```bash
 oscar whoami
@@ -20,13 +22,13 @@ oscar invoices list --all --json
 oscar companies use <COMPANY>   # change the default company
 ```
 
-With `OSCAR_API_KEY` set to an organization API key instead, no profile holds
-the organization or the company, so give them on each call (or set
-`OSCAR_COMPANY`):
+With `OSCAR_API_KEY` set to a company API key instead, no profile holds
+the company, so give it on each call (or set `OSCAR_COMPANY`):
 
 ```bash
-oscar companies list --organization <ORGANIZATION_ID>
+oscar companies list
 oscar invoices list --all --json --company <COMPANY>
+oscar -c <COMPANY> invoices list
 ```
 
 `<COMPANY>` is the id of a company, its registry code, or the start of its
@@ -45,7 +47,7 @@ repository `oscaraccountant-rust`. This file says how the CLI applies it.
 |---|---|
 | `oscar login` | Opens the browser (`$BROWSER` when set) and waits at most 5 minutes for the redirect to `http://127.0.0.1:<port>/callback`. It prints the URL when no browser opens. The browser then lands on the page `/cli/done` of the web app (or `/cli/error?reason=<code>`); a server with no such page gets a plain page of the CLI |
 | `oscar login --device` | Prints a code and a URL to open on another device, and on a terminal a QR code of the URL with the code in it, then polls. The default when no display is found (Linux with no `DISPLAY` and no `WAYLAND_DISPLAY`, or any SSH session) |
-| `oscar login --api-key` | Reads an organization API key from a prompt that does not echo on a terminal, else from standard input |
+| `oscar login --api-key` | Reads a company API key from a prompt that does not echo on a terminal, else from standard input |
 | `oscar logout` | Revokes the refresh token, then deletes the secret and the profile |
 
 `--profile NAME`, `--base-url URL`, `--scope read|write` and
@@ -65,7 +67,8 @@ On a terminal with no flag, `oscar login` asks, in order:
    the registry code and the state. `-c/--company <x>` answers it.
 
 A spinner runs while the CLI waits for the browser or the device. The last
-line is `✓ Logged in as <email> · <organization> · company <name>`.
+line is `✓ Logged in as <email> · <n> companies · company <name>`; the number
+of companies shows only when the login reaches more than one.
 
 ### No prompt: `--no-input`
 
@@ -83,16 +86,19 @@ Several: the picker on a terminal; with no terminal the previous default
 stays, else no company is chosen and the CLI says how to choose one. None:
 the CLI offers `oscar onboard`.
 
-`-c/--company <x>` on every company command, and `OSCAR_COMPANY`, take the
-id of a company, its registry code, or a unique, case-insensitive start of
-its name (`-c alpha`). An ambiguous value is a usage error that lists the
+`-c/--company <x>` on every company command (also before the command:
+`oscar -c alpha invoices list`), and `OSCAR_COMPANY`, take the id of a
+company, its registry code, or a unique, case-insensitive start of its name
+(`-c alpha`). A `-c` after the command wins over one before it. An ambiguous value is a usage error that lists the
 matches. The cache answers first; a value it does not know reads
 `/api/me/` again and stores the fresh list.
 
 | Command | Does |
 |---|---|
+| `oscar companies list` | Lists the companies of the login (`GET /api/companies/`), with no question and no default company |
+| `oscar companies get [<x>]` | Shows a company: `<x>`, else `-c`, else the default |
 | `oscar companies use <x>` | Makes the company the default of the profile |
-| `oscar whoami` | Shows the user, the organizations, the companies and the default company |
+| `oscar whoami` | Shows the user, the companies and the default company |
 | `oscar config set company <id>` | Sets the default company by id, with no check |
 
 The success line of a write names the company:
@@ -146,14 +152,18 @@ of commands is generated from the OpenAPI document of the public API by
   `revise`.
 - `-c/--company` defaults to `OSCAR_COMPANY`, then to the company of the
   profile (`oscar companies use <x>`); it takes an id, a registry code or the
-  start of a name (see "Companies"). `--organization` defaults to the
-  organization of the profile.
+  start of a name (see "Companies"). `oscar companies list` needs no
+  company.
+- A list with an `--ordering` (invoices, documents, bank transactions)
+  shows the newest first unless `--ordering` says otherwise.
 - A query parameter is a flag: `--state issued --limit 50`. The CLI checks
   numbers, booleans and dates before the call.
 - A JSON body is `--data '<json>'`, `--data @file.json` or `--data -`.
 - A command that accepts an `Idempotency-Key` sends one automatically;
   `--idempotency-key` gives your own.
-- `--all` walks every page of a list.
+- `--all` walks every page of a list. With `--json`, the answer is one
+  page: every item, `next_cursor` `null`, and the other fields of the
+  first page (the `coverage` of the payments to explain).
 - `oscar files upload <PATH> [--kind ...]` and
   `oscar files download <FILE_ID> [-o PATH|-]` are hand-written.
 - `oscar api <METHOD> <PATH> [--data ...]` calls any path with the stored
@@ -197,6 +207,25 @@ API, unchanged.
 | `--jq <expr>` | Filter the JSON with a jq expression (jaq); a string prints as it is |
 | `--template <text>` | Print with a template (minijinja): `'{{ number }} {{ state }}'`. On a list it runs once per item, unless it names `items` |
 
+#### Missing receipts
+
+`oscar bank-transactions list --to-explain true --all` lists the payments
+that are not booked yet. The column `RECEIPT` says what each one needs:
+
+| `RECEIPT` | `receipt_state` | Meaning |
+|---|---|---|
+| `missing` | `missing` | No receipt and no booked invoice: upload the receipt |
+| `received, not booked` | `receipt_not_booked` | A receipt is uploaded, and the books do not hold it yet (`receipt_detail` says why) |
+| `invoice booked, not matched` | `invoice_not_matched` | A booked invoice fits the payment; only the match is missing |
+
+After the table, the CLI prints what the answer was checked against: the
+range of the bank lines of each bank account (`DD.MM.YYYY`), the months
+with no lines, and the accounts with no bank lines. Months and accounts
+outside this range are not checked. The JSON holds the same in `coverage`.
+`-o ndjson` prints the payments only, one per line: read `coverage` with
+`--json` or `--jq .coverage`. A server that does not send these fields
+prints the list as before.
+
 Colours follow `NO_COLOR` (off) and `CLICOLOR_FORCE` (on, also in a pipe).
 `TERM=dumb` and a locale that is not UTF-8 give ASCII symbols. A terminal
 that supports them gets links to the web app (OSC 8); `FORCE_HYPERLINK=1`
@@ -219,7 +248,7 @@ is not done. `oscar onboard status` prints the steps.
 
 | Step | Where | Flags |
 |---|---|---|
-| 0. Account | Log in (`oscar login`). The CLI asks first whether you have a company in Oscar. No company yet (new, or a sign-up that stopped before the company): the CLI opens the onboarding in the browser for the account and the company, then logs in. A login whose consent page has no organization to offer takes the same path | |
+| 0. Account | Log in (`oscar login`). The CLI asks first whether you have a company in Oscar. No company yet (new, or a sign-up that stopped before the company): the CLI opens the onboarding in the browser for the account and the company, then logs in. A login whose consent page has no company to offer takes the same path | |
 | 1. Your company | The Business Register search with autocomplete, the register data, the books answers, the website, the written confirmation of the beneficial owners | `--registry-code`, `--books-today`, `--books-no-reason`, `--books-software`, `--books-software-other`, `--website` or `--no-website`, `--confirm-owners` |
 | 2. About your business | The questions one at a time, a review, then the submission | `--answers <file.json>`, `--answer key=value` (repeat it) |
 | 3. Verify your identity | The privacy notices and the PEP question; the Didit link and its QR code, in the browser or on a phone; the CLI waits for the result. Every other person who must verify is listed | `--consent`, `--pep`, `--pep-related`, `--pep-details`, `--invite-links`, `--language` |
@@ -227,12 +256,13 @@ is not done. `oscar onboard status` prints the steps.
 | 5. Choose your plan | The prices, then Checkout in the browser; the CLI waits for the payment | `--plan month` or `--plan year` |
 | 6. Set up | The checklist with the state of each item and the link to the web app | |
 
-- A company in a new organization needs a new login: the CLI runs
-  `oscar login` again after step 1, so the login reaches the new company.
+- A new company needs a new login: a login reaches only the companies chosen
+  on its consent page, so the CLI runs `oscar login` again after step 1, and
+  you choose the new company there.
 - One onboarding is open at a time, as in the web app: `--registry-code`
   of another company is refused until the open one is done. An onboarding
-  open in another organization than the login's is named with that
-  organization; in a terminal the CLI offers the login to it.
+  open for a company the login does not reach is named with that company;
+  in a terminal the CLI offers the login to reach it.
 - `--no-wait` prints the link of a browser step and stops; run
   `oscar onboard` again later.
 - With no terminal, or with `--no-input`, a missing answer is a usage error
@@ -260,59 +290,9 @@ When the server answers that the text changed, the new version opens to be
 read again. `oscar onboard agreement --download [PATH]` saves the PDF of the
 acceptance.
 
-## Build and test
+## Contributing
 
-From `rust/`:
-
-```bash
-cargo fmt --check
-cargo clippy --all-targets -- -D warnings
-cargo test -p oscaraccountant-cli           # unit tests and the CLI suite
-cargo llvm-cov -p oscaraccountant-cli --summary-only --ignore-filename-regex '[/\\]generated[/\\]'
-```
-
-The CLI suite (`tests/cli.rs`) runs the real binary against
-the mock server of the API, which it starts with `uv run`. The mock server
-is not in the public repository, so run `cargo test -p oscaraccountant-cli --bins`
-there. So `uv` must be on
-`PATH`. It covers the three logins, refresh, logout, the file store, every
-command in JSON and table form, and the exit codes. Two variables change it:
-
-| Variable | Effect |
-|---|---|
-| `OSCAR_CLI_BIN` | Test this binary instead of the one Cargo built (a musl or a cross-built binary) |
-| `OSCAR_MOCK_SERVER_DIR` | The directory of the mock server project |
-
-`OSCAR_FORCE_TTY=1` makes the CLI print tables when standard output is not a
-terminal. The suite uses it to check the table form. `OSCAR_NOW=<RFC 3339>`
-fixes the time of a run, for relative times in a test.
-
-`tests/onboard.rs` runs `oscar onboard` against the scripted onboarding of
-the mock server: every step with flags and no terminal, the stops, and the
-agreement pager in a pseudo terminal (Unix only). `OSCAR_POLL_INTERVAL_MS`
-and `OSCAR_POLL_TIMEOUT_SECS` set how often and how long the CLI waits for
-Didit and Checkout. `onboarding-calls.json` lists every hand-written call of
-the onboarding; a unit test keeps it equal to the code
-(`OSCAR_UPDATE_MANIFEST=1 cargo test -p oscaraccountant-cli manifest` writes
-it), and the server checks it against its schema.
-
-`tests/render.rs` keeps a snapshot (`insta`) of every list and detail
-command at 80 and 120 columns, with and without colour, against the
-fixtures of the mock server. `cargo insta review` shows a change.
-
-The release binaries are built by `scripts/build-cli.mjs`, and the npm
-packages by `npm/scripts/assemble.mjs`.
-
-## Build constraints
-
-- The `keyring` crate has pure-Rust backends only (`apple-native`,
-  `windows-native`, `async-secret-service` with `crypto-rust` and `tokio`),
-  so the Linux binary is a static musl build with no `libdbus`.
-- No `openssl-sys` and no `aws-lc-sys`: `cargo tree -p oscaraccountant-cli
-  --target all -i openssl-sys` must find no package. TLS is rustls with ring,
-  and the CLI trusts the certificate store of the platform.
-- The keychain calls block, so they run on the blocking threads of tokio
-  (the Secret Service backend starts its own runtime, and panics inside a
-  tokio task).
+The source, the build and the tests are at
+<https://github.com/oscaraccountant/oscaraccountant-rust>.
 
 MIT License, copyright OscarAI OÜ.

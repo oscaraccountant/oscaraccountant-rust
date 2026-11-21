@@ -19,17 +19,19 @@ expression: me
   [90mScopes[0m     read, write
   [90mStaff key[0m  [90mno[0m
 
-[1mOrganizations[0m [2m(1)[0m
-  [1mNAME[0m                  [1mROLE[0m
-  Mock Organization OÜ  owner
-
 [1mCompanies[0m [2m(1)[0m
   [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mSTATE[0m
   Mock Company OÜ  12345678       OÜ          [32m● [0m[32mready[0m
 
 [1mFeatures[0m
-  [90mAgent[0m  [90mno[0m
-  [90mInbox[0m  [90mno[0m
+  [90mAgent[0m           [90mno[0m
+  [90mInbox[0m           [90mno[0m
+  [90mEmployees[0m       [90mno[0m
+  [90mPayroll[0m         [90mno[0m
+  [90mKmd submission[0m  [90mno[0m
+  [90mForeign tax gb[0m  [90mno[0m
+  [90mForeign tax au[0m  [90mno[0m
+  [90mLightyear[0m       [90mno[0m
 === 120 columns
 [90mHas TOTP[0m            [90mno[0m
 [90mStaff MFA required[0m  [90mno[0m
@@ -47,14 +49,16 @@ expression: me
   [90mScopes[0m     read, write
   [90mStaff key[0m  [90mno[0m
 
-[1mOrganizations[0m [2m(1)[0m
-  [1mNAME[0m                  [1mROLE[0m
-  Mock Organization OÜ  owner
-
 [1mCompanies[0m [2m(1)[0m
   [1mNAME[0m             [1mREGISTRY CODE[0m  [1mLEGAL FORM[0m  [1mSTATE[0m
   Mock Company OÜ  12345678       OÜ          [32m● [0m[32mready[0m
 
 [1mFeatures[0m
-  [90mAgent[0m  [90mno[0m
-  [90mInbox[0m  [90mno[0m
+  [90mAgent[0m           [90mno[0m
+  [90mInbox[0m           [90mno[0m
+  [90mEmployees[0m       [90mno[0m
+  [90mPayroll[0m         [90mno[0m
+  [90mKmd submission[0m  [90mno[0m
+  [90mForeign tax gb[0m  [90mno[0m
+  [90mForeign tax au[0m  [90mno[0m
+  [90mLightyear[0m       [90mno[0m

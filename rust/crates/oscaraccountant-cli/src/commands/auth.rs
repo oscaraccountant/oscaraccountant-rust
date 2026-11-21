@@ -55,16 +55,16 @@ pub async fn status(app: &mut App) -> Result<()> {
         Ok(Credential::OAuth(session)) => session.expires_at().await,
         _ => None,
     };
+    let json = app.json();
     let status = json!({
         "profile": name,
         "base_url": profile.base_url,
         "auth": profile.auth.as_str(),
-        "organization": profile.organization.as_ref().map(|org| json!({"id": org.id, "name": org.name})),
+        "companies": profile.company_summaries(),
         "company": profile.company,
         "store": location.as_ref().map(ToString::to_string),
         "expires_at": expires_at,
     });
-    let json = app.json();
     app.out.value(&status, json);
     if location.is_none() {
         return Err(CliError::auth(format!(

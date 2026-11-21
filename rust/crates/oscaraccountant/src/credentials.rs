@@ -43,7 +43,7 @@ where
 /// How a client authenticates.
 #[derive(Clone)]
 pub enum Credential {
-    /// An organization API key (`osk_...`).
+    /// A company API key (`osk_...`).
     ApiKey(String),
     /// A callback that gives an access token before each request.
     TokenProvider(Arc<dyn TokenProvider>),

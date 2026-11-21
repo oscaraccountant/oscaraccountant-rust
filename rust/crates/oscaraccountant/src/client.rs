@@ -108,7 +108,7 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// An organization API key. It wins over `OSCAR_API_KEY`.
+    /// A company API key. It wins over `OSCAR_API_KEY`.
     pub fn api_key(mut self, key: impl Into<String>) -> Self {
         self.credential = Some(Credential::ApiKey(key.into()));
         self
@@ -537,7 +537,7 @@ mod tests {
     use futures::StreamExt;
 
     use super::*;
-    use crate::PaginatedOrganizationList;
+    use crate::PaginatedCompanyList;
 
     /// Answers every request with `status` and `body`, and records the requests.
     #[derive(Default)]
@@ -622,12 +622,12 @@ mod tests {
             .unwrap_err();
         assert!(matches!(error, Error::Config(_)));
         let items: Vec<_> = client
-            .paginate::<PaginatedOrganizationList>(spec("/api/{missing}/", ResponseKind::Json))
+            .paginate::<PaginatedCompanyList>(spec("/api/{missing}/", ResponseKind::Json))
             .collect()
             .await;
         assert!(matches!(items[..], [Err(Error::Config(_))]));
         let pages: Vec<_> = client
-            .paginate::<PaginatedOrganizationList>(spec("/api/{missing}/", ResponseKind::Json))
+            .paginate::<PaginatedCompanyList>(spec("/api/{missing}/", ResponseKind::Json))
             .pages()
             .collect()
             .await;

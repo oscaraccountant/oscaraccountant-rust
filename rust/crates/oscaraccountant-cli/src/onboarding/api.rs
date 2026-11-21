@@ -46,7 +46,6 @@ pub const ONBOARDING_STATE: CallSpec = CallSpec {
         "company.id",
         "company.name",
         "company.registry_code",
-        "company.organization.name",
         "blocked_reason",
         "draft.registry_code",
     ],
@@ -66,9 +65,14 @@ pub const ONBOARDING_DRAFT: CallSpec = CallSpec {
         "books_software_other",
         "website",
         "no_website",
+        "is_pep",
+        "is_pep_related",
+        "pep_details",
     ],
     response: &[
         "draft.registry_code",
+        "draft.is_pep",
+        "draft.is_pep_related",
         "draft.books_today",
         "draft.website",
         "draft.prefill.registry_code",
@@ -92,7 +96,7 @@ pub const ONBOARDING_DRAFT: CallSpec = CallSpec {
     ],
 };
 
-/// Confirm the company step: the organization and the company are made.
+/// Confirm the company step: the company is made.
 pub const ONBOARDING_CONFIRM: CallSpec = CallSpec {
     name: "confirm the company",
     method: "POST",
@@ -150,6 +154,7 @@ pub const QUESTIONNAIRE: CallSpec = CallSpec {
         "supplier_countries",
         "expected_turnover",
         "cash_usage",
+        "cash_share_percent",
         "uses_crypto_assets",
         "needs_licence",
         "licence_description",
@@ -157,6 +162,9 @@ pub const QUESTIONNAIRE: CallSpec = CallSpec {
         "residence_countries",
         "e_resident",
         "estonia_reason",
+        "bearer_shares",
+        "trust_in_chain",
+        "nominees",
         "startup_funds_source",
         "acts_for_others",
         "acts_for_others_reason",
@@ -166,6 +174,7 @@ pub const QUESTIONNAIRE: CallSpec = CallSpec {
         "register_website",
         "asked.estonia_reason",
         "asked.startup_funds_source",
+        "asked.structure",
         "register_activity",
         "register_activity_names.code",
         "register_activity_names.en",
@@ -181,6 +190,7 @@ pub const QUESTIONNAIRE_FIELDS: &[&str] = &[
     "supplier_countries",
     "expected_turnover",
     "cash_usage",
+    "cash_share_percent",
     "uses_crypto_assets",
     "needs_licence",
     "licence_description",
@@ -188,6 +198,9 @@ pub const QUESTIONNAIRE_FIELDS: &[&str] = &[
     "residence_countries",
     "e_resident",
     "estonia_reason",
+    "bearer_shares",
+    "trust_in_chain",
+    "nominees",
     "startup_funds_source",
     "acts_for_others",
     "acts_for_others_reason",
@@ -203,6 +216,7 @@ pub const QUESTIONNAIRE_REQUEST: &[&str] = &[
     "supplier_countries",
     "expected_turnover",
     "cash_usage",
+    "cash_share_percent",
     "uses_crypto_assets",
     "needs_licence",
     "licence_description",
@@ -210,6 +224,9 @@ pub const QUESTIONNAIRE_REQUEST: &[&str] = &[
     "residence_countries",
     "e_resident",
     "estonia_reason",
+    "bearer_shares",
+    "trust_in_chain",
+    "nominees",
     "startup_funds_source",
     "acts_for_others",
     "acts_for_others_reason",
@@ -223,7 +240,11 @@ pub const QUESTIONNAIRE_SAVE: CallSpec = CallSpec {
     path: "/api/companies/{company_id}/compliance/questionnaire/",
     query: &[],
     request: QUESTIONNAIRE_REQUEST,
-    response: &["asked.estonia_reason", "asked.startup_funds_source"],
+    response: &[
+        "asked.estonia_reason",
+        "asked.startup_funds_source",
+        "asked.structure",
+    ],
 };
 
 /// Submit the questionnaire.
@@ -282,6 +303,7 @@ pub const IDENTITY_START: CallSpec = CallSpec {
     request: &[
         "language",
         "consent",
+        "consent_text",
         "is_pep",
         "is_pep_related",
         "pep_details",
@@ -407,8 +429,6 @@ pub const ME: CallSpec = CallSpec {
     request: &[],
     response: &[
         "user.email",
-        "organizations[].id",
-        "organizations[].name",
         "companies[].id",
         "companies[].name",
         "cli_min_version",

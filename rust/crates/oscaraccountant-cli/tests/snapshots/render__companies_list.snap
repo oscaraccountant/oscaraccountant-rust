@@ -1,6 +1,6 @@
 ---
 source: crates/oscaraccountant-cli/tests/render.rs
-expression: companies list --organization org0000001
+expression: companies list
 ---
 === 80 columns
 NAME             REGISTRY CODE  LEGAL FORM  VAT STATUS  STATE

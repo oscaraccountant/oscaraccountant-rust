@@ -13,6 +13,12 @@ expression: files get fil0000001 --company cmp0000001
 [90mBank transaction IDs[0m  bank_transaction_ids
 [90mUploaded by[0m           uploaded_by
 
+[1mDeletion[0m
+  [90mDeletable[0m        yes
+  [90mStaff deletable[0m  yes
+
+  [1mBlocked by[0m [2m(none)[0m
+
 [2mMeta[0m
   [2mID                fil0000001[0m
   [2mCore document ID  01J90000000000000000000218[0m
@@ -27,6 +33,12 @@ expression: files get fil0000001 --company cmp0000001
 [90mReceived on[0m           2026-09-01
 [90mBank transaction IDs[0m  bank_transaction_ids
 [90mUploaded by[0m           uploaded_by
+
+[1mDeletion[0m
+  [90mDeletable[0m        yes
+  [90mStaff deletable[0m  yes
+
+  [1mBlocked by[0m [2m(none)[0m
 
 [2mMeta[0m
   [2mID                fil0000001[0m

@@ -1,0 +1,48 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: tax-account balance --company cmp0000001
+---
+=== 80 columns
+● ok
+
+Last attempt at     2026-09-27
+Last success at     2026-09-27
+As of               2026-09-27
+Request date        2026-09-27
+Total               120.00
+Interest            0.00
+Prepayment balance  35.50
+Refresh pending     no
+
+Account balances
+  E  35.50
+
+Claims (1)
+  TAX PERIOD CODE  CLAIM TYPE CODE  DOCUMENT TYPE CODE  BALANCE  DUE DATE
+  2026-08          KM               KMD                 120.00   2026-09-20
+
+Notices (1)
+  KIND  AMOUNT
+  debt  120.00
+=== 120 columns
+● ok
+
+Last attempt at     2026-09-27
+Last success at     2026-09-27
+As of               2026-09-27
+Request date        2026-09-27
+Total               120.00
+Interest            0.00
+Prepayment balance  35.50
+Refresh pending     no
+
+Account balances
+  E  35.50
+
+Claims (1)
+  TAX PERIOD CODE  CLAIM TYPE CODE  DOCUMENT TYPE CODE  BALANCE  DUE DATE
+  2026-08          KM               KMD                 120.00   2026-09-20
+
+Notices (1)
+  KIND  AMOUNT
+  debt  120.00

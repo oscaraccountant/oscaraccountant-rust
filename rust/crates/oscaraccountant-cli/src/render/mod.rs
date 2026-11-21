@@ -22,6 +22,7 @@ pub mod format;
 pub mod infer;
 pub mod list;
 pub mod machine;
+pub mod receipts;
 pub mod table;
 pub mod theme;
 
@@ -178,6 +179,8 @@ fn human(
     info: &ListInfo,
 ) -> Result<()> {
     let context = context(out);
+    // A server that knows the receipt states: the view shows them (`receipts`).
+    let view = view.map(|view| receipts::view_for(view, value));
     let (items, cursor): (Vec<&Map<String, Value>>, Option<&str>) = match value {
         Value::Object(object) if machine::is_page(object) => (
             object
@@ -211,14 +214,26 @@ fn human(
         }
     };
     let view = view.unwrap_or_else(|| infer::infer_object(&items));
+    // The bank lines the payments to explain were checked against, after the rows.
+    let coverage = match value {
+        Value::Object(page) => receipts::coverage_lines(page, &context),
+        _ => None,
+    };
     if items.is_empty() {
         // Check `--columns` even with nothing to show.
         list::fields(view, &options.columns())?;
         out.note(&empty_state(info));
+        if let Some(lines) = coverage {
+            out.line(&lines.join("\n"));
+        }
         return Ok(());
     }
     let text = list::render(view, &items, &[], &options.columns(), out.width, &context)?;
     out.line(&text);
+    if let Some(lines) = coverage {
+        out.line("");
+        out.line(&lines.join("\n"));
+    }
     if let Some(cursor) = cursor.filter(|cursor| !cursor.is_empty()) {
         out.note(&theme::paint(Role::Dim, &more_hint(items.len(), cursor)));
     }
@@ -265,7 +280,9 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::generated::VIEW_BOOKS_INVOICE;
+    use crate::generated::{
+        VIEW_BOOKS_BANK_TRANSACTION, VIEW_BOOKS_BANK_TRANSACTION_DETAIL, VIEW_BOOKS_INVOICE,
+    };
     use crate::time;
     use theme::Theme;
 
@@ -358,7 +375,7 @@ mod tests {
 
     #[test]
     fn a_long_cursor_is_not_printed() {
-        // Self-test P2-11: a 165-character footer wrapped.
+        // Regression: a 165-character footer wrapped.
         let long = "7b22".repeat(30);
         let hint = more_hint(50, &long);
         assert_eq!(
@@ -514,6 +531,116 @@ mod tests {
         };
         let (mut out, _, _) = output(true);
         assert!(show(&mut out, &options, &json!({"a": 1}), None, &info()).is_err());
+    }
+
+    #[test]
+    fn nothing_to_explain_still_says_what_was_checked() {
+        let _theme = theme::scoped(Theme::PLAIN);
+        let (mut out, stdout, stderr) = output(true);
+        let page = json!({"items": [], "next_cursor": null, "coverage": {
+            "accounts": [{"bank_account_id": "01J0", "name": "Main", "iban": "EE001",
+                          "transaction_count": 3, "first_booking_date": "2026-09-01",
+                          "last_booking_date": "2026-09-30", "booked_months": ["2026-09"],
+                          "gap_months": []}],
+            "uncovered_accounts": [], "checked_from": "2026-09-01", "checked_to": "2026-09-30"}});
+        let info = ListInfo {
+            noun: "bank transactions".into(),
+            filtered: true,
+            ..ListInfo::default()
+        };
+        show(
+            &mut out,
+            &Options::default(),
+            &page,
+            Some(&VIEW_BOOKS_BANK_TRANSACTION),
+            &info,
+        )
+        .unwrap();
+        assert_eq!(stderr.text(), "No bank transactions match these filters.\n");
+        assert_eq!(
+            stdout.text(),
+            "Checked against the bank lines in the books, 01.09.2026 to 30.09.2026:\n\
+             \x20 Main (EE001)  01.09.2026 to 30.09.2026 · 3 lines\n\
+             Months and accounts outside this range are not checked.\n"
+        );
+    }
+
+    #[test]
+    fn a_plain_list_and_a_card_with_receipt_states() {
+        let _theme = theme::scoped(Theme::PLAIN);
+        let row = |id: &str, direction: &str, state: Value| {
+            json!({"id": id, "booking_date": "2026-09-04", "counterparty_name": "Example Ltd",
+                   "currency": "EUR", "total_minor": -1896, "status": "unmatched",
+                   "direction": direction, "receipt_state": state, "receipt_detail": null,
+                   "match_proposal_id": null, "matched_invoice_candidates": []})
+        };
+        // Money in has no state: the receipt comes after the status, and no coverage shows.
+        let page = json!({"items": [row("01J0", "in", Value::Null),
+                                    row("01J1", "out", json!("missing"))],
+                          "next_cursor": null, "coverage": null});
+        let (mut out, stdout, _) = output(true);
+        out.width = Some(160);
+        show(
+            &mut out,
+            &Options::default(),
+            &page,
+            Some(&VIEW_BOOKS_BANK_TRANSACTION),
+            &info(),
+        )
+        .unwrap();
+        let text = stdout.text();
+        let header = text.lines().next().unwrap();
+        assert!(
+            header.find("STATUS").unwrap() < header.find("RECEIPT").unwrap(),
+            "{text}"
+        );
+        assert!(
+            text.lines()
+                .nth(2)
+                .unwrap()
+                .contains("● unmatched  missing"),
+            "{text}"
+        );
+        assert!(!text.contains("Checked"), "{text}");
+
+        // One payment: the card says the receipt, why it is not booked, and the invoice that fits.
+        let mut payment = row("01J1", "out", json!("receipt_not_booked"));
+        payment["receipt_detail"] = json!("review");
+        let (mut out, stdout, _) = output(true);
+        show(
+            &mut out,
+            &Options::default(),
+            &payment,
+            Some(&VIEW_BOOKS_BANK_TRANSACTION_DETAIL),
+            &info(),
+        )
+        .unwrap();
+        let text = stdout.text();
+        assert!(
+            text.contains("Receipt         received, not booked"),
+            "{text}"
+        );
+        assert!(
+            text.contains("Receipt detail  draft waiting for review"),
+            "{text}"
+        );
+        payment["receipt_state"] = json!("invoice_not_matched");
+        payment["receipt_detail"] = Value::Null;
+        payment["matched_invoice_candidates"] =
+            json!([{"invoice_id": "01J90000000000000000000116", "number": "INV-0042"}]);
+        let (mut out, stdout, _) = output(true);
+        show(
+            &mut out,
+            &Options::default(),
+            &payment,
+            Some(&VIEW_BOOKS_BANK_TRANSACTION_DETAIL),
+            &info(),
+        )
+        .unwrap();
+        let text = stdout.text();
+        assert!(text.contains("invoice booked, not matched"), "{text}");
+        assert!(text.contains("Booked invoices that fit (1)"), "{text}");
+        assert!(text.contains("INV-0042"), "{text}");
     }
 
     #[test]

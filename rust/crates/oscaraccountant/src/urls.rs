@@ -112,10 +112,7 @@ mod tests {
             ("http://localhost:3500", "http://localhost:3500"),
             ("http://127.0.0.1:3500/", "http://127.0.0.1:3500"),
             ("http://[::1]:3500", "http://[::1]:3500"),
-            (
-                "http://omarchy.personal:3500",
-                "http://omarchy.personal:3500",
-            ),
+            ("http://devbox.personal:8080", "http://devbox.personal:8080"),
             (" https://api.example.com ", "https://api.example.com"),
         ];
         for (value, expected) in ok {

@@ -13,7 +13,7 @@ use crate::output::Output;
 use crate::secrets::Secrets;
 use crate::session::{App, VERSION};
 
-/// An unknown command of a resource names the commands it has (P2-25), never a hidden alias
+/// An unknown command of a resource names the commands it has, never a hidden alias
 /// such as the SDK method `retrieve` that clap would suggest.
 fn command_tip(error: clap::Error, args: &[OsString]) -> clap::Error {
     if error.kind() != ErrorKind::InvalidSubcommand {
@@ -163,7 +163,7 @@ mod tests {
         assert_eq!(code, 2);
         assert!(
             err.contains(
-                "tip: the commands of `oscar invoices`: cancel, issue, list, record, get, revise"
+                "tip: the commands of `oscar invoices`: bank-accounts, cancel, issue, list, record, get, revise, set-bank-accounts, set-default-bank-accounts"
             ),
             "{err}"
         );

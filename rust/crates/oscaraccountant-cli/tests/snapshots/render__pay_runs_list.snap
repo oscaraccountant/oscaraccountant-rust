@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: pay-runs list --company cmp0000001
+---
+=== 80 columns
+MONTH    STATUS    PAYDAY      EMPLOYEE COUNT           NET  OPEN NET
+2026-09  ● posted  2026-10-05               1  2 050.40 EUR  0.00 EUR
+2026-10  ● draft   2026-11-05               1
+=== 120 columns
+MONTH    STATUS    PAYDAY      EMPLOYEE COUNT           NET  OPEN NET
+2026-09  ● posted  2026-10-05               1  2 050.40 EUR  0.00 EUR
+2026-10  ● draft   2026-11-05               1

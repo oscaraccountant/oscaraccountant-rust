@@ -4,9 +4,9 @@ Status: normative, with `clients/spec/README.md`. Plan section 8.
 
 A conformance case is one call of a client, the HTTP exchanges the call must
 make, and the result or the error it must give. Each SDK has a runner that
-plays every case with its own HTTP mock. So the three SDKs obey the rules of
+plays every case with its own HTTP mock. So the four SDKs obey the rules of
 `clients/spec/README.md` in the same way, and a new rule gets one case, not
-three hand-written tests.
+four hand-written tests.
 
 | Path | What it is |
 |---|---|
@@ -33,6 +33,7 @@ three hand-written tests.
 | TypeScript | A custom `fetch` given to the client | `clients/typescript` |
 | Python | `respx` | `clients/python` |
 | Rust | `wiremock` | `clients/rust/crates/oscaraccountant` |
+| PHP | A fake `Transport` given to the client: it sees the timeout of each attempt | `clients/php` |
 
 The CLI uses the Rust SDK, so the Rust runner covers its requests. The CLI
 itself is tested against `clients/mock-server` over real HTTP.
@@ -61,7 +62,7 @@ reason.
 | `description` | yes | The rule the case tests, in one or two sentences |
 | `spec` | yes | The sections of `clients/spec/README.md` the case tests |
 | `schema_valid` | no | `false` when the requests or answers break `public.yaml` on purpose (an id with characters to encode, an enum value that the document does not know). Default `true` |
-| `skip` | no | `{"<runner>": "<reason>"}`: the runners that skip the case (`typescript`, `python`, `rust`) |
+| `skip` | no | `{"<runner>": "<reason>"}`: the runners that skip the case (`typescript`, `python`, `rust`, `php`) |
 | `client` | no | The options the client is made with (see "The client") |
 | `env` | no | The `OSCAR_*` variables the client sees |
 | `inject` | no | The clock, the jitter and the UUID source (see "Injection") |
@@ -73,13 +74,13 @@ reason.
 
 ### The client
 
-| Field | TypeScript | Python | Rust |
-|---|---|---|---|
-| `base_url` | `baseUrl` | `base_url` | `.base_url(...)` |
-| `api_key` | `apiKey` | `api_key` | `.api_key(...)` |
-| `token_provider` | `tokenProvider` | `token_provider` | `.token_provider(...)` |
-| `max_retries` | `maxRetries` | `max_retries` | `.max_retries(...)` |
-| `timeout_ms` | `timeoutMs` | `timeout` (seconds, `timeout_ms / 1000`) | `.timeout(Duration::from_millis(...))` |
+| Field | TypeScript | Python | Rust | PHP |
+|---|---|---|---|---|
+| `base_url` | `baseUrl` | `base_url` | `.base_url(...)` | `baseUrl:` |
+| `api_key` | `apiKey` | `api_key` | `.api_key(...)` | `apiKey:` |
+| `token_provider` | `tokenProvider` | `token_provider` | `.token_provider(...)` | `tokenProvider:` |
+| `max_retries` | `maxRetries` | `max_retries` | `.max_retries(...)` | `maxRetries:` |
+| `timeout_ms` | `timeoutMs` | `timeout` (seconds, `timeout_ms / 1000`) | `.timeout(Duration::from_millis(...))` | `timeout:` (seconds, `timeout_ms / 1000`) |
 
 An option that is absent is not passed. An empty string is passed as it is:
 the client must treat it as not set (section 1.1).
@@ -125,10 +126,11 @@ An operation call names a generated method:
 
 Each runner maps the names to its language: `oscar.bankTransactions.list(...)`
 in TypeScript, `oscar.bank_transactions.list(...)` in Python,
-`oscar.bank_transactions().list(...)` in Rust. `mode: page` is `await` of
-the call in TypeScript, `first_page()` in Python and `.send()` in Rust.
-`mode: all` is `for await` in TypeScript, `for` in Python (the async runner
-also plays every case with `async for`), and `.stream()` in Rust. A download
+`oscar.bank_transactions().list(...)` in Rust, `$oscar->bankTransactions->list(...)`
+in PHP. `mode: page` is `await` of the call in TypeScript, `first_page()` in
+Python, `.send()` in Rust and `firstPage()` in PHP. `mode: all` is
+`for await` in TypeScript, `for` in Python (the async runner also plays
+every case with `async for`), `.stream()` in Rust and `foreach` in PHP. A download
 reads the whole stream.
 
 A spec call hands a request spec to the runtime directly, for a rule that no
@@ -226,13 +228,13 @@ The call must raise the error type of `type` (section 3.7). Each other field
 that the case lists must equal the field of the error; a field that is
 absent is not checked.
 
-| Field | TypeScript | Python | Rust |
-|---|---|---|---|
-| `type` | the class name | the class name | the variant or kind of `Error` that the Rust SDK maps to that name |
-| `status` | `status` | `status` | the status; `null` when the error has no response |
-| `code`, `title`, `detail`, `errors` | same name | same name | same name |
-| `request_id` | `requestId` | `request_id` | `request_id` |
-| `message` | `message` | `str(error)` | `to_string()` |
+| Field | TypeScript | Python | Rust | PHP |
+|---|---|---|---|---|
+| `type` | the class name | the class name | the variant or kind of `Error` that the Rust SDK maps to that name | the short class name |
+| `status` | `status` | `status` | the status; `null` when the error has no response | `status` |
+| `code`, `title`, `detail`, `errors` | same name | same name | same name | same name |
+| `request_id` | `requestId` | `request_id` | `request_id` | `requestId` |
+| `message` | `message` | `str(error)` | `to_string()` | `getMessage()` |
 
 `AuthenticationError` with `status: null` is the error of section 1: no
 credential, or a token provider that failed. The call sends nothing.
@@ -266,13 +268,13 @@ error type must appear in a case.
 1. Add it to the file of its topic, or add a file for a new topic.
 2. Write the requests and answers by hand. Take bodies from
    `clients/mock-server/src/oscar_mock_server/fixtures/api.json`, which are
-   valid answers of `public.yaml`.
+   valid answers of the snapshot `clients/codegen/public.yaml`.
 3. Run `uv run pytest tests/test_conformance_cases.py` in
    `clients/mock-server`. A failure names the case and the difference.
 4. Run the runner of each SDK.
 
-When `public.yaml` changes, the validator shows each case whose request or
-answer is no longer valid.
+At a regeneration, the validator shows each case whose request or answer is no
+longer valid.
 
 ## Not covered by the cases
 

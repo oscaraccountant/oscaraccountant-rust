@@ -1,0 +1,58 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employees get emp0000001 --company cmp0000001
+---
+=== 80 columns
+Mock  ● registered
+
+First name          Mari
+Personal code       *******0001
+Birth date          1990-05-14
+Citizenship         EE
+IBAN                EE382200221020145685
+Email               mari@example.com
+Basic exemption     full
+Pension rate        2
+Source              oscar
+Employment type     1
+Start date          2026-09-01
+Registered outside  no
+
+Employments (1)
+  EMPLOYMENT TYPE  START DATE  STATUS        SOURCE  TOOT ID
+                1  2026-09-01  ● registered  oscar    123456
+
+Absences (1)
+  START DATE  END DATE    KIND
+  2026-12-21  2026-12-31  holiday
+
+Meta
+  ID          emp0000001
+  Created at  2026-09-27T10:00:00Z
+=== 120 columns
+Mock  ● registered
+
+First name          Mari
+Personal code       *******0001
+Birth date          1990-05-14
+Citizenship         EE
+IBAN                EE382200221020145685
+Email               mari@example.com
+Basic exemption     full
+Pension rate        2
+Source              oscar
+Employment type     1
+Start date          2026-09-01
+Registered outside  no
+
+Employments (1)
+  EMPLOYMENT TYPE  START DATE  STATUS        SOURCE  TOOT ID
+                1  2026-09-01  ● registered  oscar    123456
+
+Absences (1)
+  START DATE  END DATE    KIND
+  2026-12-21  2026-12-31  holiday
+
+Meta
+  ID          emp0000001
+  Created at  2026-09-27T10:00:00Z

@@ -6,7 +6,7 @@ use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 use serde_json::{Value, json};
 
 use super::{method, read_data, string};
-use crate::cli::{flag, path_id};
+use crate::cli::{COMPANY_POSITIONAL, default_ordering, flag, path_id};
 use crate::error::{CliError, Result};
 use crate::generated::{Body, Command, Response, ValueKind, View};
 use crate::render::{Format, ListInfo, show};
@@ -41,8 +41,9 @@ pub async fn run(app: &mut App, operation: &'static Command, leaf: &ArgMatches) 
     let config = app.config()?;
     let selection = app.select(&config)?;
     crate::cli::check_output(&app.globals.output)?;
+    let company = company_flag(app, leaf)?;
     let selection = if operation.args.iter().any(|arg| arg.name == "company_id") {
-        app.with_company(selection, string(leaf, "company")).await?
+        app.with_company(selection, company.as_deref()).await?
     } else {
         selection
     };
@@ -61,10 +62,14 @@ pub async fn run(app: &mut App, operation: &'static Command, leaf: &ArgMatches) 
             && options.template.is_none();
         let mut items = Vec::new();
         let mut cursor: Option<String> = None;
+        let mut first: Option<Value> = None;
         loop {
             let page: Value = send(&client, operation, &call, cursor.as_deref())
                 .await?
                 .json()?;
+            if first.is_none() {
+                first = Some(page.clone());
+            }
             if let Some(Value::Array(page_items)) = page.get("items") {
                 if stream {
                     // `-o ndjson --all` prints each page as it comes.
@@ -88,7 +93,7 @@ pub async fn run(app: &mut App, operation: &'static Command, leaf: &ArgMatches) 
         if stream {
             return Ok(());
         }
-        json!({ "items": items, "next_cursor": null })
+        every_page(items, first.as_ref())
     } else {
         let response = send(&client, operation, &call, None).await?;
         if operation.response == Response::Empty || response.body.is_empty() {
@@ -116,7 +121,7 @@ pub async fn run(app: &mut App, operation: &'static Command, leaf: &ArgMatches) 
             .args
             .iter()
             .any(|arg| arg.name == "company_id")
-            .then(|| app.company_label(&selection, string(leaf, "company")))
+            .then(|| app.company_label(&selection, company.as_deref()))
             .flatten();
         let message = crate::company::success(message, company.as_deref(), info.link.as_deref());
         crate::render::success_line(&mut app.out, &message);
@@ -127,9 +132,45 @@ pub async fn run(app: &mut App, operation: &'static Command, leaf: &ArgMatches) 
     show(&mut app.out, &options, &value, operation.view, &info)
 }
 
+/// The one page of `--all`: every item, no next cursor, and the other fields of the first page
+/// as the API gave them (the `coverage` of the payments to explain is the same on every page).
+fn every_page(items: Vec<Value>, first: Option<&Value>) -> Value {
+    let mut page = serde_json::Map::new();
+    page.insert("items".into(), Value::Array(items));
+    page.insert("next_cursor".into(), Value::Null);
+    if let Some(Value::Object(first)) = first {
+        for (name, value) in first {
+            if !matches!(name.as_str(), "items" | "next_cursor") {
+                page.insert(name.clone(), value.clone());
+            }
+        }
+    }
+    Value::Object(page)
+}
+
+/// The company the command line gives: the positional `<COMPANY>` of `oscar companies get`,
+/// else `-c/--company` (of the command, else of the root). The positional and `-c` with two
+/// different values is a usage error.
+pub fn company_flag(app: &App, leaf: &ArgMatches) -> Result<Option<String>> {
+    let given = |value: &&str| !value.trim().is_empty();
+    let flag = string(leaf, "company")
+        .filter(given)
+        .or_else(|| app.globals.company.as_deref().filter(given));
+    match (string(leaf, COMPANY_POSITIONAL).filter(given), flag) {
+        (Some(positional), Some(flag)) if positional.trim() != flag.trim() => Err(CliError::usage(
+            format!("Give the company once: `{positional}` or -c `{flag}`, not both."),
+        )),
+        (positional, flag) => Ok(positional.or(flag).map(str::to_owned)),
+    }
+}
+
 /// The page of the web app for the answer of an operation on a company: `<base>/c/<id>/<page>`.
 pub fn web_link(base_url: &str, operation: &Command, path: &str) -> Option<String> {
-    let company = path.strip_prefix("/api/companies/")?.split('/').next()?;
+    let company = path
+        .strip_prefix("/api/companies/")?
+        .split('/')
+        .next()
+        .filter(|company| !company.is_empty())?;
     let page = match (operation.resource, operation.method) {
         ("companies", _) => "overview",
         ("reports", "balance-sheet") => "balance-sheet",
@@ -226,9 +267,9 @@ fn item_call(operation: &Command, path: &str, value: &Value) -> Option<(&'static
     })
 }
 
-/// `{company_id}` and `{organization_id}` choose where, not what.
+/// `{company_id}` chooses where, not what.
 fn is_scope_id(segment: &str) -> bool {
-    matches!(segment, "{company_id}" | "{organization_id}")
+    segment == "{company_id}"
 }
 
 /// The success line of a write: `Issued invoice 2026-0042 (1 220.00 EUR) · <link>`.
@@ -423,7 +464,7 @@ async fn resolve_one(
     }
     let wanted = given.to_ascii_uppercase();
     // The server filters the title exactly: an invoice number typed in lower case is tried in
-    // upper case too (N3-d), as invoice numbers are written.
+    // upper case too, as invoice numbers are written.
     let mut filters = vec![given.clone()];
     if wanted != given {
         filters.push(wanted.clone());
@@ -544,7 +585,8 @@ fn check_path_value(name: &str, value: &str) -> Result<()> {
     Ok(())
 }
 
-/// Build the call from the arguments: the path values, the checked flags, and the body.
+/// Build the call from the arguments: the path values, the checked flags, and the body. A list
+/// with an `ordering` and none given asks for the newest first ([`default_ordering`]).
 pub fn build(
     app: &App,
     operation: &'static Command,
@@ -554,8 +596,7 @@ pub fn build(
     let mut path = operation.path.to_owned();
     for arg in operation.args {
         let value = match arg.name {
-            "company_id" => app.company(string(leaf, "company"), selection)?,
-            "organization_id" => app.organization(string(leaf, "organization"), selection)?,
+            "company_id" => app.company(company_flag(app, leaf)?.as_deref(), selection)?,
             name => {
                 let value = string(leaf, &path_id(name))
                     .ok_or_else(|| CliError::usage(format!("Give {}.", name.to_uppercase())))?;
@@ -572,6 +613,11 @@ pub fn build(
             check_value(item.long, item.kind, value)?;
             query.push((item.name.to_owned(), value.to_owned()));
         }
+    }
+    if let Some(default) = default_ordering(operation)
+        && !query.iter().any(|(name, _)| name == "ordering")
+    {
+        query.push(("ordering".to_owned(), default.to_owned()));
     }
     let body = match operation.body {
         Body::None => None,
@@ -717,7 +763,7 @@ mod tests {
 
     #[tokio::test]
     async fn a_prefix_beyond_the_scanned_pages_is_refused() {
-        // M7: the only match of the first pages is not final while the list goes on.
+        // The only match of the first pages is not final while the list goes on.
         let mut answers = vec![page(
             &["01J90000000000000000000001", "01J900000000000000ABCD1234"],
             true,
@@ -749,13 +795,35 @@ mod tests {
 
     #[tokio::test]
     async fn a_title_beyond_the_scanned_pages_is_taken() {
-        // M7: the scan stops early, but the value is the whole title of one row: it is final.
+        // The scan stops early, but the value is the whole title of one row: it is final.
         let row = json!({"items": [{"id": "01J900000000000000ZZZZ9999", "number": "ABCD1234"}], "next_cursor": "next"});
         let mut answers = vec![row.to_string()];
         answers.extend((1..PREFIX_PAGES).map(|_| page(&[], true)));
         assert_eq!(
             resolve(&answers).await.unwrap(),
             "/api/companies/c1/invoices/01J900000000000000ZZZZ9999/"
+        );
+    }
+
+    #[test]
+    fn every_page_keeps_the_fields_of_the_first_page() {
+        let first = json!({"items": [{"id": "a"}], "next_cursor": "c2",
+                           "coverage": {"accounts": [], "checked_from": null}});
+        let page = every_page(vec![json!({"id": "a"}), json!({"id": "b"})], Some(&first));
+        assert_eq!(
+            page,
+            json!({"items": [{"id": "a"}, {"id": "b"}], "next_cursor": null,
+                   "coverage": {"accounts": [], "checked_from": null}})
+        );
+        // An older server: the page as before.
+        let old = json!({"items": [], "next_cursor": null});
+        assert_eq!(
+            every_page(Vec::new(), Some(&old)).to_string(),
+            r#"{"items":[],"next_cursor":null}"#
+        );
+        assert_eq!(
+            every_page(Vec::new(), None).to_string(),
+            r#"{"items":[],"next_cursor":null}"#
         );
     }
 
@@ -815,9 +883,129 @@ mod tests {
         assert_eq!(call.body, Some(json!({"reason": "x"})));
         assert_eq!(call.idempotency_key.as_deref(), Some("k1"));
 
-        let args = leaf(&["oscar", "companies", "list", "--organization", "o1"]);
+        let args = leaf(&["oscar", "companies", "list"]);
         let call = build(&app, operation("companies", "list"), &args, &selection).unwrap();
-        assert_eq!(call.path, "/api/organizations/o1/companies/");
+        assert_eq!(call.path, "/api/companies/");
+    }
+
+    #[test]
+    fn a_list_asks_for_the_newest_first() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = app(dir.path(), &[("OSCAR_API_KEY", "osk_test")]);
+        let selection = app.select(&crate::config::Config::default()).unwrap();
+        let ordering = |call: &Call| {
+            call.query
+                .iter()
+                .filter(|(name, _)| name == "ordering")
+                .map(|(_, value)| value.clone())
+                .collect::<Vec<_>>()
+        };
+        // No --ordering: the descending value.
+        let args = leaf(&["oscar", "invoices", "list", "-c", "c"]);
+        let call = build(&app, operation("invoices", "list"), &args, &selection).unwrap();
+        assert_eq!(ordering(&call), ["-invoice_date"]);
+        let args = leaf(&["oscar", "documents", "list", "-c", "c"]);
+        let call = build(&app, operation("documents", "list"), &args, &selection).unwrap();
+        assert_eq!(ordering(&call), ["-created_at"]);
+        let args = leaf(&["oscar", "bank-transactions", "list", "-c", "c"]);
+        let call = build(
+            &app,
+            operation("bank-transactions", "list"),
+            &args,
+            &selection,
+        )
+        .unwrap();
+        assert_eq!(ordering(&call), ["-booking_date"]);
+        // An explicit --ordering wins, once.
+        let args = leaf(&[
+            "oscar",
+            "invoices",
+            "list",
+            "-c",
+            "c",
+            "--ordering",
+            "invoice_date",
+        ]);
+        let call = build(&app, operation("invoices", "list"), &args, &selection).unwrap();
+        assert_eq!(ordering(&call), ["invoice_date"]);
+        // An operation with no ordering sends none.
+        let args = leaf(&["oscar", "accounts", "list", "-c", "c"]);
+        let call = build(&app, operation("accounts", "list"), &args, &selection).unwrap();
+        assert!(ordering(&call).is_empty());
+        let args = leaf(&["oscar", "companies", "list"]);
+        let call = build(&app, operation("companies", "list"), &args, &selection).unwrap();
+        assert!(call.query.is_empty());
+        assert_eq!(call.path, "/api/companies/");
+        // The ordering does not make a list "filtered".
+        let args = leaf(&["oscar", "invoices", "list", "-c", "c"]);
+        let call = build(&app, operation("invoices", "list"), &args, &selection).unwrap();
+        assert!(!list_info(operation("invoices", "list"), &call).filtered);
+    }
+
+    #[test]
+    fn the_company_of_the_command_line() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut app = app(dir.path(), &[("OSCAR_API_KEY", "osk_test")]);
+        let selection = app.select(&crate::config::Config::default()).unwrap();
+        let list = operation("invoices", "list");
+        // The root's -c (in the globals) when the command has none.
+        app.globals.company = Some("root".into());
+        let args = leaf(&["oscar", "invoices", "list"]);
+        let call = build(&app, list, &args, &selection).unwrap();
+        assert_eq!(call.path, "/api/companies/root/invoices/");
+        // The command's -c wins.
+        let args = leaf(&["oscar", "invoices", "list", "-c", "leaf"]);
+        let call = build(&app, list, &args, &selection).unwrap();
+        assert_eq!(call.path, "/api/companies/leaf/invoices/");
+        app.globals.company = None;
+        // `companies get <COMPANY>`.
+        let get = operation("companies", "retrieve");
+        let args = leaf(&["oscar", "companies", "get", "c7"]);
+        assert_eq!(company_flag(&app, &args).unwrap().as_deref(), Some("c7"));
+        let call = build(&app, get, &args, &selection).unwrap();
+        assert_eq!(call.path, "/api/companies/c7/");
+        // The same value twice is fine; two values are a usage error.
+        let args = leaf(&["oscar", "companies", "get", "c7", "-c", "c7"]);
+        assert_eq!(company_flag(&app, &args).unwrap().as_deref(), Some("c7"));
+        let args = leaf(&["oscar", "companies", "get", "c7", "-c", "c8"]);
+        let error = company_flag(&app, &args).unwrap_err();
+        assert_eq!(error.code, crate::error::EXIT_USAGE);
+        assert_eq!(
+            error.message,
+            "Give the company once: `c7` or -c `c8`, not both."
+        );
+        assert!(build(&app, get, &args, &selection).is_err());
+        // Also against the root's -c.
+        app.globals.company = Some("c9".into());
+        let args = leaf(&["oscar", "companies", "get", "c7"]);
+        assert!(company_flag(&app, &args).is_err());
+        let args = leaf(&["oscar", "companies", "get"]);
+        assert_eq!(company_flag(&app, &args).unwrap().as_deref(), Some("c9"));
+    }
+
+    #[test]
+    fn companies_list_needs_no_company() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = app(dir.path(), &[]);
+        let selection = app.select(&crate::config::Config::default()).unwrap();
+        let list = operation("companies", "list");
+        assert!(list.args.is_empty());
+        let call = build(
+            &app,
+            list,
+            &leaf(&["oscar", "companies", "list"]),
+            &selection,
+        )
+        .unwrap();
+        assert_eq!(call.path, "/api/companies/");
+        // The list of every company has no page of the web app.
+        assert_eq!(web_link("https://o.test", list, &call.path), None);
+        // `--organization` is gone.
+        assert!(
+            crate::cli::command()
+                .try_get_matches_from(["oscar", "companies", "list", "--organization", "o1"])
+                .is_err()
+        );
     }
 
     #[test]
@@ -903,7 +1091,7 @@ mod tests {
 
     #[test]
     fn a_success_line_names_the_object_and_its_amount() {
-        // Self-test P2-16: the short id even when the number or the name was known.
+        // Regression: the short id even when the number or the name was known.
         let cancel = operation("invoices", "cancel");
         let invoice = json!({"id": "01J90000000000000000000116", "number": "EE-2026-006",
                              "gross_minor": 372_000, "currency": "EUR"});
@@ -950,7 +1138,7 @@ mod tests {
 
     #[test]
     fn a_path_value_never_walks_out_of_its_segment() {
-        // Self-test N2-1: `oscar invoices get ../../me` reached `/api/companies/me/`.
+        // Regression: `oscar invoices get ../../me` reached `/api/companies/me/`.
         let dir = tempfile::tempdir().unwrap();
         let app = app(dir.path(), &[("OSCAR_API_KEY", "osk_test")]);
         let selection = app.select(&crate::config::Config::default()).unwrap();
@@ -973,7 +1161,7 @@ mod tests {
 
     #[test]
     fn what_names_an_id() {
-        // Self-test N3-1: the start of the short form (`Z6AASA` of `...Z6AASAST`) failed.
+        // Regression: the start of the short form (`Z6AASA` of `...Z6AASAST`) failed.
         let id = "01M4P0QQSGEKXXXXXXZ6AASAST";
         for given in ["01M4P0", "Z6AASAST", "AASAST", "Z6AASA", "z6aasa"] {
             assert!(id_matches(id, &given.to_ascii_uppercase()), "{given}");

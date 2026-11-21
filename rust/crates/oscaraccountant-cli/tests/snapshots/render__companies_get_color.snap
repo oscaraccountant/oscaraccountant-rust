@@ -13,7 +13,7 @@ expression: companies get --company cmp0000001
 [90mFiles TSD monthly[0m  [90mno[0m
 [90mBase currency[0m      EUR
 [90mRole[0m               owner
-[90mPermissions[0m        organization.read
+[90mPermissions[0m        companies.read
 [90mView as[0m            owner
 [90mRefresh pending[0m    [90mno[0m
 
@@ -25,6 +25,7 @@ expression: companies get --company cmp0000001
   [90mOpen periods[0m                1
   [90mVAT returns due[0m             1
   [90mNext VAT due date[0m           2026-09-01
+  [90mVAT months not checked[0m      1
   [90mLast bank import at[0m         2026-09-27
   [90mOverdue receivables[0m         1
   [90mOverdue receivables amount[0m  0.01 EUR
@@ -33,7 +34,6 @@ expression: companies get --company cmp0000001
 
 [2mMeta[0m
   [2mID               cmp0000001[0m
-  [2mOrganization ID  org0000001[0m
   [2mCore company ID  01J90000000000000000000007[0m
   [2mCreated at       2026-09-27T10:00:00Z[0m
   [2mUpdated at       2026-09-27T10:00:00Z[0m
@@ -48,7 +48,7 @@ expression: companies get --company cmp0000001
 [90mFiles TSD monthly[0m  [90mno[0m
 [90mBase currency[0m      EUR
 [90mRole[0m               owner
-[90mPermissions[0m        organization.read
+[90mPermissions[0m        companies.read
 [90mView as[0m            owner
 [90mRefresh pending[0m    [90mno[0m
 
@@ -60,6 +60,7 @@ expression: companies get --company cmp0000001
   [90mOpen periods[0m                1
   [90mVAT returns due[0m             1
   [90mNext VAT due date[0m           2026-09-01
+  [90mVAT months not checked[0m      1
   [90mLast bank import at[0m         2026-09-27
   [90mOverdue receivables[0m         1
   [90mOverdue receivables amount[0m  0.01 EUR
@@ -68,7 +69,6 @@ expression: companies get --company cmp0000001
 
 [2mMeta[0m
   [2mID               cmp0000001[0m
-  [2mOrganization ID  org0000001[0m
   [2mCore company ID  01J90000000000000000000007[0m
   [2mCreated at       2026-09-27T10:00:00Z[0m
   [2mUpdated at       2026-09-27T10:00:00Z[0m

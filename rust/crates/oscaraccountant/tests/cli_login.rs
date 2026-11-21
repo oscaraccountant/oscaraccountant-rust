@@ -64,7 +64,7 @@ async fn a_401_asks_the_cli_again_and_retries_a_get() {
         .mount(&server)
         .await;
     Mock::given(method("GET"))
-        .and(path("/api/organizations/"))
+        .and(path("/api/companies/"))
         .and(header("authorization", "Bearer tok-2"))
         .respond_with(
             ResponseTemplate::new(200).set_body_json(json!({"items": [], "next_cursor": null})),
@@ -85,7 +85,7 @@ async fn a_401_asks_the_cli_again_and_retries_a_get() {
 
     // The refused token is not kept: the next call asks the CLI again, and its new token works.
     std::fs::write(dir.path().join("token"), "tok-2").unwrap();
-    let page = client.organizations().list().send().await.unwrap();
+    let page = client.companies().list().send().await.unwrap();
     assert!(page.items.is_empty());
     assert_eq!(calls(&dir), 4);
 }

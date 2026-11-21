@@ -57,7 +57,7 @@ impl Paths {
 pub enum AuthKind {
     /// The OAuth login: a refresh token and an access token.
     Oauth,
-    /// An organization API key.
+    /// A company API key.
     ApiKey,
 }
 
@@ -71,39 +71,81 @@ impl AuthKind {
     }
 }
 
-/// The organization of a profile.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Organization {
-    /// Its sqid.
-    pub id: String,
-    /// Its name.
-    #[serde(default)]
-    pub name: String,
-    /// Keys a newer CLI wrote.
-    #[serde(flatten)]
-    pub extra: Map<String, Value>,
-}
-
 /// One login.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(from = "StoredProfile")]
 pub struct Profile {
     /// The normalized base URL.
     pub base_url: String,
     /// How it logged in.
     pub auth: AuthKind,
-    /// The organization of the credential, when known.
-    #[serde(default)]
-    pub organization: Option<Organization>,
     /// The default company of the commands.
     #[serde(default)]
     pub company: Option<String>,
-    /// The companies the credential can see, from the last `GET /api/me/`: the names that
+    /// The companies of the credential, from the last `GET /api/me/`: one for a company API key,
+    /// the companies chosen on the consent page for an OAuth login. The names that
     /// `--company <name>` resolves against. Read again when a name does not resolve.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub companies: Option<Vec<Company>>,
     /// Keys a newer CLI wrote.
     #[serde(flatten)]
     pub extra: Map<String, Value>,
+}
+
+/// A profile as `config.json` stores it. A file of a CLI before 0.2.0 also has `organizations`
+/// (or one `organization`) and an `organization_id` in each cached company: the server has no
+/// organizations any more, so the CLI drops them when it reads the file, and the next save writes
+/// the profile without them.
+#[derive(Deserialize)]
+struct StoredProfile {
+    base_url: String,
+    auth: AuthKind,
+    #[serde(default)]
+    company: Option<String>,
+    #[serde(default)]
+    companies: Option<Vec<Company>>,
+    #[serde(flatten)]
+    extra: Map<String, Value>,
+}
+
+/// The keys of a profile that a CLI before 0.2.0 wrote, for the organizations the server had.
+const ORGANIZATION_KEYS: [&str; 2] = ["organizations", "organization"];
+
+impl From<StoredProfile> for Profile {
+    fn from(stored: StoredProfile) -> Self {
+        let mut extra = stored.extra;
+        for key in ORGANIZATION_KEYS {
+            extra.remove(key);
+        }
+        Self {
+            base_url: stored.base_url,
+            auth: stored.auth,
+            company: stored.company,
+            companies: stored.companies,
+            extra,
+        }
+    }
+}
+
+impl Profile {
+    /// The companies of the cache, as `{id, name}`; empty when the profile has no cache.
+    pub fn company_summaries(&self) -> Vec<Value> {
+        self.companies
+            .iter()
+            .flatten()
+            .map(|company| serde_json::json!({"id": company.id, "name": company.name}))
+            .collect()
+    }
+
+    /// The names of the companies of the cache, with no empty one.
+    pub fn company_names(&self) -> Vec<&str> {
+        self.companies
+            .iter()
+            .flatten()
+            .map(|company| company.name.as_str())
+            .filter(|name| !name.is_empty())
+            .collect()
+    }
 }
 
 /// A company of the cache of a profile: the fields of `MeCompany` the CLI needs.
@@ -120,9 +162,6 @@ pub struct Company {
     /// `provisioning`, `ready` or `failed`.
     #[serde(default)]
     pub state: String,
-    /// The sqid of its organization.
-    #[serde(default)]
-    pub organization_id: String,
 }
 
 /// The whole of `config.json`.
@@ -292,7 +331,6 @@ mod tests {
         Profile {
             base_url: base_url.into(),
             auth: AuthKind::Oauth,
-            organization: None,
             company: None,
             companies: None,
             extra: Map::new(),
@@ -352,7 +390,6 @@ mod tests {
             "profiles": {"p": {
                 "base_url": "https://a.test",
                 "auth": "api_key",
-                "organization": {"id": "o1", "name": "Org", "slug": "org"},
                 "company": "c1",
                 "colour": "blue",
             }},
@@ -364,7 +401,67 @@ mod tests {
         let saved: Value = serde_json::from_slice(&fs::read(paths.config_file()).unwrap()).unwrap();
         assert_eq!(saved["future"], json!({"a": 1}));
         assert_eq!(saved["profiles"]["p"]["colour"], "blue");
-        assert_eq!(saved["profiles"]["p"]["organization"]["slug"], "org");
+    }
+
+    #[test]
+    fn drops_the_organizations_of_an_older_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let paths = paths(dir.path());
+        fs::create_dir_all(&paths.config_dir).unwrap();
+        // The file of a CLI before 0.2.0: the organizations of the login, one `organization` of a
+        // still older CLI, and an `organization_id` in each cached company.
+        let text = json!({
+            "version": 1,
+            "default_profile": "p",
+            "profiles": {
+                "p": {
+                    "base_url": "https://a.test",
+                    "auth": "oauth",
+                    "organizations": [{"id": "o1", "name": "Org A"}, {"id": "o2", "name": "Org B"}],
+                    "company": "c1",
+                    "companies": [{"id": "c1", "name": "A", "registry_code": "1",
+                                   "state": "ready", "organization_id": "o1"},
+                                  {"id": "c2", "name": "", "registry_code": "2",
+                                   "state": "ready", "organization_id": "o2"}],
+                    "colour": "blue",
+                },
+                "old": {"base_url": "https://b.test", "auth": "api_key",
+                        "organization": {"id": "o1", "name": "Org"}},
+                "none": {"base_url": "https://c.test", "auth": "api_key", "organization": null},
+            },
+        });
+        fs::write(paths.config_file(), text.to_string()).unwrap();
+        let config = Config::load(&paths).unwrap();
+        let profile = &config.profiles["p"];
+        assert_eq!(profile.company.as_deref(), Some("c1"));
+        assert_eq!(profile.companies.as_ref().map(Vec::len), Some(2));
+        assert_eq!(profile.company_names(), ["A"]);
+        assert_eq!(
+            profile.company_summaries(),
+            [
+                json!({"id": "c1", "name": "A"}),
+                json!({"id": "c2", "name": ""})
+            ]
+        );
+        assert_eq!(profile.extra.keys().collect::<Vec<_>>(), ["colour"]);
+        assert!(config.profiles["old"].extra.is_empty());
+        assert!(config.profiles["none"].extra.is_empty());
+        assert!(config.profiles["none"].company_summaries().is_empty());
+        // Saved again: no organization key, no `organization_id`, and the rest kept.
+        config.save(&paths).unwrap();
+        let saved: Value = serde_json::from_slice(&fs::read(paths.config_file()).unwrap()).unwrap();
+        for name in ["p", "old", "none"] {
+            let saved = &saved["profiles"][name];
+            assert!(saved.get("organizations").is_none(), "{saved}");
+            assert!(saved.get("organization").is_none(), "{saved}");
+        }
+        let saved = &saved["profiles"]["p"];
+        assert_eq!(saved["colour"], "blue");
+        assert_eq!(
+            saved["companies"][0],
+            json!({"id": "c1", "name": "A", "registry_code": "1", "state": "ready"})
+        );
+        assert_eq!(Config::load(&paths).unwrap(), config);
     }
 
     #[test]

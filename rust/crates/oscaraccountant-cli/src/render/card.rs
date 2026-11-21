@@ -72,7 +72,12 @@ fn header(
 ) -> (String, Vec<&'static str>) {
     let mut parts = Vec::new();
     let mut shown = Vec::new();
-    if let Some(field) = view.field(view.title) {
+    // A title that is the status field (the tax account has no name) is shown once, as the status.
+    let title_is_status = view
+        .status
+        .as_ref()
+        .is_some_and(|status| status.field == view.title);
+    if let Some(field) = view.field(view.title).filter(|_| !title_is_status) {
         let cell = format::field_cell(field, object, &[], view.status.as_ref(), context, false);
         if cell.width() > 0 {
             let title = context.theme.bold(&cell.plain());
@@ -451,7 +456,7 @@ mod tests {
     use super::*;
     use crate::generated::{
         VIEW_BOOKS_GENERAL_LEDGER, VIEW_BOOKS_INVOICE_DETAIL, VIEW_BOOKS_OPEN_ITEMS,
-        VIEW_BOOKS_VAT_PREVIEW,
+        VIEW_BOOKS_VAT_PREVIEW, VIEW_TAX_ACCOUNT_BALANCE,
     };
     use crate::render::theme::Theme;
     use crate::time;
@@ -546,7 +551,7 @@ mod tests {
 
     #[test]
     fn a_cancelled_invoice_shows_its_state_and_no_overdue() {
-        // Self-test P1-1 and P1-2: `● unposted` on a cancelled invoice, and `overdue 24d` in the
+        // Regression: `● unposted` on a cancelled invoice, and `overdue 24d` in the
         // revision of a paid one.
         let mut value = invoice(1);
         value["settlement_state"] = json!("unposted");
@@ -589,8 +594,23 @@ mod tests {
     }
 
     #[test]
+    fn a_title_that_is_the_status_is_shown_once() {
+        let value = json!({"access_status": "ok", "access_error_code": "", "total": "0.00",
+                           "as_of": "2026-10-11T02:10:00Z", "claims": [], "notices": [],
+                           "account_balances": {"E": "12.00"}, "refresh_pending": false});
+        let text = render(
+            &VIEW_TAX_ACCOUNT_BALANCE,
+            value.as_object().unwrap(),
+            Some(80),
+            &context(false),
+            None,
+        );
+        assert_eq!(text.lines().next(), Some("● ok"), "{text}");
+    }
+
+    #[test]
     fn a_draft_has_its_short_id_as_title() {
-        // Self-test P2-4: the card of a draft started with blanks.
+        // Regression: the card of a draft started with blanks.
         let mut value = invoice(1);
         value["number"] = json!(null);
         value["state"] = json!("recorded");
@@ -607,7 +627,7 @@ mod tests {
 
     #[test]
     fn vat_boxes_are_money() {
-        // Self-test P1-3: `KMD.1  248000` was 2 480.00 EUR in minor units.
+        // Regression: `KMD.1  248000` was 2 480.00 EUR in minor units.
         let value = json!({"form": "KMD", "form_version": "2026", "period_from": "2026-09-01",
                            "period_to": "2026-09-30", "base_currency": "EUR", "recognitions": 4,
                            "boxes": {"KMD.1": 248_000, "KMD.4": 59_520, "KMD.5": 10_200}});
@@ -625,7 +645,7 @@ mod tests {
 
     #[test]
     fn the_general_ledger_shows_the_lines_of_each_account() {
-        // Self-test P1-4: the `lines` of each account were dropped.
+        // Regression: the `lines` of each account were dropped.
         let line = |memo: &str| {
             json!({"entry_id": "E1", "entry_no": 7, "journal": "bank", "entry_state": "posted",
                    "economic_date": "2026-09-03", "line_no": 1, "account_code": "1000",
@@ -670,7 +690,7 @@ mod tests {
 
     #[test]
     fn a_section_repeats_nothing_and_snapshots_read_as_words() {
-        // Self-test P2-7 and P2-8: `Sign 1`, the revision and the settlement repeating the
+        // Regression: `Sign 1`, the revision and the settlement repeating the
         // header, `bank_accounts  [1]` and `reg_code` in the seller snapshot.
         let value = json!({
             "id": "01JX8Z3Q4R5S6T7V8W9XAYBZCD", "number": "EE-2026-004", "party_name": "Echo OÜ",

@@ -48,6 +48,10 @@ Revision
     FILENAME  ROLE  KIND
     filename  role  invoice
 
+  Removed documents (1)
+    FILENAME  REMOVED AT  ROLE
+    filename  2026-09-27  role
+
 Revisions (1)
   REVISION NO  STATE       GROSS  INVOICE DATE
             1  ● state  0.01 EUR  2026-09-01
@@ -62,6 +66,8 @@ Settlement
   Paid         no
   Credited     no
   Written off  no
+
+Allocations (none)
 
 Meta
   ID                   01J90000000000000000000116
@@ -115,6 +121,10 @@ Revision
     FILENAME  ROLE  KIND
     filename  role  invoice
 
+  Removed documents (1)
+    FILENAME  REMOVED AT  ROLE
+    filename  2026-09-27  role
+
 Revisions (1)
   REVISION NO  STATE       GROSS  INVOICE DATE
             1  ● state  0.01 EUR  2026-09-01
@@ -129,6 +139,8 @@ Settlement
   Paid         no
   Credited     no
   Written off  no
+
+Allocations (none)
 
 Meta
   ID                   01J90000000000000000000116

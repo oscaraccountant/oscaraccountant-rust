@@ -13,13 +13,13 @@ use std::time::SystemTime;
 
 use clap::ArgMatches;
 use oscaraccountant::{Client, DEFAULT_BASE_URL};
-use serde_json::{Map, Value};
+use serde_json::Value;
 
 use super::string;
 use crate::browser;
 use crate::cli::flag;
 use crate::company::{self, Found};
-use crate::config::{AuthKind, Company, Config, Organization, Profile};
+use crate::config::{AuthKind, Company, Config, Profile};
 use crate::env::Env;
 use crate::error::{CliError, Result};
 use crate::loopback::{self, LOGIN_TIMEOUT, Landing, Loopback};
@@ -52,7 +52,7 @@ pub enum Method {
     Browser,
     /// A code to enter on another device.
     Device,
-    /// An organization API key.
+    /// A company API key.
     ApiKey,
 }
 
@@ -130,19 +130,15 @@ pub async fn run(app: &mut App, matches: &ArgMatches) -> Result<()> {
         Secret::OAuth { access_token, .. } => access_token.clone(),
     };
     let me = company::fetch_me(&app.builder(&base_url).api_key(token).build()?).await?;
-    let (organization, _) = organization_of(&me);
+    // The companies of the credential: those chosen on the consent page, the one of a company
+    // API key, or every company for a staff key.
     let companies = company::from_me(&me);
-    let mine = owned(&companies, organization.as_ref());
-    let previous = config.profiles.get(&name).and_then(|previous| {
-        let same = previous.base_url == base_url
-            && previous.organization.as_ref().map(|org| &org.id)
-                == organization.as_ref().map(|org| &org.id);
-        if same { previous.company.clone() } else { None }
-    });
+    let previous = previous_company(config.profiles.get(&name), &base_url, &companies);
     let chosen = choose_company(
         &prompter,
-        string(leaf, "company"),
-        &mine,
+        // `-c` of `login`, else of the root (`oscar -c <x> login`).
+        string(leaf, "company").or(app.globals.company.as_deref()),
+        &companies,
         previous.as_deref(),
     )
     .await?;
@@ -152,31 +148,26 @@ pub async fn run(app: &mut App, matches: &ArgMatches) -> Result<()> {
     let mut config = app.config()?;
     let previous = config.profiles.remove(&name);
     let extra = previous.map(|profile| profile.extra).unwrap_or_default();
-    let org_name = organization.as_ref().map(|org| org.name.clone());
-    config.profiles.insert(
-        name.clone(),
-        Profile {
-            base_url: base_url.clone(),
-            auth: kind,
-            organization,
-            company: chosen.company.as_ref().map(|company| company.id.clone()),
-            companies: Some(companies),
-            extra,
-        },
+    let line = logged_in(
+        me.pointer("/user/email")
+            .and_then(Value::as_str)
+            .unwrap_or("an API key"),
+        companies.len(),
+        chosen.company.as_ref(),
     );
+    let profile = Profile {
+        base_url: base_url.clone(),
+        auth: kind,
+        company: chosen.company.as_ref().map(|company| company.id.clone()),
+        companies: Some(companies),
+        extra,
+    };
+    config.profiles.insert(name.clone(), profile);
     if config.default_name().is_none() || config.default_profile.is_none() {
         config.default_profile = Some(name.clone());
     }
     config.save(&app.paths)?;
-    let email = me
-        .pointer("/user/email")
-        .and_then(Value::as_str)
-        .unwrap_or("an API key");
-    app.out.note(&render::success_text(&logged_in(
-        email,
-        org_name.as_deref(),
-        chosen.company.as_ref(),
-    )));
+    app.out.note(&render::success_text(&line));
     // The hint follows the line it explains (`· no company`).
     if let Some(note) = &chosen.note {
         app.out.note(note);
@@ -184,12 +175,13 @@ pub async fn run(app: &mut App, matches: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
-/// The last line of a login: `Logged in as <email> · <organization> · company <name>`.
-pub fn logged_in(email: &str, organization: Option<&str>, company: Option<&Company>) -> String {
+/// The last line of a login: `Logged in as <email> · <n> companies · company <name>`; the
+/// number only when the login reaches more than one company.
+pub fn logged_in(email: &str, companies: usize, company: Option<&Company>) -> String {
     let dot = theme::symbol(Sym::Middot);
     let mut line = format!("Logged in as {}", theme::current().bold(email));
-    if let Some(organization) = organization.filter(|name| !name.is_empty()) {
-        line.push_str(&format!(" {dot} {organization}"));
+    if companies > 1 {
+        line.push_str(&format!(" {dot} {companies} companies"));
     }
     match company {
         Some(company) => line.push_str(&format!(
@@ -201,18 +193,19 @@ pub fn logged_in(email: &str, organization: Option<&str>, company: Option<&Compa
     line
 }
 
-/// The companies of the organization of the login; all of them when the login has no single
-/// organization (a staff key).
-fn owned(companies: &[Company], organization: Option<&Organization>) -> Vec<Company> {
-    companies
-        .iter()
-        .filter(|company| {
-            organization.is_none_or(|org| {
-                company.organization_id.is_empty() || company.organization_id == org.id
-            })
-        })
-        .cloned()
-        .collect()
+/// The default company of the previous login of the profile, kept when the profile is for the
+/// same server and the new login still reaches that company (a login that adds or drops a
+/// company keeps it too).
+fn previous_company(
+    previous: Option<&Profile>,
+    base_url: &str,
+    mine: &[Company],
+) -> Option<String> {
+    let previous = previous.filter(|profile| profile.base_url == base_url)?;
+    let id = previous.company.as_ref()?;
+    mine.iter()
+        .any(|company| &company.id == id)
+        .then(|| id.clone())
 }
 
 /// The default company a login chose, and a note on how to choose one when it chose none.
@@ -524,7 +517,7 @@ pub fn check_callback(params: &[(String, String)], state: &str, issuer: &str) ->
         ));
     }
     if let Some(error) = get("error") {
-        if error == "access_denied" && get("reason") == Some(loopback::NO_ORGANIZATION) {
+        if error == "access_denied" && get("reason") == Some(loopback::NO_COMPANY) {
             return Err(CliError::auth(NO_COMPANY));
         }
         let described = match get("error_description") {
@@ -551,7 +544,7 @@ async fn device(
     let started = oauth::device_authorize(client, metadata, scope).await?;
     let code = theme::current().bold(&started.user_code);
     // The link carries the code: the browser shows it, and the user checks it against this one
-    // (SEC-070). Without a link, the user types the code.
+    // Without a link, the user types the code.
     let target = started
         .verification_uri_complete
         .as_deref()
@@ -612,57 +605,9 @@ pub fn qr_code(text: &str) -> Option<String> {
     )
 }
 
-/// The organization of the credential, and the company when the organization has exactly one.
-pub fn organization_of(me: &Value) -> (Option<Organization>, Option<String>) {
-    let list = |key: &str| {
-        me.get(key)
-            .and_then(Value::as_array)
-            .cloned()
-            .unwrap_or_default()
-    };
-    let (organizations, companies) = (list("organizations"), list("companies"));
-    let id_of =
-        |value: &Value, key: &str| value.get(key).and_then(Value::as_str).map(str::to_owned);
-    let chosen = if organizations.len() == 1 {
-        organizations.first().cloned()
-    } else {
-        let mut ids: Vec<String> = companies
-            .iter()
-            .filter_map(|c| id_of(c, "organization_id"))
-            .collect();
-        ids.dedup();
-        match ids.as_slice() {
-            [only] => organizations
-                .iter()
-                .find(|org| id_of(org, "id").as_deref() == Some(only))
-                .cloned(),
-            _ => None,
-        }
-    };
-    let Some(chosen) = chosen else {
-        return (None, None);
-    };
-    let Some(id) = id_of(&chosen, "id") else {
-        return (None, None);
-    };
-    let organization = Organization {
-        name: id_of(&chosen, "name").unwrap_or_default(),
-        id: id.clone(),
-        extra: Map::new(),
-    };
-    let mut owned = companies
-        .iter()
-        .filter(|company| id_of(company, "organization_id").is_none_or(|org| org == id));
-    let company = match (owned.next(), owned.next()) {
-        (Some(only), None) => id_of(only, "id"),
-        _ => None,
-    };
-    (Some(organization), company)
-}
-
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
+    use serde_json::Map;
 
     use super::*;
     use crate::company::tests::company;
@@ -678,7 +623,7 @@ mod tests {
         Prompter::new(&Env::with_vars(&[]), false)
     }
 
-    /// The login the onboarding runs again after step 1 asks no method (P2-18).
+    /// The login the onboarding runs again after step 1 asks no method.
     #[tokio::test]
     async fn the_browser_flag_asks_no_method() {
         let dir = tempfile::tempdir().unwrap();
@@ -763,44 +708,28 @@ mod tests {
     }
 
     #[test]
-    fn finds_the_organization() {
-        let org = |id: &str| json!({"id": id, "name": format!("Org {id}")});
-        let company = |id: &str, org: &str| json!({"id": id, "organization_id": org});
-        let me = json!({"organizations": [org("o1")], "companies": [company("c1", "o1")]});
-        let (organization, company_id) = organization_of(&me);
-        assert_eq!(organization.unwrap().name, "Org o1");
-        assert_eq!(company_id.as_deref(), Some("c1"));
-        let me = json!({"organizations": [org("o1")], "companies": [company("c1", "o1"), company("c2", "o1")]});
-        assert_eq!(organization_of(&me).1, None);
-        let me =
-            json!({"organizations": [org("o1"), org("o2")], "companies": [company("c2", "o2")]});
-        let (organization, company_id) = organization_of(&me);
-        assert_eq!(organization.unwrap().id, "o2");
-        assert_eq!(company_id.as_deref(), Some("c2"));
-        let me = json!({"organizations": [org("o1"), org("o2")], "companies": []});
-        assert_eq!(organization_of(&me).0, None);
-        assert_eq!(
-            organization_of(&json!({"organizations": [{"name": "x"}]})).0,
-            None
-        );
-        assert_eq!(organization_of(&json!({})).0, None);
-    }
-
-    #[test]
-    fn keeps_the_companies_of_the_organization() {
-        let mut other = company("c2", "B", "2");
-        other.organization_id = "org2".into();
-        let mut loose = company("c3", "C", "3");
-        loose.organization_id.clear();
-        let all = vec![company("c1", "A", "1"), other, loose];
-        let org = Organization {
-            id: "org1".into(),
-            name: "Org".into(),
+    fn keeps_the_previous_company_it_still_reaches() {
+        let mine = [company("c1", "A", "1"), company("c2", "B", "2")];
+        let mut profile = Profile {
+            base_url: "https://a.test".into(),
+            auth: AuthKind::Oauth,
+            company: Some("c2".into()),
+            companies: None,
             extra: Map::new(),
         };
-        let ids = |list: Vec<Company>| list.into_iter().map(|c| c.id).collect::<Vec<_>>();
-        assert_eq!(ids(owned(&all, Some(&org))), ["c1", "c3"]);
-        assert_eq!(ids(owned(&all, None)).len(), 3);
+        let kept = |profile: &Profile, url: &str, mine: &[Company]| {
+            previous_company(Some(profile), url, mine)
+        };
+        assert_eq!(
+            kept(&profile, "https://a.test", &mine).as_deref(),
+            Some("c2")
+        );
+        // Another server, or a company the new login does not reach: not kept.
+        assert_eq!(kept(&profile, "https://b.test", &mine), None);
+        assert_eq!(kept(&profile, "https://a.test", &mine[..1]), None);
+        profile.company = None;
+        assert_eq!(kept(&profile, "https://a.test", &mine), None);
+        assert_eq!(previous_company(None, "https://a.test", &mine), None);
     }
 
     #[tokio::test]
@@ -869,16 +798,20 @@ mod tests {
         let _plain = theme::scoped(theme::Theme::PLAIN);
         let alpha = company("c1", "Alpha OÜ", "1");
         assert_eq!(
-            logged_in("ann@example.com", Some("Org"), Some(&alpha)),
-            "Logged in as ann@example.com · Org · company Alpha OÜ"
+            logged_in("ann@example.com", 1, Some(&alpha)),
+            "Logged in as ann@example.com · company Alpha OÜ"
         );
         assert_eq!(
-            logged_in("an API key", None, None),
+            logged_in("ann@example.com", 3, Some(&alpha)),
+            "Logged in as ann@example.com · 3 companies · company Alpha OÜ"
+        );
+        assert_eq!(
+            logged_in("an API key", 0, None),
             "Logged in as an API key · no company"
         );
         assert_eq!(
-            logged_in("a@b", Some(""), None),
-            "Logged in as a@b · no company"
+            logged_in("a@b", 2, None),
+            "Logged in as a@b · 2 companies · no company"
         );
     }
 
@@ -900,7 +833,6 @@ mod tests {
             Profile {
                 base_url: DEFAULT_BASE_URL.into(),
                 auth: AuthKind::Oauth,
-                organization: None,
                 company: None,
                 companies: None,
                 extra: Map::new(),

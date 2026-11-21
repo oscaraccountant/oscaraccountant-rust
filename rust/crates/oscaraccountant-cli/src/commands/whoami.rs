@@ -6,7 +6,7 @@ use crate::company;
 use crate::error::Result;
 use crate::session::App;
 
-/// Show the user, the credential, the organizations, the companies and the default company.
+/// Show the user, the credential, the companies and the default company.
 /// The companies refresh the cache of the profile.
 pub async fn run(app: &mut App) -> Result<()> {
     let (client, selection) = app.client().await?;
@@ -88,10 +88,6 @@ pub fn summarize(me: &Value, base_url: &str, profile: Option<&str>) -> Value {
         "credential".into(),
         json!(format!("{} ({scopes})", text(&credential, "kind"))),
     );
-    summary.insert(
-        "organizations".into(),
-        json!(named(me.get("organizations"))),
-    );
     summary.insert("companies".into(), json!(named(me.get("companies"))));
     summary.insert("base_url".into(), json!(base_url));
     summary.insert("profile".into(), json!(profile));
@@ -107,7 +103,6 @@ mod tests {
         let me = json!({
             "user": {"name": "Ann", "email": "ann@example.com"},
             "credential": {"kind": "oauth", "scopes": ["read", "write"]},
-            "organizations": [{"id": "o1", "name": "Org"}],
             "companies": [{"id": "c1", "name": "A"}, {"id": "c2", "name": "B"}],
         });
         assert_eq!(
@@ -115,7 +110,6 @@ mod tests {
             json!({
                 "user": "Ann <ann@example.com>",
                 "credential": "oauth (read write)",
-                "organizations": "Org (o1)",
                 "companies": "A (c1), B (c2)",
                 "base_url": "https://x.test",
                 "profile": "default",

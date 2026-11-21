@@ -13,6 +13,12 @@ Received on           2026-09-01
 Bank transaction IDs  bank_transaction_ids
 Uploaded by           uploaded_by
 
+Deletion
+  Deletable        yes
+  Staff deletable  yes
+
+  Blocked by (none)
+
 Meta
   ID                fil0000001
   Core document ID  01J90000000000000000000218
@@ -27,6 +33,12 @@ SHA-256               c5069e96d942a867e6668ba3342bcdefcdd4ba7c75e9284bf5d033877d
 Received on           2026-09-01
 Bank transaction IDs  bank_transaction_ids
 Uploaded by           uploaded_by
+
+Deletion
+  Deletable        yes
+  Staff deletable  yes
+
+  Blocked by (none)
 
 Meta
   ID                fil0000001

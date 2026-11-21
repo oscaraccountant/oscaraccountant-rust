@@ -1,0 +1,50 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: pay-runs get pyr0000001 --company cmp0000001
+---
+=== 80 columns
+2026-09  ● posted  2 050.40 EUR
+
+Payday          2026-10-05
+Currency        EUR
+Employee count  1
+Gross           2 500.00 EUR
+Withheld        449.60 EUR
+Employer tax    850.00 EUR
+Expense         3 350.00 EUR
+Open net        0.00 EUR
+Approved at     2026-10-01
+Posted at       2026-10-01
+
+Employees (1)
+         GROSS           NET  CURRENCY  BASIC EXEMPTION  SOCIAL TAX MINIMUM
+  2 500.00 EUR  2 050.40 EUR  EUR       full             full
+    STATE           AMOUNT  EFFECTIVE DATE  CURRENCY
+    ● posted  2 050.40 EUR  2026-10-05      EUR
+
+Meta
+  ID          pyr0000001
+  Pay run ID  01J90000000000000000000301
+=== 120 columns
+2026-09  ● posted  2 050.40 EUR
+
+Payday          2026-10-05
+Currency        EUR
+Employee count  1
+Gross           2 500.00 EUR
+Withheld        449.60 EUR
+Employer tax    850.00 EUR
+Expense         3 350.00 EUR
+Open net        0.00 EUR
+Approved at     2026-10-01
+Posted at       2026-10-01
+
+Employees (1)
+         GROSS           NET  CURRENCY  BASIC EXEMPTION  SOCIAL TAX MINIMUM
+  2 500.00 EUR  2 050.40 EUR  EUR       full             full
+    STATE           AMOUNT  EFFECTIVE DATE  CURRENCY
+    ● posted  2 050.40 EUR  2026-10-05      EUR
+
+Meta
+  ID          pyr0000001
+  Pay run ID  01J90000000000000000000301

@@ -17,6 +17,7 @@ expression: parties get 01J90000000000000000000179 --company cmp0000001
 [90mIs confirmed[0m      [90mno[0m
 [90mNotes[0m             notes
 [90mPrivate persons[0m   [90mno[0m
+[90mRoles[0m             supplier
 
 [1mDefaults[0m
   [90mExpense role[0m  expense_role
@@ -43,6 +44,7 @@ expression: parties get 01J90000000000000000000179 --company cmp0000001
 [90mIs confirmed[0m      [90mno[0m
 [90mNotes[0m             notes
 [90mPrivate persons[0m   [90mno[0m
+[90mRoles[0m             supplier
 
 [1mDefaults[0m
   [90mExpense role[0m  expense_role

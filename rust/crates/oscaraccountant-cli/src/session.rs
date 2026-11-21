@@ -32,6 +32,8 @@ pub struct Globals {
     pub base_url: Option<String>,
     /// `--api-key`, for this call only.
     pub api_key: Option<String>,
+    /// `-c/--company` of the command, else of the root (`oscar -c <x> invoices list`).
+    pub company: Option<String>,
     /// The output options: `-o`, `--columns`, `--json=fields`, `--jq`, `--template`.
     pub output: crate::render::Options,
     /// `--no-input` (or `OSCAR_NO_INPUT=1`, read by `prompt::Prompter`): never ask.
@@ -229,7 +231,8 @@ impl App {
     }
 
     /// The company of a command: the one [`with_company`](Self::with_company) resolved, else
-    /// `--company`, else `OSCAR_COMPANY`, else the profile's.
+    /// `flag`, else `-c/--company` of the command line (the command's, else the root's), else
+    /// `OSCAR_COMPANY`, else the profile's.
     pub fn company(&self, flag: Option<&str>, selection: &Selection) -> Result<String> {
         if let Some(company) = &selection.company {
             return Ok(company.clone());
@@ -251,13 +254,7 @@ impl App {
     /// The authentication error of a call that has no credential to use: no `--api-key`, no
     /// `OSCAR_API_KEY`, and no profile (or a profile that may not be used here).
     fn logged_out(&self, selection: &Selection) -> Result<()> {
-        let key = self
-            .globals
-            .api_key
-            .as_deref()
-            .is_some_and(|key| !key.is_empty())
-            || self.env.var("OSCAR_API_KEY").is_some();
-        if key {
+        if self.key_given() {
             return Ok(());
         }
         if let Some(refused) = &selection.refused {
@@ -272,9 +269,21 @@ impl App {
         Ok(())
     }
 
-    /// `-c/--company`, else `OSCAR_COMPANY`.
+    /// The credential of the call is an API key of `--api-key` or `OSCAR_API_KEY`, not the
+    /// stored one of the profile.
+    pub fn key_given(&self) -> bool {
+        self.globals
+            .api_key
+            .as_deref()
+            .is_some_and(|key| !key.is_empty())
+            || self.env.var("OSCAR_API_KEY").is_some()
+    }
+
+    /// `flag`, else `-c/--company` of the command line, else `OSCAR_COMPANY`.
     fn wanted_company<'a>(&'a self, flag: Option<&'a str>) -> Option<&'a str> {
-        flag.filter(|value| !value.trim().is_empty())
+        let given = |value: &&str| !value.trim().is_empty();
+        flag.filter(given)
+            .or_else(|| self.globals.company.as_deref().filter(given))
             .or_else(|| self.env.var("OSCAR_COMPANY"))
     }
 
@@ -341,24 +350,6 @@ impl App {
             _ => return Ok(()),
         }
         config.save(&self.paths)
-    }
-
-    /// The organization of a command: `--organization`, else the profile's.
-    pub fn organization(&self, flag: Option<&str>, selection: &Selection) -> Result<String> {
-        flag.filter(|value| !value.is_empty())
-            .map(str::to_owned)
-            .or_else(|| {
-                Some(
-                    selection
-                        .profile
-                        .as_ref()?
-                        .organization
-                        .as_ref()?
-                        .id
-                        .clone(),
-                )
-            })
-            .ok_or_else(|| CliError::usage("No organization. Give --organization <id>."))
     }
 }
 
@@ -476,7 +467,6 @@ pub mod tests {
                 Profile {
                     base_url: url.into(),
                     auth: AuthKind::ApiKey,
-                    organization: None,
                     company: Some(format!("{name}-company")),
                     companies: None,
                     extra: Map::new(),
@@ -611,7 +601,7 @@ pub mod tests {
     }
 
     #[test]
-    fn company_and_organization() {
+    fn the_company_of_a_command() {
         let dir = tempfile::tempdir().unwrap();
         let app = app(dir.path(), &[("OSCAR_COMPANY", "env-company")]);
         let mut chosen = app.select(&config()).unwrap();
@@ -654,8 +644,22 @@ pub mod tests {
             keyed.company(None, &nobody).unwrap_err().code,
             crate::error::EXIT_USAGE
         );
-        assert_eq!(app.organization(Some("o"), &chosen).unwrap(), "o");
-        assert!(app.organization(None, &chosen).is_err());
+        // -c of the command line (the root's, in the globals): after the flag, before
+        // OSCAR_COMPANY and the profile's.
+        let mut rooted = self::app(dir.path(), &[("OSCAR_COMPANY", "env-company")]);
+        rooted.globals.company = Some("root".into());
+        assert_eq!(rooted.company(None, &chosen).unwrap(), "root");
+        assert_eq!(rooted.company(Some("leaf"), &chosen).unwrap(), "leaf");
+        assert_eq!(rooted.company(Some(" "), &chosen).unwrap(), "root");
+        rooted.globals.company = Some(String::new());
+        assert_eq!(rooted.company(None, &chosen).unwrap(), "env-company");
+        assert!(!app.key_given());
+        assert!(keyed.key_given());
+        let mut flagged = self::app(dir.path(), &[]);
+        flagged.globals.api_key = Some("osk_flag".into());
+        assert!(flagged.key_given());
+        flagged.globals.api_key = Some(String::new());
+        assert!(!flagged.key_given());
     }
 
     #[test]

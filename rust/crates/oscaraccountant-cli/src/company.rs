@@ -218,7 +218,6 @@ pub mod tests {
             name: name.into(),
             registry_code: code.into(),
             state: "ready".into(),
-            organization_id: "org1".into(),
         }
     }
 
@@ -276,6 +275,7 @@ pub mod tests {
     #[test]
     fn reads_me_and_the_cache() {
         let me = json!({"companies": [
+            // An older server also sent `organization_id`; the CLI ignores it.
             {"id": "c1", "name": "A", "registry_code": "1", "state": "ready", "organization_id": "o1", "vat_number": "EE1"},
             {"name": "no id"},
         ]});
@@ -287,7 +287,6 @@ pub mod tests {
                 name: "A".into(),
                 registry_code: "1".into(),
                 state: "ready".into(),
-                organization_id: "o1".into(),
             }]
         );
         assert!(from_me(&json!({})).is_empty());
@@ -299,7 +298,6 @@ pub mod tests {
             crate::config::Profile {
                 base_url: "https://a.test".into(),
                 auth: crate::config::AuthKind::Oauth,
-                organization: None,
                 company: None,
                 companies: Some(list),
                 extra: serde_json::Map::new(),

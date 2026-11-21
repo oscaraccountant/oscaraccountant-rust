@@ -151,12 +151,15 @@ pub fn header(view: &View, field: &ViewField) -> String {
 /// Money a reader looks for first: a total, a closing balance, what is left to pay.
 const KEY_MONEY: [&str; 6] = ["closing", "total", "gross", "residual", "balance", "amount"];
 
-/// The priority of a column (0 is kept longest), from its kind: the title, then the status and
-/// the short id, the key amount, the first date and the codes, the text, the rest, and last the
-/// `wide` extras and the opening balances.
+/// The priority of a column (0 is kept longest), from its kind: the title, then the status (or
+/// a receipt state in its place) and the short id, the key amount, the first date and the codes,
+/// the text, the rest, and last the `wide` extras and the opening balances.
 fn priority(view: &View, field: &ViewField, position: usize, first_date: Option<&str>) -> usize {
     if position == 0 || field.name == view.title {
         return 0;
+    }
+    if field.name == super::receipts::RECEIPT_STATE {
+        return super::receipts::column_priority(view);
     }
     if view
         .status
@@ -340,7 +343,7 @@ mod tests {
 
     #[test]
     fn the_status_and_the_amount_stay_at_80_columns() {
-        // Self-test P2-1: at 80 columns the status went first and the party stayed whole.
+        // Regression: at 80 columns the status went first and the party stayed whole.
         let rows = [
             invoice_row(
                 Some("EE-2026-006"),
@@ -379,7 +382,7 @@ mod tests {
 
     #[test]
     fn wide_keeps_the_short_id_at_120_and_80_columns() {
-        // Self-test P2-2: the short id only appeared at 160 columns.
+        // Regression: the short id only appeared at 160 columns.
         let rows = [invoice_row(Some("EE-2026-006"), "Aurora Analytics OÜ")];
         let items: Vec<&Map<String, Value>> = rows.iter().filter_map(Value::as_object).collect();
         for width in [80, 120] {
@@ -400,7 +403,7 @@ mod tests {
 
     #[test]
     fn a_draft_row_shows_its_short_id() {
-        // Self-test P2-4: a draft has no number; its row started with blanks.
+        // Regression: a draft has no number; its row started with blanks.
         let rows = [invoice_row(None, "Echo Robotics OÜ")];
         let items: Vec<&Map<String, Value>> = rows.iter().filter_map(Value::as_object).collect();
         let text = render(
@@ -420,7 +423,7 @@ mod tests {
 
     #[test]
     fn codes_are_never_cut_and_closing_balances_stay() {
-        // Self-test P2-3 and P2-1: `EE-PUR-FOREIGN-V…`, and no CLOSING BASE at 80 columns.
+        // Regression: `EE-PUR-FOREIGN-V…`, and no CLOSING BASE at 80 columns.
         let codes = [
             json!({"id": "v1", "code": "EE-PUR-RC-EU-GOODS-REVERSE", "name": "Reverse charge on goods bought in the EU",
                             "direction": "purchase", "treatment": "rc_eu_goods", "deductible_bps": 10_000, "active": true}),
@@ -437,7 +440,7 @@ mod tests {
         .unwrap();
         assert!(widest(&text) <= 80, "{text}");
         assert!(text.contains("EE-PUR-RC-EU-GOODS-REVERSE"), "{text}");
-        // Self-test P2-10: the treatment in words, not `rc eu goods`.
+        // Regression: the treatment in words, not `rc eu goods`.
         assert!(text.contains("reverse charge EU"), "{text}");
         let text = render(
             &VIEW_BOOKS_VAT_CODE,
@@ -476,7 +479,7 @@ mod tests {
 
     #[test]
     fn a_column_by_its_header() {
-        // Self-test P2-13: the header says GROSS, `--columns gross` failed.
+        // Regression: the header says GROSS, `--columns gross` failed.
         let names = |columns: &[&str]| {
             fields(
                 &VIEW_BOOKS_INVOICE,

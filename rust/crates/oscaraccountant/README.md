@@ -78,7 +78,10 @@ let oscar = Client::builder()
 
 ### The login of the `oscar` CLI
 
-For a script on your own machine, log in once with `oscar login`, then:
+For a script on your own machine, install the CLI
+(`cargo install oscaraccountant-cli` or `npm install -g @oscaraccountant/cli`)
+and log in once with `oscar login`. The SDK runs `oscar` from `PATH`, so a
+login with `npx` alone does not serve it. Then:
 
 ```rust
 use oscaraccountant::{Client, Credential};

@@ -7,9 +7,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use common::{
-    FakeTransport, Reply, builder, builder_with_env, organization, outcome, stored_document,
-};
+use common::{FakeTransport, Reply, builder, builder_with_env, company, outcome, stored_document};
 use futures::{StreamExt, TryStreamExt};
 use oscaraccountant::{
     BoxError, CancelInvoiceBodyRequest, Client, Credential, Error, HttpMethod, TlsRoots,
@@ -29,11 +27,11 @@ fn header<'a>(request: &'a oscaraccountant::HttpRequest, name: &str) -> Option<&
 async fn a_get_sends_the_headers_and_the_query() {
     let transport = FakeTransport::new(vec![Reply::json(
         200,
-        json!({"items": [organization("o1")], "next_cursor": null}),
+        json!({"items": [company("o1")], "next_cursor": null}),
     )]);
     let client = builder(&transport, &sleeps()).build().unwrap();
     let page = client
-        .organizations()
+        .companies()
         .list()
         .limit(50)
         .cursor("a b&c")
@@ -45,7 +43,7 @@ async fn a_get_sends_the_headers_and_the_query() {
     assert_eq!(request.method, HttpMethod::Get);
     assert_eq!(
         request.url,
-        "https://api.example.com/api/organizations/?cursor=a%20b%26c&limit=50"
+        "https://api.example.com/api/companies/?cursor=a%20b%26c&limit=50"
     );
     assert_eq!(header(request, "authorization"), Some("Bearer osk_test"));
     assert_eq!(header(request, "accept"), Some("application/json"));
@@ -61,17 +59,12 @@ async fn a_get_sends_the_headers_and_the_query() {
 
 #[tokio::test]
 async fn a_path_value_is_encoded() {
-    let transport = FakeTransport::new(vec![Reply::json(200, organization("o/1"))]);
+    let transport = FakeTransport::new(vec![Reply::json(200, company("o/1"))]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    client
-        .organizations()
-        .retrieve("o/1 ö")
-        .send()
-        .await
-        .unwrap();
+    client.companies().retrieve("o/1 ö").send().await.unwrap();
     assert_eq!(
         transport.requests()[0].url,
-        "https://api.example.com/api/organizations/o%2F1%20%C3%B6/"
+        "https://api.example.com/api/companies/o%2F1%20%C3%B6/"
     );
 }
 
@@ -178,12 +171,12 @@ async fn without_a_credential_nothing_is_sent() {
 
 #[tokio::test]
 async fn the_environment_key_is_used_when_no_key_is_given() {
-    let transport = FakeTransport::new(vec![Reply::json(200, organization("o1"))]);
+    let transport = FakeTransport::new(vec![Reply::json(200, company("o1"))]);
     let client = builder_with_env(&transport, &sleeps(), &[("OSCAR_API_KEY", "osk_env")])
         .api_key("")
         .build()
         .unwrap();
-    client.organizations().retrieve("o1").send().await.unwrap();
+    client.companies().retrieve("o1").send().await.unwrap();
     assert_eq!(
         header(&transport.requests()[0], "authorization"),
         Some("Bearer osk_env")
@@ -194,7 +187,7 @@ async fn the_environment_key_is_used_when_no_key_is_given() {
 async fn the_token_provider_is_called_before_each_attempt() {
     let transport = FakeTransport::new(vec![
         Reply::problem(503, "unavailable"),
-        Reply::json(200, organization("o1")),
+        Reply::json(200, company("o1")),
     ]);
     let calls = Arc::new(AtomicUsize::new(0));
     let counter = calls.clone();
@@ -205,7 +198,7 @@ async fn the_token_provider_is_called_before_each_attempt() {
         })
         .build()
         .unwrap();
-    client.organizations().retrieve("o1").send().await.unwrap();
+    client.companies().retrieve("o1").send().await.unwrap();
     let requests = transport.requests();
     assert_eq!(
         header(&requests[0], "authorization"),
@@ -240,11 +233,11 @@ async fn a_get_is_retried_with_backoff() {
     let transport = FakeTransport::new(vec![
         Reply::problem(503, "unavailable"),
         Reply::Error(TransportError::Connection("reset".into())),
-        Reply::json(200, organization("o1")),
+        Reply::json(200, company("o1")),
     ]);
     let sleeps = sleeps();
     let client = builder(&transport, &sleeps).build().unwrap();
-    client.organizations().retrieve("o1").send().await.unwrap();
+    client.companies().retrieve("o1").send().await.unwrap();
     assert_eq!(transport.requests().len(), 3);
     assert_eq!(
         *sleeps.lock().unwrap(),
@@ -256,11 +249,11 @@ async fn a_get_is_retried_with_backoff() {
 async fn the_jitter_shortens_the_delay() {
     let transport = FakeTransport::new(vec![
         Reply::problem(502, "bad_gateway"),
-        Reply::json(200, organization("o1")),
+        Reply::json(200, company("o1")),
     ]);
     let sleeps = sleeps();
     let client = builder(&transport, &sleeps).jitter(|| 0.5).build().unwrap();
-    client.organizations().retrieve("o1").send().await.unwrap();
+    client.companies().retrieve("o1").send().await.unwrap();
     assert_eq!(
         *sleeps.lock().unwrap(),
         vec![Duration::from_micros(437_500)]
@@ -273,11 +266,11 @@ async fn retry_after_wins_and_a_long_one_ends_the_retries() {
         Reply::problem(429, "throttled").with_header("retry-after", "3"),
         Reply::problem(429, "throttled")
             .with_header("retry-after", "Sun, 27 Sep 2026 10:00:05 GMT"),
-        Reply::json(200, organization("o1")),
+        Reply::json(200, company("o1")),
     ]);
     let sleeps = sleeps();
     let client = builder(&transport, &sleeps).build().unwrap();
-    client.organizations().retrieve("o1").send().await.unwrap();
+    client.companies().retrieve("o1").send().await.unwrap();
     assert_eq!(
         *sleeps.lock().unwrap(),
         vec![Duration::from_secs(3), Duration::from_secs(5)]
@@ -288,12 +281,7 @@ async fn retry_after_wins_and_a_long_one_ends_the_retries() {
     ]);
     let sleeps = self::sleeps();
     let client = builder(&transport, &sleeps).build().unwrap();
-    let error = client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o1").send().await.unwrap_err();
     assert!(matches!(error, Error::RateLimit(_)));
     assert_eq!(transport.requests().len(), 1);
     assert!(sleeps.lock().unwrap().is_empty());
@@ -307,12 +295,7 @@ async fn the_retries_stop_after_the_maximum() {
         Reply::problem(500, "server_error"),
     ]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let error = client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o1").send().await.unwrap_err();
     assert!(matches!(error, Error::InternalServer(_)));
     assert_eq!(error.request_id(), Some("req-9"));
     assert_eq!(transport.requests().len(), 3);
@@ -322,12 +305,7 @@ async fn the_retries_stop_after_the_maximum() {
         .max_retries(0)
         .build()
         .unwrap();
-    client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    client.companies().retrieve("o1").send().await.unwrap_err();
     assert_eq!(transport.requests().len(), 1);
 
     let transport = FakeTransport::new(vec![
@@ -339,7 +317,7 @@ async fn the_retries_stop_after_the_maximum() {
         .build()
         .unwrap();
     client
-        .organizations()
+        .companies()
         .retrieve("o1")
         .max_retries(1)
         .send()
@@ -409,12 +387,7 @@ async fn a_connection_error_after_the_last_retry() {
         .max_retries(1)
         .build()
         .unwrap();
-    let error = client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o1").send().await.unwrap_err();
     assert!(matches!(&error, Error::Connection(message) if message == "refused"));
     assert!(error.is_network());
 }
@@ -427,12 +400,7 @@ async fn an_attempt_that_hangs_times_out() {
         .max_retries(1)
         .build()
         .unwrap();
-    let error = client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o1").send().await.unwrap_err();
     assert!(matches!(error, Error::Timeout(timeout) if timeout == Duration::from_secs(5)));
     assert_eq!(transport.requests().len(), 2);
 
@@ -442,7 +410,7 @@ async fn an_attempt_that_hangs_times_out() {
         .build()
         .unwrap();
     let error = client
-        .organizations()
+        .companies()
         .retrieve("o1")
         .timeout(Duration::from_millis(10))
         .send()
@@ -465,12 +433,7 @@ async fn each_status_has_its_error() {
     for (status, check) in cases {
         let transport = FakeTransport::new(vec![Reply::problem(status, "some_code")]);
         let client = builder(&transport, &sleeps()).build().unwrap();
-        let error = client
-            .organizations()
-            .retrieve("o1")
-            .send()
-            .await
-            .unwrap_err();
+        let error = client.companies().retrieve("o1").send().await.unwrap_err();
         assert!(check(&error), "{status}: {error:?}");
         assert_eq!(
             error.to_string(),
@@ -483,12 +446,7 @@ async fn each_status_has_its_error() {
 async fn a_body_that_is_not_the_type_is_a_json_error() {
     let transport = FakeTransport::new(vec![Reply::json(200, json!({"unexpected": true}))]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let error = client
-        .organizations()
-        .retrieve("o1")
-        .send()
-        .await
-        .unwrap_err();
+    let error = client.companies().retrieve("o1").send().await.unwrap_err();
     assert!(matches!(error, Error::Json(_)));
 }
 
@@ -604,20 +562,12 @@ async fn the_stream_walks_every_page() {
     let transport = FakeTransport::new(vec![
         Reply::json(
             200,
-            json!({"items": [organization("o1"), organization("o2")], "next_cursor": "c2"}),
+            json!({"items": [company("o1"), company("o2")], "next_cursor": "c2"}),
         ),
-        Reply::json(
-            200,
-            json!({"items": [organization("o3")], "next_cursor": null}),
-        ),
+        Reply::json(200, json!({"items": [company("o3")], "next_cursor": null})),
     ]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let stream = client
-        .organizations()
-        .list()
-        .limit(2)
-        .cursor("start")
-        .stream();
+    let stream = client.companies().list().limit(2).cursor("start").stream();
     assert!(format!("{stream:?}").contains("PageStream"));
     assert!(
         transport.requests().is_empty(),
@@ -630,8 +580,8 @@ async fn the_stream_walks_every_page() {
     assert_eq!(
         urls,
         vec![
-            "https://api.example.com/api/organizations/?cursor=start&limit=2",
-            "https://api.example.com/api/organizations/?limit=2&cursor=c2",
+            "https://api.example.com/api/companies/?cursor=start&limit=2",
+            "https://api.example.com/api/companies/?limit=2&cursor=c2",
         ]
     );
 }
@@ -639,17 +589,11 @@ async fn the_stream_walks_every_page() {
 #[tokio::test]
 async fn the_stream_fetches_a_page_only_when_needed() {
     let transport = FakeTransport::new(vec![
-        Reply::json(
-            200,
-            json!({"items": [organization("o1")], "next_cursor": "c2"}),
-        ),
-        Reply::json(
-            200,
-            json!({"items": [organization("o2")], "next_cursor": ""}),
-        ),
+        Reply::json(200, json!({"items": [company("o1")], "next_cursor": "c2"})),
+        Reply::json(200, json!({"items": [company("o2")], "next_cursor": ""})),
     ]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let mut stream = client.organizations().list().stream();
+    let mut stream = client.companies().list().stream();
     assert_eq!(stream.next().await.unwrap().unwrap().id, "o1");
     assert_eq!(transport.requests().len(), 1);
     assert_eq!(stream.next().await.unwrap().unwrap().id, "o2");
@@ -664,35 +608,29 @@ async fn the_stream_fetches_a_page_only_when_needed() {
 #[tokio::test]
 async fn the_stream_ends_with_an_error() {
     let transport = FakeTransport::new(vec![
-        Reply::json(
-            200,
-            json!({"items": [organization("o1")], "next_cursor": "c2"}),
-        ),
+        Reply::json(200, json!({"items": [company("o1")], "next_cursor": "c2"})),
         Reply::problem(403, "forbidden"),
     ]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let results: Vec<_> = client.organizations().list().stream().collect().await;
+    let results: Vec<_> = client.companies().list().stream().collect().await;
     assert_eq!(results.len(), 2);
     assert!(results[0].is_ok());
     assert!(matches!(results[1], Err(Error::PermissionDenied(_))));
 
     let transport = FakeTransport::new(vec![Reply::json(200, json!("not a page"))]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let results: Vec<_> = client.organizations().list().stream().collect().await;
+    let results: Vec<_> = client.companies().list().stream().collect().await;
     assert!(matches!(results[..], [Err(Error::Json(_))]));
 }
 
 #[tokio::test]
 async fn the_pages_of_a_list() {
     let transport = FakeTransport::new(vec![
-        Reply::json(
-            200,
-            json!({"items": [organization("o1")], "next_cursor": "c2"}),
-        ),
+        Reply::json(200, json!({"items": [company("o1")], "next_cursor": "c2"})),
         Reply::json(200, json!({"items": [], "next_cursor": null})),
     ]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let pages = client.organizations().list().stream().pages();
+    let pages = client.companies().list().stream().pages();
     assert!(format!("{pages:?}").contains("Pages"));
     let pages: Vec<_> = pages.try_collect().await.unwrap();
     assert_eq!(pages.len(), 2);
@@ -700,10 +638,10 @@ async fn the_pages_of_a_list() {
 
     let transport = FakeTransport::new(vec![Reply::json(
         200,
-        json!({"items": [organization("o1")], "next_cursor": null}),
+        json!({"items": [company("o1")], "next_cursor": null}),
     )]);
     let client = builder(&transport, &sleeps()).build().unwrap();
-    let mut stream = client.organizations().list().stream();
+    let mut stream = client.companies().list().stream();
     stream.next().await.unwrap().unwrap();
     let rest: Vec<_> = stream.pages().collect().await;
     assert!(rest.is_empty(), "a polled stream has no pages left to give");

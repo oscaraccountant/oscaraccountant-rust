@@ -709,6 +709,16 @@ pub fn value_cell(
             }
         }
         (FieldKind::Number, Value::Number(_)) => Cell::fixed(value.to_string(), None, Align::Right),
+        (FieldKind::Enum { .. }, Value::String(text))
+            if super::receipts::label(field.name, text).is_some() =>
+        {
+            // A receipt state reads as a person says it, and is never cut short.
+            let label = super::receipts::label(field.name, text).unwrap_or_default();
+            let role = (field.name == super::receipts::RECEIPT_STATE)
+                .then(|| super::receipts::state_role(text))
+                .flatten();
+            Cell::fixed(label.to_owned(), role, Align::Left)
+        }
         (FieldKind::Enum { .. }, Value::String(text)) => {
             let words = match legal_form(text).filter(|_| field.name == "legal_form") {
                 Some(written) => written.to_owned(),
@@ -976,7 +986,7 @@ mod tests {
 
     #[test]
     fn enum_words_bps_and_legal_forms() {
-        // Self-test P2-6 and P2-10: `● 1 30`, `ou`, `10000`.
+        // Regression: `● 1 30`, `ou`, `10000`.
         assert_eq!(enum_words("1_30"), "1-30");
         assert_eq!(enum_words("over_90"), "over 90");
         assert_eq!(enum_words("rc_eu_goods"), "reverse charge EU goods");
@@ -1120,8 +1130,8 @@ mod tests {
 
     #[test]
     fn days_sizes_english_names_and_snapshot_words() {
-        // Self-test P2-6 (`DAYS OVERDUE  -9`), N3-16 (`SIZE BYTES 38307`) and N2-6 (Estonian
-        // account names beside `account_name_en`).
+        // Regression: `DAYS OVERDUE  -9`, `SIZE BYTES 38307`, and Estonian account names beside
+        // `account_name_en`.
         assert_eq!(days_overdue_text(10), "10");
         assert_eq!(days_overdue_text(0), "due today");
         assert_eq!(days_overdue_text(-9), "due in 9d");

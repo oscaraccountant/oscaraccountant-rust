@@ -336,7 +336,7 @@ mod tests {
 
     #[test]
     fn a_template_of_one_item_runs_per_item_of_a_list() {
-        // Self-test P2-12: the README form printed an empty line.
+        // Regression: the README form printed an empty line.
         let page = json!({"items": [{"number": "A", "state": "issued"}, {"number": "B", "state": "posted"}],
                           "next_cursor": null});
         assert_eq!(
@@ -369,7 +369,7 @@ mod tests {
 
     #[test]
     fn csv_tsv_and_why_an_expression_fails() {
-        // Self-test P2-14: `@tsv` and `@csv` were "not a valid jq expression", with no reason.
+        // Regression: `@tsv` and `@csv` were "not a valid jq expression", with no reason.
         let page = json!({"items": [{"number": "EE-1", "name": "A \"B\", C", "gross": 12.5, "x": null},
                                     {"number": "EE-2", "name": "tab\there\nnew\\line", "gross": 3, "x": true}]});
         assert_eq!(

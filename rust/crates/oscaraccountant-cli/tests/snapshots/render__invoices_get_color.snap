@@ -48,6 +48,10 @@ expression: invoices get 01J90000000000000000000116 --company cmp0000001
     [1mFILENAME[0m  [1mROLE[0m  [1mKIND[0m
     filename  role  invoice
 
+  [1mRemoved documents[0m [2m(1)[0m
+    [1mFILENAME[0m  [1mREMOVED AT[0m  [1mROLE[0m
+    filename  2026-09-27  role
+
 [1mRevisions[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mSTATE[0m       [1mGROSS[0m  [1mINVOICE DATE[0m
             1  [2m● [0mstate  0.01 EUR  2026-09-01
@@ -62,6 +66,8 @@ expression: invoices get 01J90000000000000000000116 --company cmp0000001
   [90mPaid[0m         [90mno[0m
   [90mCredited[0m     [90mno[0m
   [90mWritten off[0m  [90mno[0m
+
+[1mAllocations[0m [2m(none)[0m
 
 [2mMeta[0m
   [2mID                   01J90000000000000000000116[0m
@@ -115,6 +121,10 @@ expression: invoices get 01J90000000000000000000116 --company cmp0000001
     [1mFILENAME[0m  [1mROLE[0m  [1mKIND[0m
     filename  role  invoice
 
+  [1mRemoved documents[0m [2m(1)[0m
+    [1mFILENAME[0m  [1mREMOVED AT[0m  [1mROLE[0m
+    filename  2026-09-27  role
+
 [1mRevisions[0m [2m(1)[0m
   [1mREVISION NO[0m  [1mSTATE[0m       [1mGROSS[0m  [1mINVOICE DATE[0m
             1  [2m● [0mstate  0.01 EUR  2026-09-01
@@ -129,6 +139,8 @@ expression: invoices get 01J90000000000000000000116 --company cmp0000001
   [90mPaid[0m         [90mno[0m
   [90mCredited[0m     [90mno[0m
   [90mWritten off[0m  [90mno[0m
+
+[1mAllocations[0m [2m(none)[0m
 
 [2mMeta[0m
   [2mID                   01J90000000000000000000116[0m

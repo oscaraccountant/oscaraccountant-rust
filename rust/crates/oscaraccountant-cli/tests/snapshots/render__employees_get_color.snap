@@ -1,0 +1,58 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employees get emp0000001 --company cmp0000001
+---
+=== 80 columns
+[1mMock[0m  [32m● [0m[32mregistered[0m
+
+[90mFirst name[0m          Mari
+[90mPersonal code[0m       *******0001
+[90mBirth date[0m          1990-05-14
+[90mCitizenship[0m         EE
+[90mIBAN[0m                EE382200221020145685
+[90mEmail[0m               mari@example.com
+[90mBasic exemption[0m     full
+[90mPension rate[0m        2
+[90mSource[0m              oscar
+[90mEmployment type[0m     1
+[90mStart date[0m          2026-09-01
+[90mRegistered outside[0m  [90mno[0m
+
+[1mEmployments[0m [2m(1)[0m
+  [1mEMPLOYMENT TYPE[0m  [1mSTART DATE[0m  [1mSTATUS[0m        [1mSOURCE[0m  [1mTOOT ID[0m
+                1  2026-09-01  [32m● [0m[32mregistered[0m  oscar    123456
+
+[1mAbsences[0m [2m(1)[0m
+  [1mSTART DATE[0m  [1mEND DATE[0m    [1mKIND[0m
+  2026-12-21  2026-12-31  holiday
+
+[2mMeta[0m
+  [2mID          emp0000001[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m
+=== 120 columns
+[1mMock[0m  [32m● [0m[32mregistered[0m
+
+[90mFirst name[0m          Mari
+[90mPersonal code[0m       *******0001
+[90mBirth date[0m          1990-05-14
+[90mCitizenship[0m         EE
+[90mIBAN[0m                EE382200221020145685
+[90mEmail[0m               mari@example.com
+[90mBasic exemption[0m     full
+[90mPension rate[0m        2
+[90mSource[0m              oscar
+[90mEmployment type[0m     1
+[90mStart date[0m          2026-09-01
+[90mRegistered outside[0m  [90mno[0m
+
+[1mEmployments[0m [2m(1)[0m
+  [1mEMPLOYMENT TYPE[0m  [1mSTART DATE[0m  [1mSTATUS[0m        [1mSOURCE[0m  [1mTOOT ID[0m
+                1  2026-09-01  [32m● [0m[32mregistered[0m  oscar    123456
+
+[1mAbsences[0m [2m(1)[0m
+  [1mSTART DATE[0m  [1mEND DATE[0m    [1mKIND[0m
+  2026-12-21  2026-12-31  holiday
+
+[2mMeta[0m
+  [2mID          emp0000001[0m
+  [2mCreated at  2026-09-27T10:00:00Z[0m

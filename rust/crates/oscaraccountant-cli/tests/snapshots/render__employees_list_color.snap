@@ -1,0 +1,12 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employees list --company cmp0000001
+---
+=== 80 columns
+[1mLAST NAME[0m  [1mFIRST NAME[0m  [1mPERSONAL CODE[0m  [1mEMPLOYMENT TYPE[0m  [1mSTART DATE[0m  [1mSTATUS[0m
+Mock       Mari        *******0001                  1  2026-09-01  [32m● [0m[32mregistered[0m
+Example    Jaan        *******0002                601  2025-01-01  [32m● [0m[32mregistered[0m
+=== 120 columns
+[1mLAST NAME[0m  [1mFIRST NAME[0m  [1mPERSONAL CODE[0m  [1mEMPLOYMENT TYPE[0m  [1mSTART DATE[0m  [1mSTATUS[0m
+Mock       Mari        *******0001                  1  2026-09-01  [32m● [0m[32mregistered[0m
+Example    Jaan        *******0002                601  2025-01-01  [32m● [0m[32mregistered[0m

@@ -10,12 +10,19 @@ use crate::env::Env;
 pub fn open(url: &str, env: &Env) -> bool {
     match env.var("BROWSER") {
         Some(browser) => match command(browser, url) {
-            Some(mut command) => command
-                .stdin(Stdio::null())
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .spawn()
-                .is_ok(),
+            Some(mut command) => {
+                // A process group of its own, as the opener of the OS: the browser goes on when
+                // `oscar` ends. In the foreground group it gets the hangup of the terminal when
+                // `oscar` is the session leader (a terminal or a pane that runs only `oscar`).
+                #[cfg(unix)]
+                std::os::unix::process::CommandExt::process_group(&mut command, 0);
+                command
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()
+                    .is_ok()
+            }
             None => false,
         },
         None => open::that_detached(url).is_ok(),

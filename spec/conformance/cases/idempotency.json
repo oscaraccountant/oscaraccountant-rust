@@ -398,6 +398,7 @@
                 "base_currency": "EUR",
                 "needs_review": false,
                 "review_note": "review_note",
+                "review_decision": null,
                 "open_minor": 1,
                 "settlement_state": "unposted",
                 "revision": {
@@ -430,8 +431,13 @@
                   "source_payload": {},
                   "needs_review": false,
                   "review_note": "review_note",
+                  "review_decision": null,
                   "reason": "reason",
                   "customer_note": null,
+                  "buyer_contact_name": null,
+                  "order_number": null,
+                  "contract_number": null,
+                  "buyer_reference": null,
                   "prices_include_vat": false,
                   "language": null,
                   "base_vat": null,
@@ -447,6 +453,7 @@
                       "quantity": "quantity",
                       "unit": "unit",
                       "unit_price_minor": 1,
+                      "unit_price": "0.01",
                       "allowance_minor": 1,
                       "charge_minor": 1,
                       "net_minor": 1,
@@ -470,7 +477,26 @@
                       "document_id": "01J90000000000000000000139",
                       "role": "role",
                       "filename": "filename",
-                      "kind": "invoice"
+                      "kind": "invoice",
+                      "file_id": null,
+                      "download_url": null,
+                      "source": "source"
+                    }
+                  ],
+                  "bank_account_ids": null,
+                  "removed_documents": [
+                    {
+                      "document_id": "01J90000000000000000000318",
+                      "role": "role",
+                      "replaced_by_document_id": null,
+                      "reason_code": null,
+                      "reason": "reason",
+                      "removed_at": "2026-09-27T10:00:00Z",
+                      "actor_id": "01J90000000000000000000319",
+                      "file_id": null,
+                      "filename": "filename",
+                      "replacement_file_id": null,
+                      "replacement_filename": "replacement_filename"
                     }
                   ]
                 },
@@ -510,7 +536,10 @@
                   "paid": false,
                   "credited": false,
                   "written_off": false
-                }
+                },
+                "posted_at": null,
+                "allocations": [],
+                "migrated_from": null
               }
             }
           }
@@ -552,6 +581,7 @@
             "base_currency": "EUR",
             "needs_review": false,
             "review_note": "review_note",
+            "review_decision": null,
             "open_minor": 1,
             "settlement_state": "unposted",
             "revision": {
@@ -584,8 +614,13 @@
               "source_payload": {},
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "reason": "reason",
               "customer_note": null,
+              "buyer_contact_name": null,
+              "order_number": null,
+              "contract_number": null,
+              "buyer_reference": null,
               "prices_include_vat": false,
               "language": null,
               "base_vat": null,
@@ -601,6 +636,7 @@
                   "quantity": "quantity",
                   "unit": "unit",
                   "unit_price_minor": 1,
+                  "unit_price": "0.01",
                   "allowance_minor": 1,
                   "charge_minor": 1,
                   "net_minor": 1,
@@ -624,7 +660,26 @@
                   "document_id": "01J90000000000000000000139",
                   "role": "role",
                   "filename": "filename",
-                  "kind": "invoice"
+                  "kind": "invoice",
+                  "file_id": null,
+                  "download_url": null,
+                  "source": "source"
+                }
+              ],
+              "bank_account_ids": null,
+              "removed_documents": [
+                {
+                  "document_id": "01J90000000000000000000318",
+                  "role": "role",
+                  "replaced_by_document_id": null,
+                  "reason_code": null,
+                  "reason": "reason",
+                  "removed_at": "2026-09-27T10:00:00Z",
+                  "actor_id": "01J90000000000000000000319",
+                  "file_id": null,
+                  "filename": "filename",
+                  "replacement_file_id": null,
+                  "replacement_filename": "replacement_filename"
                 }
               ]
             },
@@ -664,7 +719,10 @@
               "paid": false,
               "credited": false,
               "written_off": false
-            }
+            },
+            "posted_at": null,
+            "allocations": [],
+            "migrated_from": null
           }
         }
       }

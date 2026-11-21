@@ -1,0 +1,28 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: bank-transactions list --to-explain true --all --company cmp0000001
+---
+=== 80 columns
+BOOKING DATE  COUNTERPARTY NAME         TOTAL  RECEIPT
+2026-09-04    Example SMS Inc     (18.96 EUR)  invoice booked, not matched
+2026-09-02    Example Cloud Ltd   (43.21 EUR)  received, not booked
+2026-09-01    Example Hosting OÜ   (9.90 EUR)  missing
+
+Checked against the bank lines in the books, 01.09.2026 to 18.11.2026:
+  Main account (EE001)  01.09.2026 to 18.11.2026 · 120 lines · no lines in 10.2026
+Not checked:
+  Savings account (EE003)  no bank lines in the books
+  Broker account (EE004)   bank feed account, not linked to the books
+Months and accounts outside this range are not checked.
+=== 120 columns
+BOOKING DATE  COUNTERPARTY NAME   DESCRIPTION         TOTAL  RECEIPT                      BANK ACCOUNT LABEL
+2026-09-04    Example SMS Inc     Card payment  (18.96 EUR)  invoice booked, not matched  Main account
+2026-09-02    Example Cloud Ltd   Card payment  (43.21 EUR)  received, not booked         Main account
+2026-09-01    Example Hosting OÜ  Card payment   (9.90 EUR)  missing                      Main account
+
+Checked against the bank lines in the books, 01.09.2026 to 18.11.2026:
+  Main account (EE001)  01.09.2026 to 18.11.2026 · 120 lines · no lines in 10.2026
+Not checked:
+  Savings account (EE003)  no bank lines in the books
+  Broker account (EE004)   bank feed account, not linked to the books
+Months and accounts outside this range are not checked.

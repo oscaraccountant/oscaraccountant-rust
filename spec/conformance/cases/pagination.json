@@ -88,8 +88,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "1"
@@ -163,8 +165,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "2"
@@ -238,8 +242,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": null
@@ -285,8 +291,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             },
             {
               "id": "01J90000000000000000000120",
@@ -321,8 +329,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             },
             {
               "id": "01J90000000000000000000124",
@@ -357,8 +367,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             }
           ]
         }
@@ -444,8 +456,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   },
                   {
                     "id": "01J90000000000000000000120",
@@ -480,8 +494,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "2"
@@ -528,8 +544,10 @@
                 "base_currency": "EUR",
                 "needs_review": false,
                 "review_note": "review_note",
+                "review_decision": null,
                 "open_minor": 1,
-                "settlement_state": "unposted"
+                "settlement_state": "unposted",
+                "posted_at": null
               },
               {
                 "id": "01J90000000000000000000120",
@@ -564,8 +582,10 @@
                 "base_currency": "EUR",
                 "needs_review": false,
                 "review_note": "review_note",
+                "review_decision": null,
                 "open_minor": 1,
-                "settlement_state": "unposted"
+                "settlement_state": "unposted",
+                "posted_at": null
               }
             ],
             "next_cursor": "2"
@@ -713,8 +733,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "2"
@@ -780,8 +802,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": null
@@ -827,8 +851,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             },
             {
               "id": "01J90000000000000000000124",
@@ -863,8 +889,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             }
           ]
         }
@@ -951,8 +979,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   },
                   {
                     "id": "01J90000000000000000000120",
@@ -987,8 +1017,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "2"
@@ -1099,8 +1131,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": null
@@ -1149,8 +1183,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             },
             {
               "id": "01J90000000000000000000120",
@@ -1185,8 +1221,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             },
             {
               "id": "01J90000000000000000000124",
@@ -1221,8 +1259,10 @@
               "base_currency": "EUR",
               "needs_review": false,
               "review_note": "review_note",
+              "review_decision": null,
               "open_minor": 1,
-              "settlement_state": "unposted"
+              "settlement_state": "unposted",
+              "posted_at": null
             }
           ]
         }
@@ -1309,8 +1349,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   },
                   {
                     "id": "01J90000000000000000000120",
@@ -1345,8 +1387,10 @@
                     "base_currency": "EUR",
                     "needs_review": false,
                     "review_note": "review_note",
+                    "review_decision": null,
                     "open_minor": 1,
-                    "settlement_state": "unposted"
+                    "settlement_state": "unposted",
+                    "posted_at": null
                   }
                 ],
                 "next_cursor": "2"

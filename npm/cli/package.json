@@ -1,6 +1,6 @@
 {
   "name": "@oscaraccountant/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "oscar, the command-line tool of the Oscar accounting API",
   "license": "MIT",
   "author": "OscarAI OÜ",
@@ -33,11 +33,11 @@
     "node": ">=18"
   },
   "optionalDependencies": {
-    "@oscaraccountant/cli-darwin-arm64": "0.1.0",
-    "@oscaraccountant/cli-darwin-x64": "0.1.0",
-    "@oscaraccountant/cli-linux-x64": "0.1.0",
-    "@oscaraccountant/cli-linux-arm64": "0.1.0",
-    "@oscaraccountant/cli-win32-x64": "0.1.0",
-    "@oscaraccountant/cli-win32-arm64": "0.1.0"
+    "@oscaraccountant/cli-darwin-arm64": "0.2.0",
+    "@oscaraccountant/cli-darwin-x64": "0.2.0",
+    "@oscaraccountant/cli-linux-x64": "0.2.0",
+    "@oscaraccountant/cli-linux-arm64": "0.2.0",
+    "@oscaraccountant/cli-win32-x64": "0.2.0",
+    "@oscaraccountant/cli-win32-arm64": "0.2.0"
   }
 }

@@ -30,9 +30,10 @@ pub const DONE_PATH: &str = "/cli/done";
 /// The page of the web app after a failed login.
 pub const ERROR_PATH: &str = "/cli/error";
 
-/// The `reason` of a denial by a user who has no organization to connect yet: the sign-up
-/// stopped before the company (backend `oauth.services.NO_ORGANIZATION`).
-pub const NO_ORGANIZATION: &str = "no_organization";
+/// The `reason` of a denial by a user who has no company to connect yet: the sign-up stopped
+/// before the company. The server keeps the old name of the value, `no_organization`, so the
+/// CLIs before 0.2.0 still understand it.
+pub const NO_COMPANY: &str = "no_organization";
 
 const DONE_PAGE: &str = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">\
 <title>oscar</title></head><body><h1>You are logged in.</h1>\
@@ -56,7 +57,7 @@ pub struct Landing {
 
 impl Landing {
     /// The reason code of `/cli/error` for a callback, or `None` for a good one:
-    /// `state_mismatch`, `no_organization` (a denial by a user with no organization yet),
+    /// `state_mismatch`, `no_organization` (a denial by a user with no company yet),
     /// `access_denied`, `invalid_request` or `server_error`.
     pub fn reason(&self, params: &[(String, String)]) -> Option<&'static str> {
         let get = |name: &str| {
@@ -70,7 +71,7 @@ impl Landing {
         }
         if let Some(error) = get("error") {
             return Some(match error {
-                "access_denied" if get("reason") == Some(NO_ORGANIZATION) => NO_ORGANIZATION,
+                "access_denied" if get("reason") == Some(NO_COMPANY) => NO_COMPANY,
                 "access_denied" => "access_denied",
                 "invalid_request"
                 | "invalid_scope"

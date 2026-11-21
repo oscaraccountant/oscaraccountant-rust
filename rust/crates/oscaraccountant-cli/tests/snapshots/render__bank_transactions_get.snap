@@ -29,6 +29,9 @@ Party source          alias
 Suspense residual     0.01 EUR
 Has document          no
 File IDs              file_ids
+Retractable           no
+
+Booked invoices that fit (none)
 
 Entries (1)
   ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE KIND
@@ -84,6 +87,9 @@ Party source          alias
 Suspense residual     0.01 EUR
 Has document          no
 File IDs              file_ids
+Retractable           no
+
+Booked invoices that fit (none)
 
 Entries (1)
   ENTRY NO  STATE     ECONOMIC DATE  JOURNAL    SOURCE KIND

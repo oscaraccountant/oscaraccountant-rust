@@ -40,7 +40,7 @@ pub enum Secret {
         /// When the access token expires, RFC 3339.
         expires_at: String,
     },
-    /// An organization API key.
+    /// A company API key.
     ApiKey {
         /// The key, `osk_...`.
         api_key: String,

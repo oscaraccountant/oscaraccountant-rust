@@ -15,7 +15,9 @@ Received on      2026-09-01
 Retention until  2026-09-01
 Legal hold       no
 Referenced       no
+Withdrawn        no
 Download URL     download_url
+Withdrawable     any
 
 Invoices (1)
   REVISION NO  ROLE
@@ -32,6 +34,14 @@ Accounting events (1)
 VAT returns (1)
   REVISION NO  PERIOD FROM  FORM
             1  2026-09-01   form
+
+References (1)
+  LABEL     KIND
+  00000303  kind
+
+Status events (1)
+  STATUS
+  ● withdrawn
 
 Meta
   ID          01J90000000000000000000096
@@ -50,7 +60,9 @@ Received on      2026-09-01
 Retention until  2026-09-01
 Legal hold       no
 Referenced       no
+Withdrawn        no
 Download URL     download_url
+Withdrawable     any
 
 Invoices (1)
   REVISION NO  ROLE
@@ -67,6 +79,14 @@ Accounting events (1)
 VAT returns (1)
   REVISION NO  PERIOD FROM  FORM
             1  2026-09-01   form
+
+References (1)
+  LABEL     KIND
+  00000303  kind
+
+Status events (1)
+  STATUS
+  ● withdrawn
 
 Meta
   ID          01J90000000000000000000096

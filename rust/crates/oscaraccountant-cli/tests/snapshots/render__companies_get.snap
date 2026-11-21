@@ -13,7 +13,7 @@ Legal form         OÜ
 Files TSD monthly  no
 Base currency      EUR
 Role               owner
-Permissions        organization.read
+Permissions        companies.read
 View as            owner
 Refresh pending    no
 
@@ -25,6 +25,7 @@ Status
   Open periods                1
   VAT returns due             1
   Next VAT due date           2026-09-01
+  VAT months not checked      1
   Last bank import at         2026-09-27
   Overdue receivables         1
   Overdue receivables amount  0.01 EUR
@@ -33,7 +34,6 @@ Status
 
 Meta
   ID               cmp0000001
-  Organization ID  org0000001
   Core company ID  01J90000000000000000000007
   Created at       2026-09-27T10:00:00Z
   Updated at       2026-09-27T10:00:00Z
@@ -48,7 +48,7 @@ Legal form         OÜ
 Files TSD monthly  no
 Base currency      EUR
 Role               owner
-Permissions        organization.read
+Permissions        companies.read
 View as            owner
 Refresh pending    no
 
@@ -60,6 +60,7 @@ Status
   Open periods                1
   VAT returns due             1
   Next VAT due date           2026-09-01
+  VAT months not checked      1
   Last bank import at         2026-09-27
   Overdue receivables         1
   Overdue receivables amount  0.01 EUR
@@ -68,7 +69,6 @@ Status
 
 Meta
   ID               cmp0000001
-  Organization ID  org0000001
   Core company ID  01J90000000000000000000007
   Created at       2026-09-27T10:00:00Z
   Updated at       2026-09-27T10:00:00Z

@@ -11,14 +11,28 @@ use crate::session::App;
 
 /// Run `oscar onboard` or one of its subcommands.
 pub async fn run(app: &mut App, matches: &ArgMatches) -> Result<()> {
+    // `-c` of the command, else of the root (`oscar -c <x> onboard status`).
+    let with_root = |mut options: Options| {
+        if options.company.is_none() {
+            options.company.clone_from(&app.globals.company);
+        }
+        options
+    };
     match matches.subcommand() {
-        Some(("status", leaf)) => onboarding::status(app, options(leaf)?).await,
+        Some(("status", leaf)) => {
+            let options = with_root(options(leaf)?);
+            onboarding::status(app, options).await
+        }
         Some(("agreement", leaf)) => {
             // `--download` with no path is an empty one: the default file name.
             let download = string(leaf, "download").map(str::to_owned);
-            onboarding::agreement(app, options(leaf)?, download, flag(leaf, "force")).await
+            let options = with_root(options(leaf)?);
+            onboarding::agreement(app, options, download, flag(leaf, "force")).await
         }
-        _ => onboarding::onboard(app, options(matches)?).await,
+        _ => {
+            let options = with_root(options(matches)?);
+            onboarding::onboard(app, options).await
+        }
     }
 }
 

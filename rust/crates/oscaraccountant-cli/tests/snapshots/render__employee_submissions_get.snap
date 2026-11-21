@@ -1,0 +1,46 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: employee-submissions get sub0000001 --company cmp0000001
+---
+=== 80 columns
+new employee  ● registered
+
+Event date          2026-09-01
+Employee name       Mari Mock
+Submitted at        2026-08-25
+Submitted by staff  no
+Reviewed at         2026-08-26
+Toot ID             123456
+Registered at       2026-08-26
+
+Data
+  Employee    Mari Mock
+  Employment  1
+
+Tor messages (none)
+
+Meta
+  ID             sub0000001
+  Employee ID    emp0000001
+  Employment ID  emt0000001
+=== 120 columns
+new employee  ● registered
+
+Event date          2026-09-01
+Employee name       Mari Mock
+Submitted at        2026-08-25
+Submitted by staff  no
+Reviewed at         2026-08-26
+Toot ID             123456
+Registered at       2026-08-26
+
+Data
+  Employee    Mari Mock
+  Employment  1
+
+Tor messages (none)
+
+Meta
+  ID             sub0000001
+  Employee ID    emp0000001
+  Employment ID  emt0000001

@@ -115,9 +115,20 @@ async fn onboards_a_company_end_to_end_without_a_terminal() {
         mock.company_id
     );
     let started = &mock.requests_to(&path).await[0]["body"]["value"];
+    // The PEP answer went with the company step (feedback of 16.10.2026, item 4b), so step 3
+    // sends the consent and its text only.
     assert_eq!(
         started,
-        &json!({"consent": true, "is_pep": false, "is_pep_related": false})
+        &json!({"consent": true, "consent_text": "cli_identity_biometric_v1"})
+    );
+    let saved = mock.requests_to("/api/onboarding/").await;
+    assert!(
+        saved
+            .iter()
+            .any(|request| request["body"]["value"]["is_pep"] == json!(false)
+                && request["body"]["value"]["is_pep_related"] == json!(false)
+                && request["body"]["value"]["pep_details"] == json!("")),
+        "{saved:?}"
     );
 
     // The agreement is accepted in the browser; `oscar onboard` resumes at the plan.
@@ -136,8 +147,8 @@ async fn onboards_a_company_end_to_end_without_a_terminal() {
         "Step 6 of 6 · Set up",
         "e-MTA access",
         &format!("/c/{}/setup", mock.company_id),
-        // Required items are open: never "done" (N2-7).
-        "Left to do, required: People (due 2026-10-25), e-MTA access (due 2026-11-20).",
+        // Required items are open: never "done".
+        "Left to do, required: People (due 2026-10-25), e-MTA access.",
     ] {
         assert!(run.stderr.contains(text), "{text:?} in {}", run.stderr);
     }
@@ -178,7 +189,7 @@ async fn onboards_a_company_end_to_end_without_a_terminal() {
         .expect(0);
     assert!(run.stderr.contains("Saved the evidence"), "{}", run.stderr);
     assert!(std::fs::read(&pdf).unwrap().starts_with(b"%PDF"));
-    // An existing file is kept without --force (M5).
+    // An existing file is kept without --force.
     std::fs::write(&pdf, b"kept").unwrap();
     let run = user
         .run(&["onboard", "agreement", "--download", pdf.to_str().unwrap()])
@@ -190,7 +201,7 @@ async fn onboards_a_company_end_to_end_without_a_terminal() {
         run.stderr
     );
     assert_eq!(std::fs::read(&pdf).unwrap(), b"kept");
-    // A dangling symbolic link is not followed without --force (M5).
+    // A dangling symbolic link is not followed without --force.
     #[cfg(unix)]
     {
         let link = user.dir.path().join("link.pdf");
@@ -214,7 +225,7 @@ async fn onboards_a_company_end_to_end_without_a_terminal() {
 }
 
 /// `--registry-code` with `-c/--company` is a usage error; with `OSCAR_COMPANY` only, the
-/// registry code wins and onboards a new company (M6).
+/// registry code wins and onboards a new company.
 #[tokio::test]
 async fn a_registry_code_wins_over_oscar_company() {
     let mock = mock().await;
@@ -267,6 +278,24 @@ async fn every_terminal_step_has_a_flag() {
         ])
         .await
         .expect(2);
+    // The PEP questions of the person who sets up the company are on the company step.
+    assert!(run.stderr.contains("--pep yes|no"), "{}", run.stderr);
+    let run = user
+        .run(&[
+            "onboard",
+            "--registry-code",
+            "12345678",
+            "--books-today",
+            "yes",
+            "--books-software",
+            "xolo",
+            "--pep",
+            "no",
+            "--pep-related",
+            "no",
+        ])
+        .await
+        .expect(2);
     assert!(run.stderr.contains("--confirm-owners"), "{}", run.stderr);
     // Step 2: every missing answer is a usage error that names its flag, before anything is sent.
     onboarding(&mock, json!({"step": "business"})).await;
@@ -276,7 +305,7 @@ async fn every_terminal_step_has_a_flag() {
         "--no-input is set",
         "--website <url> or --no-website",
         "--answer customer_countries=<codes, for example EE,FI>",
-        // The allowed values, not only after a wrong one (N3-6).
+        // The allowed values, not only after a wrong one.
         "--answer field_experience=under_1|1_3|3_10|over_10",
     ] {
         assert!(run.stderr.contains(text), "{text:?} in {}", run.stderr);
@@ -313,7 +342,7 @@ async fn every_terminal_step_has_a_flag() {
     assert_eq!(submitted["no_website"], true);
     onboarding(&mock, json!({"step": "identity"})).await;
     let run = user.run(&["onboard"]).await.expect(2);
-    // Every missing flag of step 3 in one run (N3-5).
+    // Every missing flag of step 3 in one run.
     for text in [
         "An answer to each question below is needed",
         "--consent ",
@@ -485,7 +514,7 @@ async fn an_old_cli_and_no_login() {
 }
 
 #[tokio::test]
-async fn a_new_organization_needs_a_new_login() {
+async fn a_new_company_needs_a_new_login() {
     let mock = mock().await;
     let mut user = user(&mock).await;
     let browser_dir = tempfile::tempdir().unwrap();
@@ -502,21 +531,25 @@ async fn a_new_organization_needs_a_new_login() {
             "merit_aktiva",
             "--website",
             "https://mock.example",
+            "--pep",
+            "no",
+            "--pep-related",
+            "no",
             "--confirm-owners",
         ])
         .await
         .expect(3);
     assert!(
-        run.stderr.contains("is in a new organization"),
+        run.stderr
+            .contains("This login does not reach Mock Company OÜ yet. Log in again to reach it."),
         "{}",
         run.stderr
     );
     assert!(run.stderr.contains("does not reach"), "{}", run.stderr);
-    // The consent page cannot preselect it, so the CLI names the organization to choose.
+    // The consent page cannot preselect it, so the CLI names the company to choose.
     assert!(
-        run.stderr.contains(
-            "Important: on the consent page, choose the organization \"Mock Company OÜ\""
-        ),
+        run.stderr
+            .contains("Important: on the consent page, choose the company \"Mock Company OÜ\""),
         "{}",
         run.stderr
     );
@@ -527,8 +560,8 @@ async fn a_new_organization_needs_a_new_login() {
     );
 }
 
-/// Step 3 with no requirement of the caller yet (P1-6): the consent, the PEP answer and the
-/// start, as the web page does; then each state of the server has its own message (P2-21).
+/// Step 3 with no requirement of the caller yet: the consent, the PEP answer and the
+/// start, as the web page does; then each state of the server has its own message.
 #[tokio::test]
 async fn identity_states_say_what_to_do() {
     let mock = mock().await;
@@ -568,7 +601,7 @@ async fn identity_states_say_what_to_do() {
         run.stderr
     );
     assert_eq!(mock.requests_to(&start).await.len(), 1);
-    // A check that runs, resumed with no terminal (P2-21): how to get its link, then the link.
+    // A check that runs, resumed with no terminal: how to get its link, then the link.
     onboarding(&mock, json!({"step": "identity"})).await;
     onboarding(
         &mock,
@@ -602,7 +635,11 @@ async fn identity_states_say_what_to_do() {
         run.stderr
     );
     let again = &mock.requests_to(&start).await[before]["body"]["value"];
-    assert_eq!(again, &json!({"consent": true}), "the PEP answer is kept");
+    assert_eq!(
+        again,
+        &json!({"consent": true, "consent_text": "cli_identity_biometric_v1"}),
+        "the PEP answer is kept"
+    );
     // Verified, with the PEP question still open: the CLI asks it, and the step is done.
     onboarding(&mock, json!({"step": "identity"})).await;
     onboarding(
@@ -636,8 +673,8 @@ async fn identity_states_say_what_to_do() {
     assert!(run.stderr.contains("--pep yes|no"), "{}", run.stderr);
 }
 
-/// A finished onboarding resumes at the setup checklist (P1-7); a company that came through no
-/// onboarding says so (P2-22); the agreement names the step that is missing (P3-20).
+/// A finished onboarding resumes at the setup checklist; a company that came through no
+/// onboarding says so; the agreement names the step that is missing.
 #[tokio::test]
 async fn resumes_where_the_company_stands() {
     let mock = mock().await;
@@ -686,7 +723,7 @@ async fn resumes_where_the_company_stands() {
         .await
         .expect(2);
     assert!(run.stderr.contains("needs no onboarding"), "{}", run.stderr);
-    // An explicit set-up company: the same clear line, not a 404 (P2-22).
+    // An explicit set-up company: the same clear line, not a 404.
     let run = user.run(&["onboard", "-c", &company]).await.expect(2);
     assert!(
         run.stderr
@@ -714,7 +751,7 @@ async fn resumes_where_the_company_stands() {
 }
 
 /// Every company of the person is set up (P1, a second company): on a terminal `oscar onboard`
-/// offers a new company, as "New organization" of the web app, and its step 1 starts; the
+/// offers a new company, as "New company" of the web app, and its step 1 starts; the
 /// other choice shows the setup checklist as before.
 #[cfg(unix)]
 #[tokio::test]
@@ -811,7 +848,7 @@ async fn the_pager_accepts_the_agreement_in_a_terminal() {
     assert_eq!(state["acceptance"]["channel"], "cli");
 }
 
-/// The company search in a pseudo terminal (P1-8): text typed with no row chosen never ends the
+/// The company search in a pseudo terminal: text typed with no row chosen never ends the
 /// run. A text that names no company asks again; one that names several offers them.
 #[cfg(unix)]
 #[tokio::test]
@@ -850,7 +887,7 @@ async fn the_search_keeps_the_prompt_open() {
     assert_eq!(picked, [&json!("87654321")]);
 }
 
-/// The questions of step 2 in a pseudo terminal (P2-19): a yes or no risk question has no
+/// The questions of step 2 in a pseudo terminal: a yes or no risk question has no
 /// default, so Enter alone asks again; each question shows its place; the website is asked
 /// again; the activity of the register is offered in English.
 #[cfg(unix)]
@@ -876,7 +913,7 @@ async fn a_risk_question_has_no_default_answer() {
         session.expect("(5/10)");
         session.keys("\r");
         session.expect("(6/10)");
-        // A question with no default says how to answer (N3-4).
+        // A question with no default says how to answer.
         session.expect("(y/n)");
         session.keys("\r");
         session.expect("Answer y for yes or n for no.");
@@ -889,7 +926,7 @@ async fn a_risk_question_has_no_default_answer() {
         session.keys("n\r");
         session.expect("(10/10)");
         session.keys("\r");
-        // The review shows a "no" answer (N2-3).
+        // The review shows a "no" answer.
         session.expect("Your answers");
         session.expect("Does it hold, accept or pay with crypto-assets?");
         session.expect("No");
@@ -917,28 +954,287 @@ async fn a_risk_question_has_no_default_answer() {
     );
 }
 
-/// The scripted onboarding of `OÜ Selfi`, at step 3, in another organization than the login's:
-/// its company routes answer 404 to this login (N3-P1-1).
+/// The cash share in a pseudo terminal: asked right after "a little" cash, with its hint, a
+/// number outside 0 to 100 asked again, and the share in the review as "40 %".
+#[cfg(unix)]
+#[tokio::test]
+async fn asks_the_cash_share_in_a_terminal() {
+    let mock = mock().await;
+    let user = user(&mock).await;
+    onboarding(&mock, json!({"step": "business"})).await;
+    let dir = user.dir.path().to_owned();
+    let screen = tokio::task::spawn_blocking(move || {
+        let mut session = pty::Session::start(&dir, &["onboard"]);
+        session.expect("The company website");
+        session.keys("\r");
+        session.expect("(1/10)");
+        session.keys("\r");
+        session.expect("(2/10)");
+        session.keys("EE\r");
+        session.expect("(3/10)");
+        session.keys("EE\r");
+        session.expect("(4/10)");
+        session.keys("\r");
+        session.expect("(5/10) Does the business take or pay cash?");
+        // "A little": the second choice.
+        session.keys("\x1b[B\r");
+        session.expect("(6/11) What share of the turnover is received or paid in cash?");
+        session.expect("An estimate is enough.");
+        session.keys("101\r");
+        session.expect("whole number from 0 to 100");
+        session.keys("\x7f\x7f\x7f");
+        session.keys("40\r");
+        session.expect("(7/11)");
+        session.keys("n\r");
+        session.expect("(8/11)");
+        session.keys("n\r");
+        session.expect("(9/11)");
+        session.keys("\r");
+        session.expect("(10/11)");
+        session.keys("n\r");
+        session.expect("(11/11)");
+        session.keys("\r");
+        session.expect("Your answers");
+        session.expect("What share of the turnover is received or paid in cash?");
+        session.expect("40 %");
+        session.expect("Submit these answers?");
+        session.keys("\r");
+        session.expect("privacy notice");
+        session.keys("\x1b");
+        session.finish()
+    })
+    .await
+    .unwrap();
+    assert_eq!(screen.code, 2, "{}", screen.output);
+    let path = format!(
+        "/api/companies/{}/compliance/questionnaire/submit/",
+        mock.company_id
+    );
+    let submitted = &mock.requests_to(&path).await[0]["body"]["value"];
+    assert_eq!(submitted["cash_usage"], "a_little");
+    assert_eq!(submitted["cash_share_percent"], 40);
+}
+
+/// The draft saves (`PATCH`) of the questionnaire at `path`.
+async fn patches(mock: &Mock, path: &str) -> Vec<Value> {
+    mock.requests_to(path)
+        .await
+        .into_iter()
+        .filter(|request| request["method"] == "PATCH")
+        .collect()
+}
+
+#[tokio::test]
+async fn asks_the_cash_share_when_cash_is_used() {
+    let mock = mock().await;
+    let user = user(&mock).await;
+    onboarding(&mock, json!({"step": "business"})).await;
+    let answers = answers_file(&user);
+    let path = format!(
+        "/api/companies/{}/compliance/questionnaire/",
+        mock.company_id
+    );
+    // Cash is used: the share is required, and named with its flag before anything is sent.
+    let run = user
+        .run(&[
+            "onboard",
+            "--no-website",
+            "--answers",
+            &answers,
+            "--answer",
+            "cash_usage=often",
+        ])
+        .await
+        .expect(2);
+    for text in [
+        "An answer to each question below is needed",
+        "--answer cash_share_percent=<0 to 100>",
+        "What share of the turnover is received or paid in cash?",
+    ] {
+        assert!(run.stderr.contains(text), "{text:?} in {}", run.stderr);
+    }
+    assert!(patches(&mock, &path).await.is_empty(), "nothing is sent");
+    let run = user
+        .run(&["onboard", "--answer", "cash_share_percent=101"])
+        .await
+        .expect(2);
+    assert!(
+        run.stderr.contains("whole number from 0 to 100"),
+        "{}",
+        run.stderr
+    );
+    // A share saved as a draft: a far country turns on "why Estonia" after the save, so the run
+    // stops with the share stored.
+    let run = user
+        .run(&[
+            "onboard",
+            "--no-website",
+            "--answers",
+            &answers,
+            "--answer",
+            "cash_usage=often",
+            "--answer",
+            "cash_share_percent=60 %",
+            "--answer",
+            "residence=some_abroad",
+            "--answer",
+            "residence_countries=CN",
+            "--answer",
+            "e_resident=no",
+        ])
+        .await
+        .expect(2);
+    assert!(
+        run.stderr.contains("--answer estonia_reason=<text>"),
+        "{}",
+        run.stderr
+    );
+    let saved = patches(&mock, &path).await;
+    let draft = &saved.last().unwrap()["body"]["value"];
+    assert_eq!(draft["cash_usage"], "often");
+    assert_eq!(draft["cash_share_percent"], 60);
+    // Cash is no longer used: the stored share is not sent again, neither saved nor submitted.
+    let run = user
+        .run(&[
+            "onboard",
+            "--answer",
+            "cash_usage=no",
+            "--answer",
+            "estonia_reason=Our customers are in the EU",
+        ])
+        .await
+        .expect(2);
+    assert!(run.stderr.contains("submitted"), "{}", run.stderr);
+    let writes = patches(&mock, &path).await;
+    for write in &writes[saved.len()..] {
+        let body = &write["body"]["value"];
+        assert_eq!(body["cash_usage"], "no", "{write}");
+        assert!(body.get("cash_share_percent").is_none(), "{write}");
+    }
+    let submitted = &mock.requests_to(&format!("{path}submit/")).await[0]["body"]["value"];
+    assert_eq!(submitted["cash_usage"], "no");
+    assert!(submitted.get("cash_share_percent").is_none(), "{submitted}");
+}
+
+#[tokio::test]
+async fn asks_the_structure_questions_when_the_ownership_is_not_understood() {
+    let mock = mock().await;
+    let user = user(&mock).await;
+    // The register does not show who holds all of the company: `asked.structure`.
+    onboarding(&mock, json!({"step": "business", "structure": true})).await;
+    let answers = answers_file(&user);
+    let run = user
+        .run(&["onboard", "--no-website", "--answers", &answers])
+        .await
+        .expect(2);
+    for text in [
+        "An answer to each question below is needed",
+        "--answer bearer_shares=yes|no",
+        "Does the company, or a company that owns it, have bearer shares?",
+        "--answer trust_in_chain=yes|no",
+        "Is a trust or a foundation among the owners?",
+        "--answer nominees=yes|no",
+        "Does anyone hold shares or a board seat for another person?",
+    ] {
+        assert!(run.stderr.contains(text), "{text:?} in {}", run.stderr);
+    }
+    let path = format!(
+        "/api/companies/{}/compliance/questionnaire/submit/",
+        mock.company_id
+    );
+    assert!(
+        mock.requests_to(&path).await.is_empty(),
+        "nothing submitted"
+    );
+    let run = user
+        .run(&[
+            "onboard",
+            "--no-website",
+            "--answers",
+            &answers,
+            "--answer",
+            "bearer_shares=no",
+            "--answer",
+            "trust_in_chain=no",
+            "--answer",
+            "nominees=no",
+        ])
+        .await
+        .expect(2);
+    assert!(
+        run.stderr
+            .contains("The answers about your business are submitted"),
+        "{}",
+        run.stderr
+    );
+    let submitted = &mock.requests_to(&path).await[0]["body"]["value"];
+    assert_eq!(submitted["bearer_shares"], false);
+    assert_eq!(submitted["trust_in_chain"], false);
+    assert_eq!(submitted["nominees"], false);
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn the_structure_questions_in_a_terminal() {
+    let mock = mock().await;
+    let user = user(&mock).await;
+    onboarding(&mock, json!({"step": "business", "structure": true})).await;
+    let answers = answers_file(&user);
+    let dir = user.dir.path().to_owned();
+    let screen = tokio::task::spawn_blocking(move || {
+        // Every other answer comes from the file: the terminal asks the three structure questions.
+        let mut session =
+            pty::Session::start(&dir, &["onboard", "--no-website", "--answers", &answers]);
+        session.expect("We could not see the whole ownership of the company");
+        session.expect("(9/13) Does the company, or a company that owns it, have bearer shares?");
+        session.keys("n\r");
+        session.expect("(10/13) Is a trust or a foundation among the owners?");
+        session.keys("n\r");
+        session.expect("(11/13) Does anyone hold shares or a board seat for another person?");
+        session.keys("n\r");
+        session.expect("Your answers");
+        session.expect("Does anyone hold shares or a board seat for another person?");
+        session.expect("No");
+        session.expect("Submit these answers?");
+        session.keys("\r");
+        session.expect("privacy notice");
+        session.keys("\x1b");
+        session.finish()
+    })
+    .await
+    .unwrap();
+    assert_eq!(screen.code, 2, "{}", screen.output);
+    let path = format!(
+        "/api/companies/{}/compliance/questionnaire/submit/",
+        mock.company_id
+    );
+    let submitted = &mock.requests_to(&path).await[0]["body"]["value"];
+    assert_eq!(submitted["bearer_shares"], false);
+    assert_eq!(submitted["nominees"], false);
+}
+
+/// The scripted onboarding of `Second Example OÜ`, at step 3, of a company the login does not
+/// reach (the consent page granted other companies): its company routes answer 404 to this
+/// login.
 async fn open_elsewhere(mock: &Mock) {
     onboarding(
         mock,
         json!({
-            "new_company_id": "cmpselfi001",
-            "company_name": "OÜ Selfi",
-            "organization_id": "org0000002",
-            "organization_name": "OÜ Selfi",
+            "new_company_id": "cmpsecond01",
+            "company_name": "Second Example OÜ",
+            "reachable": false,
             "step": "identity",
         }),
     )
     .await;
 }
 
-const ELSEWHERE: &str = "The onboarding of OÜ Selfi (cmpselfi001) is open in the organization \"OÜ Selfi\", and this login is for \"Mock Organization OÜ\".";
+const ELSEWHERE: &str = "The onboarding of Second Example OÜ (cmpsecond01) is open, and this login does not reach that company.";
 
-/// An onboarding open in another organization: never a bare 404 and never "set up already",
-/// but the organization to log in to (N3-P1-1).
+/// An onboarding open for a company the login does not reach: never a bare 404 and never "set
+/// up already", but the company to choose at the next login.
 #[tokio::test]
-async fn an_onboarding_open_in_another_organization() {
+async fn an_onboarding_the_login_does_not_reach() {
     let mock = mock().await;
     let mut user = user(&mock).await;
     open_elsewhere(&mock).await;
@@ -951,20 +1247,20 @@ async fn an_onboarding_open_in_another_organization() {
         assert!(run.stderr.contains(ELSEWHERE), "{args:?}: {}", run.stderr);
         assert!(
             run.stderr
-                .contains("Run `oscar login`, choose the organization \"OÜ Selfi\""),
+                .contains("Run `oscar login`, choose the company \"Second Example OÜ\""),
             "{}",
             run.stderr
         );
         assert!(!run.stderr.contains("404"), "{}", run.stderr);
     }
-    // The registry code of another company: the open one must finish first (N3-P2-1).
+    // The registry code of another company: the open one must finish first.
     let run = user
         .run(&["onboard", "--registry-code", "87654321", "--no-input"])
         .await
         .expect(2);
     assert!(
         run.stderr.contains(
-            "The onboarding of OÜ Selfi, registry code 12345678 is still open, at step 3 (Verify your identity). Finish it before you onboard another company."
+            "The onboarding of Second Example OÜ, registry code 12345678 is still open, at step 3 (Verify your identity). Finish it before you onboard another company."
         ),
         "{}",
         run.stderr
@@ -977,11 +1273,12 @@ async fn an_onboarding_open_in_another_organization() {
         .expect(0)
         .json();
     assert_eq!(status["current_step"], "identity");
-    assert_eq!(status["company"]["organization"]["name"], "OÜ Selfi");
+    assert_eq!(status["company"]["name"], "Second Example OÜ");
+    assert!(status["company"].get("organization").is_none(), "{status}");
     user.set("OSCAR_FORCE_TTY", "1");
     let run = user.run(&["onboard", "status"]).await.expect(0);
     assert!(
-        run.stdout.contains("OÜ Selfi (cmpselfi001)"),
+        run.stdout.contains("Second Example OÜ (cmpsecond01)"),
         "{}",
         run.stdout
     );
@@ -994,8 +1291,8 @@ async fn an_onboarding_open_in_another_organization() {
     assert!(!run.stdout.contains("set up already"), "{}", run.stdout);
 }
 
-/// `--registry-code` of another company while one onboarding is open in this organization:
-/// said, not ignored; the code of the open one goes on with it (N3-P2-1).
+/// `--registry-code` of another company while one onboarding is open:
+/// said, not ignored; the code of the open one goes on with it.
 #[tokio::test]
 async fn one_open_onboarding_at_a_time() {
     let mock = mock().await;
@@ -1036,12 +1333,12 @@ async fn one_open_onboarding_at_a_time() {
     );
 }
 
-/// In a terminal, the CLI offers the login to the organization of the open onboarding, with
-/// the consent-page hint (N3-P1-1). The mock binds every login to its own organization, so the
-/// new login still does not reach the company, and the CLI says what to run.
+/// In a terminal, the CLI offers the login to reach the company of the open onboarding, with
+/// the consent-page hint. The mock keeps the company out of every login, so the new login
+/// still does not reach it, and the CLI says what to run.
 #[cfg(unix)]
 #[tokio::test]
-async fn offers_the_login_to_the_organization_of_the_open_onboarding() {
+async fn offers_the_login_to_the_company_of_the_open_onboarding() {
     let mock = mock().await;
     let user = user(&mock).await;
     open_elsewhere(&mock).await;
@@ -1049,7 +1346,7 @@ async fn offers_the_login_to_the_organization_of_the_open_onboarding() {
     let browser = test_browser(&dir);
     let screen = tokio::task::spawn_blocking(move || {
         let mut session = pty::Session::start_with(&dir, &["onboard"], &[("BROWSER", &browser)]);
-        session.expect("is open in the organization");
+        session.expect("(cmpsecond01) is open");
         session.expect("Log in to");
         session.keys("\r");
         session.finish()
@@ -1059,23 +1356,20 @@ async fn offers_the_login_to_the_organization_of_the_open_onboarding() {
     let output = &screen.output;
     assert_eq!(screen.code, 3, "{output}");
     assert!(
-        output.contains("Important: on the consent page, choose the organization \"OÜ Selfi\"."),
-        "{output}"
-    );
-    assert!(
-        output.contains("Not \"Mock Organization OÜ\": that login cannot reach the company."),
+        output
+            .contains("Important: on the consent page, choose the company \"Second Example OÜ\"."),
         "{output}"
     );
     // The same server and profile: the login asks for neither.
     assert!(!output.contains("? Server"), "{output}");
     assert!(output.contains("Logged in as"), "{output}");
     assert!(
-        output.contains("This login does not reach OÜ Selfi (cmpselfi001)."),
+        output.contains("This login does not reach Second Example OÜ (cmpsecond01)."),
         "{output}"
     );
 }
 
-/// An account with no company yet (N2-4): the CLI asks first, and when the person says "log
+/// An account with no company yet: the CLI asks first, and when the person says "log
 /// in" anyway, the consent page's denial (`reason=no_organization`) leads to step 1 in the
 /// browser, then a second login in the browser with no question of the method.
 #[cfg(unix)]
@@ -1106,7 +1400,7 @@ async fn an_account_with_no_company_goes_to_the_browser() {
     })
     .await
     .unwrap();
-    // The mock still has no organization for the account: the second login says so again.
+    // The mock still has no company for the account: the second login says so again.
     assert_eq!(screen.code, 3, "{}", screen.output);
     // Two logins in the browser; the method is asked before the first one only.
     let output = &screen.output;
@@ -1126,7 +1420,48 @@ async fn an_account_with_no_company_goes_to_the_browser() {
     );
 }
 
-/// Ctrl-C during the wait for Didit ends the wait with the way to go on (N3-8).
+/// A slow browser lands on the page after `oscar` has ended. Here `oscar` is the session leader
+/// of the terminal, and its end hangs up the foreground process group, so the browser must not
+/// be in that group.
+#[cfg(unix)]
+#[tokio::test]
+async fn a_slow_browser_lands_after_the_terminal_has_ended() {
+    let mock = Mock::start(json!({"authorize_decision": "no_organization"})).await;
+    let user = User::new();
+    let dir = user.dir.path().to_owned();
+    let script = dir.join("slow_browser.py");
+    std::fs::write(
+        &script,
+        r#"import sys, time, urllib.request
+
+class Slow(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if "/cli/" in newurl:
+            time.sleep(1)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+urllib.request.build_opener(Slow).open(sys.argv[1], timeout=60).read()
+"#,
+    )
+    .unwrap();
+    let browser = format!("{} {}", support::python().display(), script.display());
+    let url = mock.url.clone();
+    let screen = tokio::task::spawn_blocking(move || {
+        pty::Session::start_with(
+            &dir,
+            &["login", "--browser", "--base-url", &url],
+            &[("BROWSER", &browser)],
+        )
+        .finish()
+    })
+    .await
+    .unwrap();
+    assert_eq!(screen.code, 3, "{}", screen.output);
+    let errors = mock.wait_for_requests("/cli/error", 1).await;
+    assert_eq!(errors.len(), 1, "{errors:?}");
+}
+
+/// Ctrl-C during the wait for Didit ends the wait with the way to go on.
 #[cfg(unix)]
 #[tokio::test]
 async fn ctrl_c_ends_the_wait_and_says_how_to_go_on() {
@@ -1205,7 +1540,13 @@ mod pty {
             command.args(args);
             command.cwd(dir);
             for (name, _) in std::env::vars_os() {
-                let text = name.to_string_lossy();
+                // Windows compares variable names without case, and so does `oscar` there: compare
+                // the name in upper case, or `oscar_config_dir` would reach the child.
+                let text = if cfg!(windows) {
+                    name.to_string_lossy().to_ascii_uppercase()
+                } else {
+                    name.to_string_lossy().into_owned()
+                };
                 if text.starts_with("OSCAR_")
                     || ["BROWSER", "SSH_CONNECTION", "NO_COLOR", "WAYLAND_DISPLAY"]
                         .contains(&text.as_ref())

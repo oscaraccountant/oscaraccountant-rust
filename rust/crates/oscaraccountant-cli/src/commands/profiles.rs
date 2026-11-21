@@ -11,6 +11,7 @@ use crate::session::App;
 pub fn list(app: &mut App) -> Result<()> {
     let config = app.config()?;
     let default = config.default_name().map(str::to_owned);
+    let json = app.json();
     let rows: Vec<Value> = config
         .profiles
         .iter()
@@ -20,16 +21,15 @@ pub fn list(app: &mut App) -> Result<()> {
                 "default": default.as_deref() == Some(name.as_str()),
                 "base_url": profile.base_url,
                 "auth": profile.auth.as_str(),
-                "organization": profile.organization.as_ref().map(|org| &org.name),
+                "companies": profile.company_names(),
                 "company": profile.company,
             })
         })
         .collect();
-    if rows.is_empty() && !app.json() {
+    if rows.is_empty() && !json {
         app.out.note("No profile. Run `oscar login`.");
         return Ok(());
     }
-    let json = app.json();
     app.out.value(&Value::Array(rows), json);
     Ok(())
 }

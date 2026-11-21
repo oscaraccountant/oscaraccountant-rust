@@ -19,17 +19,19 @@ Credential
   Scopes     read, write
   Staff key  no
 
-Organizations (1)
-  NAME                  ROLE
-  Mock Organization OÜ  owner
-
 Companies (1)
   NAME             REGISTRY CODE  LEGAL FORM  STATE
   Mock Company OÜ  12345678       OÜ          ● ready
 
 Features
-  Agent  no
-  Inbox  no
+  Agent           no
+  Inbox           no
+  Employees       no
+  Payroll         no
+  Kmd submission  no
+  Foreign tax gb  no
+  Foreign tax au  no
+  Lightyear       no
 === 120 columns
 Has TOTP            no
 Staff MFA required  no
@@ -47,14 +49,16 @@ Credential
   Scopes     read, write
   Staff key  no
 
-Organizations (1)
-  NAME                  ROLE
-  Mock Organization OÜ  owner
-
 Companies (1)
   NAME             REGISTRY CODE  LEGAL FORM  STATE
   Mock Company OÜ  12345678       OÜ          ● ready
 
 Features
-  Agent  no
-  Inbox  no
+  Agent           no
+  Inbox           no
+  Employees       no
+  Payroll         no
+  Kmd submission  no
+  Foreign tax gb  no
+  Foreign tax au  no
+  Lightyear       no

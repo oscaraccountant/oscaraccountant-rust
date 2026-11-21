@@ -87,28 +87,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -141,28 +140,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -253,28 +251,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -307,28 +304,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -419,28 +415,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -473,28 +468,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -585,28 +579,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -639,28 +632,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -751,28 +743,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -805,28 +796,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -917,28 +907,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -971,28 +960,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -1248,28 +1236,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -1303,28 +1290,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -1576,28 +1562,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -1635,28 +1620,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -1911,28 +1895,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -1965,28 +1948,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -2081,28 +2063,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -2135,28 +2116,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -2295,28 +2275,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -2349,28 +2328,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }
@@ -3068,28 +3046,27 @@
                   ],
                   "staff_key": false
                 },
-                "organizations": [
-                  {
-                    "id": "org0000001",
-                    "name": "Mock Organization OÜ",
-                    "role": "owner",
-                    "is_member": true
-                  }
-                ],
                 "companies": [
                   {
                     "id": "cmp0000001",
-                    "organization_id": "org0000001",
                     "name": "Mock Company OÜ",
                     "registry_code": "12345678",
                     "vat_number": "EE123456789",
                     "legal_form": "ou",
-                    "state": "ready"
+                    "state": "ready",
+                    "role": "owner",
+                    "is_member": true
                   }
                 ],
                 "features": {
                   "agent": false,
-                  "inbox": false
+                  "inbox": false,
+                  "employees": false,
+                  "payroll": false,
+                  "kmd_submission": false,
+                  "foreign_tax_gb": false,
+                  "foreign_tax_au": false,
+                  "lightyear": false
                 },
                 "cli_min_version": "0.1.0"
               }
@@ -3122,28 +3099,27 @@
               ],
               "staff_key": false
             },
-            "organizations": [
-              {
-                "id": "org0000001",
-                "name": "Mock Organization OÜ",
-                "role": "owner",
-                "is_member": true
-              }
-            ],
             "companies": [
               {
                 "id": "cmp0000001",
-                "organization_id": "org0000001",
                 "name": "Mock Company OÜ",
                 "registry_code": "12345678",
                 "vat_number": "EE123456789",
                 "legal_form": "ou",
-                "state": "ready"
+                "state": "ready",
+                "role": "owner",
+                "is_member": true
               }
             ],
             "features": {
               "agent": false,
-              "inbox": false
+              "inbox": false,
+              "employees": false,
+              "payroll": false,
+              "kmd_submission": false,
+              "foreign_tax_gb": false,
+              "foreign_tax_au": false,
+              "lightyear": false
             },
             "cli_min_version": "0.1.0"
           }

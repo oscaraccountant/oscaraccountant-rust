@@ -17,15 +17,18 @@ use std::time::Duration;
 
 use futures::{StreamExt, TryStreamExt};
 use oscaraccountant::{
-    CancelInvoiceBodyRequest, Client, ClientBuilder, CreatePartyPayloadRequest, Credential, Error,
-    HttpMethod, InvoiceLineRequest, InvoiceRevisionRequest, RecordInvoicePayloadRequest,
-    ReviseInvoiceBodyRequest, TlsRoots, Upload,
+    CancelInvoiceBodyRequest, Client, ClientBuilder, CreatePartyPayloadRequest, Credential,
+    EndInputRequest, Error, FileDeleteRequest, HttpMethod, InvoiceLineRequest,
+    InvoiceRevisionRequest, PatchedPartyUpdateRequest, RecordInvoicePayloadRequest,
+    ReviseInvoiceBodyRequest, SetDefaultInvoiceBankAccountsPayloadRequest,
+    SetInvoiceBankAccountsBodyRequest, SetPartyAddressBodyRequest, SubmissionRequestRequest,
+    TlsRoots, Upload,
 };
 use serde_json::{Value, json};
 
 const READY: &str = "OSCAR_MOCK_SERVER_READY ";
 const COMPANY: &str = "cmp0000001";
-const ORGANIZATION: &str = "org0000001";
+const BANK_ACCOUNT: &str = "01J90000000000000000000033";
 const INVOICE: &str = "01J90000000000000000000116";
 
 /// The mock server process. Dropping it stops the server.
@@ -276,15 +279,7 @@ async fn every_resource(server: &MockServer) {
 
     let me = oscar.me().retrieve().send().await.unwrap();
     assert_eq!(me.credential.kind.as_str(), "api_key");
-    let organizations = oscar.organizations().list().send().await.unwrap();
-    assert_eq!(organizations.items[0].id, ORGANIZATION);
-    oscar
-        .organizations()
-        .retrieve(ORGANIZATION)
-        .send()
-        .await
-        .unwrap();
-    let companies = oscar.companies().list(ORGANIZATION).send().await.unwrap();
+    let companies = oscar.companies().list().send().await.unwrap();
     assert_eq!(companies.items[0].id, COMPANY);
     oscar.companies().retrieve(COMPANY).send().await.unwrap();
 
@@ -407,6 +402,56 @@ async fn every_resource(server: &MockServer) {
     assert_eq!(emails.items.len(), 3);
     oscar.inbox().rotate(COMPANY).send().await.unwrap();
 
+    // The tax account.
+    let tax_account = oscar.tax_account().balance(COMPANY).send().await.unwrap();
+    assert_eq!(tax_account.claims.len(), 1);
+
+    // The employees and the payroll.
+    let employees = oscar.employees().list(COMPANY).send().await.unwrap();
+    assert_eq!(employees.items.len(), 2);
+    let employee = oscar
+        .employees()
+        .retrieve(COMPANY, "emp0000001")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(employee.employments.len(), 1);
+    let submissions = oscar
+        .employee_submissions()
+        .list(COMPANY)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(submissions.items.len(), 2);
+    oscar
+        .employee_submissions()
+        .retrieve(COMPANY, "sub0000001")
+        .send()
+        .await
+        .unwrap();
+    oscar
+        .employee_submissions()
+        .create(
+            COMPANY,
+            SubmissionRequestRequest {
+                employment_id: Some("emt0000001".to_owned()),
+                end: Some(EndInputRequest::new("2026-12-31", 1)),
+                ..SubmissionRequestRequest::new("end")
+            },
+        )
+        .send()
+        .await
+        .unwrap();
+    let pay_runs = oscar.pay_runs().list(COMPANY).send().await.unwrap();
+    assert_eq!(pay_runs.items.len(), 2);
+    let pay_run = oscar
+        .pay_runs()
+        .retrieve(COMPANY, "pyr0000001")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(pay_run.employees.len(), 1);
+
     // The commands.
     oscar
         .invoices()
@@ -446,6 +491,55 @@ async fn every_resource(server: &MockServer) {
     let mut party = CreatePartyPayloadRequest::new("Mock Supplier OÜ", "supplier");
     party.country = Some(Some("EE".into()));
     oscar.parties().create(COMPANY, party).send().await.unwrap();
+    let party_id = "01J90000000000000000000179";
+    let update = PatchedPartyUpdateRequest {
+        email: Some(Some("billing@example.com".into())),
+        ..PatchedPartyUpdateRequest::default()
+    };
+    let updated = oscar
+        .parties()
+        .update(COMPANY, party_id)
+        .body(update)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(updated.id, party_id);
+    let address = SetPartyAddressBodyRequest {
+        address: Some(Some("Narva mnt 5, 10117 Tallinn".into())),
+    };
+    oscar
+        .parties()
+        .set_address(COMPANY, party_id)
+        .body(address)
+        .send()
+        .await
+        .unwrap();
+    oscar
+        .invoices()
+        .bank_accounts(COMPANY, INVOICE)
+        .send()
+        .await
+        .unwrap();
+    let accounts = vec![BANK_ACCOUNT.to_owned()];
+    oscar
+        .invoices()
+        .set_bank_accounts(
+            COMPANY,
+            INVOICE,
+            SetInvoiceBankAccountsBodyRequest::new(Some(accounts.clone())),
+        )
+        .send()
+        .await
+        .unwrap();
+    oscar
+        .invoices()
+        .set_default_bank_accounts(
+            COMPANY,
+            SetDefaultInvoiceBankAccountsPayloadRequest::new(accounts),
+        )
+        .send()
+        .await
+        .unwrap();
 
     // The files.
     let files = oscar.files().list(COMPANY).send().await.unwrap();
@@ -465,15 +559,25 @@ async fn every_resource(server: &MockServer) {
         .bytes()
         .await
         .unwrap();
-    oscar
+    let uploaded = oscar
         .files()
         .upload(COMPANY, Upload::new("%PDF-1.4\n").file_name("a.pdf"))
         .send()
         .await
         .unwrap();
+    let reason = FileDeleteRequest {
+        reason: Some("Uploaded twice".into()),
+    };
+    oscar
+        .files()
+        .delete(COMPANY, uploaded.id)
+        .body(reason)
+        .send()
+        .await
+        .unwrap();
 
     let log = server.requests().await;
-    assert_eq!(log.len(), 36, "one request per operation");
+    assert_eq!(log.len(), 48, "one request per operation");
     for request in &log {
         assert_eq!(request["errors"], json!([]), "{request}");
         assert!(request["status"].as_u64().unwrap() < 300, "{request}");
@@ -866,7 +970,7 @@ async fn cli_login(server: &MockServer) {
 
     let me = oscar.me().retrieve().send().await.unwrap();
     assert_eq!(me.credential.kind.as_str(), "oauth");
-    oscar.organizations().list().send().await.unwrap();
+    oscar.companies().list().send().await.unwrap();
     let calls = cli.calls();
     assert_eq!(calls[0], "--version");
     assert_eq!(

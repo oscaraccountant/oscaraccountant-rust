@@ -410,7 +410,7 @@ where
         .map_err(prompt_error)
 }
 
-/// The question of [`Prompter::yes_no`]: with no default, `(y/n)` after it (N3-4).
+/// The question of [`Prompter::yes_no`]: with no default, `(y/n)` after it.
 fn yes_no_message(message: &str, default: Option<bool>) -> String {
     match default {
         None => format!("{message} (y/n)"),
@@ -422,7 +422,7 @@ fn yes_no_message(message: &str, default: Option<bool>) -> String {
 fn prompt_error(error: InquireError) -> CliError {
     match error {
         InquireError::OperationCanceled => CliError::usage("Cancelled."),
-        // Ctrl-C: the code of an interrupt, as a shell gives it (N3-j).
+        // Ctrl-C: the code of an interrupt, as a shell gives it.
         InquireError::OperationInterrupted => CliError::interrupted("Cancelled."),
         InquireError::NotTTY => CliError::usage(format!(
             "This is not a terminal. Give the value as a flag, or use {NO_INPUT_FLAG}."

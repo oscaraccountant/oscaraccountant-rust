@@ -1,0 +1,50 @@
+---
+source: crates/oscaraccountant-cli/tests/render.rs
+expression: pay-runs get pyr0000001 --company cmp0000001
+---
+=== 80 columns
+[1m2026-09[0m  [32m● [0m[32mposted[0m  [1m2 050.40 EUR[0m
+
+[90mPayday[0m          2026-10-05
+[90mCurrency[0m        EUR
+[90mEmployee count[0m  1
+[90mGross[0m           2 500.00 EUR
+[90mWithheld[0m        449.60 EUR
+[90mEmployer tax[0m    850.00 EUR
+[90mExpense[0m         3 350.00 EUR
+[90mOpen net[0m        0.00 EUR
+[90mApproved at[0m     2026-10-01
+[90mPosted at[0m       2026-10-01
+
+[1mEmployees[0m [2m(1)[0m
+         [1mGROSS[0m           [1mNET[0m  [1mCURRENCY[0m  [1mBASIC EXEMPTION[0m  [1mSOCIAL TAX MINIMUM[0m
+  2 500.00 EUR  2 050.40 EUR  EUR       full             full
+    [1mSTATE[0m           [1mAMOUNT[0m  [1mEFFECTIVE DATE[0m  [1mCURRENCY[0m
+    [32m● [0m[32mposted[0m  2 050.40 EUR  2026-10-05      EUR
+
+[2mMeta[0m
+  [2mID          pyr0000001[0m
+  [2mPay run ID  01J90000000000000000000301[0m
+=== 120 columns
+[1m2026-09[0m  [32m● [0m[32mposted[0m  [1m2 050.40 EUR[0m
+
+[90mPayday[0m          2026-10-05
+[90mCurrency[0m        EUR
+[90mEmployee count[0m  1
+[90mGross[0m           2 500.00 EUR
+[90mWithheld[0m        449.60 EUR
+[90mEmployer tax[0m    850.00 EUR
+[90mExpense[0m         3 350.00 EUR
+[90mOpen net[0m        0.00 EUR
+[90mApproved at[0m     2026-10-01
+[90mPosted at[0m       2026-10-01
+
+[1mEmployees[0m [2m(1)[0m
+         [1mGROSS[0m           [1mNET[0m  [1mCURRENCY[0m  [1mBASIC EXEMPTION[0m  [1mSOCIAL TAX MINIMUM[0m
+  2 500.00 EUR  2 050.40 EUR  EUR       full             full
+    [1mSTATE[0m           [1mAMOUNT[0m  [1mEFFECTIVE DATE[0m  [1mCURRENCY[0m
+    [32m● [0m[32mposted[0m  2 050.40 EUR  2026-10-05      EUR
+
+[2mMeta[0m
+  [2mID          pyr0000001[0m
+  [2mPay run ID  01J90000000000000000000301[0m

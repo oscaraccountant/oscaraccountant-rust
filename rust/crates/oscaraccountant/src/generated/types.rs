@@ -8,6 +8,64 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+/// A holiday or a sick leave.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Absence {
+    pub id: String,
+    pub kind: AbsenceKindEnum,
+    pub start_date: String,
+    pub end_date: String,
+    pub note: String,
+}
+
+/// * `holiday` - Holiday
+/// * `sick_leave` - Sick leave
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum AbsenceKindEnum {
+    /// `holiday`
+    #[serde(rename = "holiday")]
+    Holiday,
+    /// `sick_leave`
+    #[serde(rename = "sick_leave")]
+    SickLeave,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl AbsenceKindEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Holiday => "holiday",
+            Self::SickLeave => "sick_leave",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for AbsenceKindEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "holiday" => Self::Holiday,
+            "sick_leave" => Self::SickLeave,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for AbsenceKindEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for AbsenceKindEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BankTransactionsListOrdering {
     /// `booking_date`
@@ -76,6 +134,12 @@ impl fmt::Display for BankTransactionsListOrdering {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BankTransactionsListStatus {
+    /// `migrated`
+    #[serde(rename = "migrated")]
+    Migrated,
+    /// `retracted`
+    #[serde(rename = "retracted")]
+    Retracted,
     /// `unmatched`
     #[serde(rename = "unmatched")]
     Unmatched,
@@ -112,6 +176,8 @@ impl BankTransactionsListStatus {
     /// The value as it goes on the wire.
     pub fn as_str(&self) -> &str {
         match self {
+            Self::Migrated => "migrated",
+            Self::Retracted => "retracted",
             Self::Unmatched => "unmatched",
             Self::PartMatched => "part_matched",
             Self::Matched => "matched",
@@ -129,6 +195,8 @@ impl BankTransactionsListStatus {
 impl From<&str> for BankTransactionsListStatus {
     fn from(value: &str) -> Self {
         match value {
+            "migrated" => Self::Migrated,
+            "retracted" => Self::Retracted,
             "unmatched" => Self::Unmatched,
             "part_matched" => Self::PartMatched,
             "matched" => Self::Matched,
@@ -150,6 +218,60 @@ impl From<String> for BankTransactionsListStatus {
 }
 
 impl fmt::Display for BankTransactionsListStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `none` - No application
+/// * `full` - The whole exemption
+/// * `partial` - A part of the exemption
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BasicExemptionEnum {
+    /// `none`
+    #[serde(rename = "none")]
+    None,
+    /// `full`
+    #[serde(rename = "full")]
+    Full,
+    /// `partial`
+    #[serde(rename = "partial")]
+    Partial,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BasicExemptionEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::None => "none",
+            Self::Full => "full",
+            Self::Partial => "partial",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BasicExemptionEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "none" => Self::None,
+            "full" => Self::Full,
+            "partial" => Self::Partial,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BasicExemptionEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BasicExemptionEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
@@ -599,8 +721,12 @@ pub struct BooksBankAccount {
     /// The ledger account of the feed.
     pub account_id: String,
     pub account_code: String,
+    /// The currency the ledger account is kept in; null means the base currency. It can differ from `currency`.
+    pub ledger_currency: Option<String>,
     pub is_debtor: bool,
     pub active: bool,
+    /// The place of the account in the company default of the sales invoices: 1 prints first; null when it is not in the default. Set with `POST .../invoice-bank-accounts`.
+    pub invoice_position: Option<i64>,
     pub created_at: String,
     /// A payment provider feed: the account at the provider (`acct_…`).
     pub external_account_id: Option<String>,
@@ -614,8 +740,18 @@ pub struct BooksBankAccount {
     pub reserve_account_code: Option<String>,
     /// A payment provider feed: the pooled customer party of its receipts.
     pub customer_party_id: Option<String>,
+    /// A broker feed (Lightyear): the key that groups the feeds of one broker account, one per currency.
+    pub broker_key: Option<String>,
+    /// A broker feed: the account of its money market fund units, in the feed currency.
+    pub mmf_account_code: Option<String>,
+    /// The bank transactions of the account, without a transaction removed from the books (`status` `retracted`).
     pub transaction_count: i64,
+    /// The earliest booking date of a transaction of the account, without a retracted one; null with none.
+    pub first_booking_date: Option<String>,
+    /// The latest booking date of a transaction of the account, a retracted one too (a bank feed starts after it); null with none.
     pub last_booking_date: Option<String>,
+    /// Each month (`YYYY-MM`) with at least one transaction of the account that is not retracted, in order; empty with none.
+    pub booked_months: Vec<String>,
     /// The balance of the ledger account in the feed currency.
     pub ledger_balance_minor: i64,
     /// The tie-out of verify: the latest closing balance a statement of the account printed (a bank feed sync or a statement file); null when none printed one.
@@ -634,6 +770,104 @@ pub struct BooksBankAccountPage {
     pub items: Vec<BooksBankAccount>,
     /// Send it back as `cursor` for the next page; null on the last page.
     pub next_cursor: Option<String>,
+}
+
+/// What the payments to explain were checked against: the transactions of the books, per bank account.
+///
+/// Months and accounts outside it are not checked.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksBankCoverage {
+    /// The bank accounts with transactions, in label order.
+    pub accounts: Vec<BooksBankCoverageAccount>,
+    /// The accounts with no transaction in the books: not checked.
+    pub uncovered_accounts: Vec<BooksBankCoverageUncovered>,
+    /// The earliest first booking date of `accounts`; null with none.
+    pub checked_from: Option<String>,
+    /// The latest last booking date of `accounts`; null with none.
+    pub checked_to: Option<String>,
+}
+
+/// A bank account with transactions: the range the payments to explain were checked in.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksBankCoverageAccount {
+    pub bank_account_id: String,
+    /// The label of the bank account.
+    pub name: String,
+    pub iban: Option<String>,
+    pub currency: String,
+    /// The transactions of the account, without a retracted one.
+    pub transaction_count: i64,
+    /// The earliest booking date of a transaction.
+    pub first_booking_date: String,
+    /// The latest booking date of a transaction: months after it are not checked.
+    pub last_booking_date: String,
+    /// The months (`YYYY-MM`) with a transaction, in order.
+    pub booked_months: Vec<String>,
+    /// The months (`YYYY-MM`) between the first and the last booking date with no transaction: not checked.
+    pub gap_months: Vec<String>,
+}
+
+/// A bank account the payments to explain could not be checked in.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksBankCoverageUncovered {
+    /// The bank account of the books; null for an account of a bank connection.
+    pub bank_account_id: Option<String>,
+    pub name: String,
+    pub iban: Option<String>,
+    pub currency: Option<String>,
+    /// `no_bank_lines`: the bank account has no transaction. `feed_not_linked`: an account of a bank connection that feeds no bank account of the books yet.
+    ///
+    /// * `no_bank_lines` - no_bank_lines
+    /// * `feed_not_linked` - feed_not_linked
+    pub reason: BooksBankCoverageUncoveredReasonEnum,
+}
+
+/// * `no_bank_lines` - no_bank_lines
+/// * `feed_not_linked` - feed_not_linked
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksBankCoverageUncoveredReasonEnum {
+    /// `no_bank_lines`
+    #[serde(rename = "no_bank_lines")]
+    NoBankLines,
+    /// `feed_not_linked`
+    #[serde(rename = "feed_not_linked")]
+    FeedNotLinked,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksBankCoverageUncoveredReasonEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::NoBankLines => "no_bank_lines",
+            Self::FeedNotLinked => "feed_not_linked",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksBankCoverageUncoveredReasonEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "no_bank_lines" => Self::NoBankLines,
+            "feed_not_linked" => Self::FeedNotLinked,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksBankCoverageUncoveredReasonEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksBankCoverageUncoveredReasonEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// * `in` - in
@@ -726,10 +960,32 @@ pub struct BooksBankTransaction {
     /// The unsettled part of the suspense line; 0 once a judgement (an exemption, a money-in class) clears it; null without one.
     pub suspense_residual_minor: Option<i64>,
     pub status: BooksBankTransactionStatusEnum,
-    /// True when an uploaded file explains the transaction.
+    /// The imported accounting event a `migrated` line is linked to (a migration import); null for every other line.
+    pub migrated_event_id: Option<String>,
+    /// True when a file explains the transaction: an upload for it, or a file of the purchase invoice a payment allocation matched to it.
     pub has_document: bool,
-    /// The sqids of the uploaded files that explain it (`files/{file_id}/`).
+    /// The sqids of the files that explain it (`files/{file_id}/`): uploads, and the files of matched purchase invoices.
     pub file_ids: Vec<String>,
+    /// Why a `retracted` line is out of the books; null for every other line.
+    pub retraction: Option<BooksBankTransactionRetraction>,
+    /// A payment to explain (money out still open that no file of a matched invoice explains): `missing` (no receipt and no booked invoice), `receipt_not_booked` (a person linked a file, the payment is not booked yet), `invoice_not_matched` (a posted invoice still open fits the payment: a linked file became it, a match proposal names it, or it is the only open invoice of the party with the same amount). Null for every other transaction.
+    ///
+    /// * `missing` - missing
+    /// * `receipt_not_booked` - receipt_not_booked
+    /// * `invoice_not_matched` - invoice_not_matched
+    pub receipt_state: Option<ReceiptStateEnum>,
+    /// `receipt_not_booked` only: `reading` (the file is being read), `review` (its draft waits for a person), `recorded` (the invoice is recorded, not posted), `failed` (the reading failed), `no_extraction` (the file is not read, for example an image or a contract). Null otherwise, and when none of these applies.
+    ///
+    /// * `reading` - reading
+    /// * `review` - review
+    /// * `recorded` - recorded
+    /// * `failed` - failed
+    /// * `no_extraction` - no_extraction
+    pub receipt_detail: Option<ReceiptDetailEnum>,
+    /// `invoice_not_matched` by a match proposal that waits for a person: its sqid; null otherwise.
+    pub match_proposal_id: Option<String>,
+    /// `invoice_not_matched` only: the posted invoices that fit the payment; empty otherwise.
+    pub matched_invoice_candidates: Vec<BooksBankTransactionInvoiceCandidate>,
 }
 
 /// A bank transaction with its source row, entries, allocations and judgements.
@@ -774,10 +1030,32 @@ pub struct BooksBankTransactionDetail {
     /// The unsettled part of the suspense line; 0 once a judgement (an exemption, a money-in class) clears it; null without one.
     pub suspense_residual_minor: Option<i64>,
     pub status: BooksBankTransactionStatusEnum,
-    /// True when an uploaded file explains the transaction.
+    /// The imported accounting event a `migrated` line is linked to (a migration import); null for every other line.
+    pub migrated_event_id: Option<String>,
+    /// True when a file explains the transaction: an upload for it, or a file of the purchase invoice a payment allocation matched to it.
     pub has_document: bool,
-    /// The sqids of the uploaded files that explain it (`files/{file_id}/`).
+    /// The sqids of the files that explain it (`files/{file_id}/`): uploads, and the files of matched purchase invoices.
     pub file_ids: Vec<String>,
+    /// Why a `retracted` line is out of the books; null for every other line.
+    pub retraction: Option<BooksBankTransactionRetraction>,
+    /// A payment to explain (money out still open that no file of a matched invoice explains): `missing` (no receipt and no booked invoice), `receipt_not_booked` (a person linked a file, the payment is not booked yet), `invoice_not_matched` (a posted invoice still open fits the payment: a linked file became it, a match proposal names it, or it is the only open invoice of the party with the same amount). Null for every other transaction.
+    ///
+    /// * `missing` - missing
+    /// * `receipt_not_booked` - receipt_not_booked
+    /// * `invoice_not_matched` - invoice_not_matched
+    pub receipt_state: Option<ReceiptStateEnum>,
+    /// `receipt_not_booked` only: `reading` (the file is being read), `review` (its draft waits for a person), `recorded` (the invoice is recorded, not posted), `failed` (the reading failed), `no_extraction` (the file is not read, for example an image or a contract). Null otherwise, and when none of these applies.
+    ///
+    /// * `reading` - reading
+    /// * `review` - review
+    /// * `recorded` - recorded
+    /// * `failed` - failed
+    /// * `no_extraction` - no_extraction
+    pub receipt_detail: Option<ReceiptDetailEnum>,
+    /// `invoice_not_matched` by a match proposal that waits for a person: its sqid; null otherwise.
+    pub match_proposal_id: Option<String>,
+    /// `invoice_not_matched` only: the posted invoices that fit the payment; empty otherwise.
+    pub matched_invoice_candidates: Vec<BooksBankTransactionInvoiceCandidate>,
     /// The source row as the statement parser stored it.
     pub raw: serde_json::Value,
     pub entries: Vec<BooksBankTransactionEntry>,
@@ -785,6 +1063,8 @@ pub struct BooksBankTransactionDetail {
     pub exemption: Option<BooksExemption>,
     pub money_in: Option<BooksMoneyIn>,
     pub transfer_match: Option<BooksTransferMatch>,
+    /// False when the books keep this line for good, so `retract_bank_transaction` always refuses it. True does not promise that it passes: the books refuse a line that something still explains, and say what to undo first.
+    pub retractable: bool,
 }
 
 /// A journal entry posted from a bank transaction.
@@ -799,14 +1079,35 @@ pub struct BooksBankTransactionEntry {
     pub state: BooksEntryStateEnum,
 }
 
-/// One page of BooksBankTransaction items, and the cursor of the next page.
+/// A posted invoice that fits an open payment (`receipt_state` `invoice_not_matched`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksBankTransactionInvoiceCandidate {
+    pub invoice_id: String,
+    pub number: Option<String>,
+}
+
+/// One page of BooksBankTransaction items, the cursor of the next page, and the coverage of the payments to
+/// explain.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooksBankTransactionPage {
     pub items: Vec<BooksBankTransaction>,
     /// Send it back as `cursor` for the next page; null on the last page.
     pub next_cursor: Option<String>,
+    /// With `to_explain=true` or `receipt_state`: the bank accounts and months the answer checked (the same on every page). Null otherwise.
+    pub coverage: Option<BooksBankCoverage>,
 }
 
+/// The retraction of a bank line: why a person took it out of the books (`retract_bank_transaction`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksBankTransactionRetraction {
+    pub reason: String,
+    /// The line this one repeats; null when it is no duplicate.
+    pub duplicate_of_bank_transaction_id: Option<String>,
+    pub retracted_at: String,
+}
+
+/// * `migrated` - migrated
+/// * `retracted` - retracted
 /// * `unmatched` - unmatched
 /// * `part_matched` - part_matched
 /// * `matched` - matched
@@ -817,6 +1118,12 @@ pub struct BooksBankTransactionPage {
 /// * `posted` - posted
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BooksBankTransactionStatusEnum {
+    /// `migrated`
+    #[serde(rename = "migrated")]
+    Migrated,
+    /// `retracted`
+    #[serde(rename = "retracted")]
+    Retracted,
     /// `unmatched`
     #[serde(rename = "unmatched")]
     Unmatched,
@@ -850,6 +1157,8 @@ impl BooksBankTransactionStatusEnum {
     /// The value as it goes on the wire.
     pub fn as_str(&self) -> &str {
         match self {
+            Self::Migrated => "migrated",
+            Self::Retracted => "retracted",
             Self::Unmatched => "unmatched",
             Self::PartMatched => "part_matched",
             Self::Matched => "matched",
@@ -866,6 +1175,8 @@ impl BooksBankTransactionStatusEnum {
 impl From<&str> for BooksBankTransactionStatusEnum {
     fn from(value: &str) -> Self {
         match value {
+            "migrated" => Self::Migrated,
+            "retracted" => Self::Retracted,
             "unmatched" => Self::Unmatched,
             "part_matched" => Self::PartMatched,
             "matched" => Self::Matched,
@@ -1084,10 +1395,15 @@ pub struct BooksDocument {
     pub retention_until: Option<String>,
     pub legal_hold: bool,
     pub created_at: String,
-    /// True when the books refer to the document (an invoice, a statement, an event, a return).
+    /// True when any record of the books refers to the document: an invoice, a statement, an event, a VAT return, an exchange rate, the dividend facts, a registration or a valuation.
     pub referenced: bool,
+    /// True when the file was deleted: the books keep the record, and nothing links it again.
+    pub withdrawn: bool,
+    pub withdrawn_at: Option<String>,
     /// The sqid of the stored file (`files/{file_id}/`), or null when none is stored.
     pub file_id: Option<String>,
+    /// The name of the stored file now, or null when none is stored or it was deleted. A file uploaded again after its deletion has the name of that upload, while `filename` keeps the first one.
+    pub stored_filename: Option<String>,
     /// The API path that gives a short-lived URL of the bytes (`files/{file_id}/download/`), or null.
     pub download_url: Option<String>,
 }
@@ -1108,16 +1424,39 @@ pub struct BooksDocumentDetail {
     pub retention_until: Option<String>,
     pub legal_hold: bool,
     pub created_at: String,
-    /// True when the books refer to the document (an invoice, a statement, an event, a return).
+    /// True when any record of the books refers to the document: an invoice, a statement, an event, a VAT return, an exchange rate, the dividend facts, a registration or a valuation.
     pub referenced: bool,
+    /// True when the file was deleted: the books keep the record, and nothing links it again.
+    pub withdrawn: bool,
+    pub withdrawn_at: Option<String>,
     /// The sqid of the stored file (`files/{file_id}/`), or null when none is stored.
     pub file_id: Option<String>,
+    /// The name of the stored file now, or null when none is stored or it was deleted. A file uploaded again after its deletion has the name of that upload, while `filename` keeps the first one.
+    pub stored_filename: Option<String>,
     /// The API path that gives a short-lived URL of the bytes (`files/{file_id}/download/`), or null.
     pub download_url: Option<String>,
     pub invoices: Vec<BooksDocumentInvoice>,
     pub bank_statements: Vec<BooksDocumentStatement>,
     pub accounting_events: Vec<BooksDocumentEvent>,
     pub vat_returns: Vec<BooksDocumentVatReturn>,
+    /// Every record of the books that refers to the document.
+    pub references: Vec<BooksDocumentReference>,
+    /// Who may withdraw the document from the books now: any caller, a person with a reason, or nobody.
+    ///
+    /// * `any` - any
+    /// * `human_with_reason` - human_with_reason
+    /// * `no` - no
+    pub withdrawable: WithdrawableEnum,
+    /// What stops the withdrawal, or null.
+    ///
+    /// * `document_withdrawn` - document_withdrawn
+    /// * `document_legal_hold` - document_legal_hold
+    /// * `document_in_use` - document_in_use
+    pub withdraw_blocked_by: Option<WithdrawBlockedByEnum>,
+    /// The withdrawals and reinstatements of the document, oldest first.
+    pub status_events: Vec<BooksDocumentStatusEvent>,
+    /// Whether the stored file can be deleted now (`POST files/{file_id}/delete/`), and what stops it; null when no file is stored.
+    pub deletion: Option<Deletion>,
 }
 
 /// An accounting event that refers to a document.
@@ -1218,11 +1557,153 @@ pub struct BooksDocumentPage {
     pub next_cursor: Option<String>,
 }
 
+/// One record of the books that refers to a document, and whether it keeps the document in use.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksDocumentReference {
+    /// `invoice`, `accounting_event`, `bank_statement`, `vat_return`, `exchange_rate`, `annual_report`, `unpaid_capital`, `dividend_received`, `dividend_decision`, `vat_registration`, `vat_scheme_registration` or `investment_valuation`.
+    pub kind: String,
+    pub id: String,
+    /// The state of the record, or null.
+    pub state: Option<String>,
+    /// An invoice: `original` or `supporting`.
+    pub role: Option<String>,
+    /// An invoice: the revision that links the document.
+    pub revision_id: Option<String>,
+    /// An invoice: the number of that revision.
+    pub revision_no: Option<i64>,
+    /// An invoice: `current` or `superseded`.
+    pub revision_state: Option<String>,
+    /// An invoice: true when staff removed the document from the revision.
+    pub removed: Option<bool>,
+    /// A short label of the record for people: an invoice gives its number (a purchase invoice: the supplier's number) and its party name, `"{number}, {party}"`, or the party name alone; null for other records.
+    pub label: Option<String>,
+    /// Whether the record keeps the document in use.
+    ///
+    /// * `live` - live
+    /// * `permanent` - permanent
+    /// * `inactive` - inactive
+    pub class: BooksDocumentReferenceClassEnum,
+}
+
+/// * `live` - live
+/// * `permanent` - permanent
+/// * `inactive` - inactive
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksDocumentReferenceClassEnum {
+    /// `live`
+    #[serde(rename = "live")]
+    Live,
+    /// `permanent`
+    #[serde(rename = "permanent")]
+    Permanent,
+    /// `inactive`
+    #[serde(rename = "inactive")]
+    Inactive,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksDocumentReferenceClassEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Live => "live",
+            Self::Permanent => "permanent",
+            Self::Inactive => "inactive",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksDocumentReferenceClassEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "live" => Self::Live,
+            "permanent" => Self::Permanent,
+            "inactive" => Self::Inactive,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksDocumentReferenceClassEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksDocumentReferenceClassEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// A bank statement that refers to a document.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooksDocumentStatement {
     pub statement_id: String,
     pub bank_account_id: String,
+}
+
+/// A withdrawal of a document from the books' use, or its reinstatement by the same file uploaded again.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksDocumentStatusEvent {
+    pub status: BooksDocumentStatusEventStatusEnum,
+    /// `not_company_document`, `wrong_file` or `duplicate`, or null.
+    pub reason_code: Option<String>,
+    pub reason: Option<String>,
+    pub created_at: String,
+    /// The core actor.
+    pub actor_id: String,
+}
+
+/// * `withdrawn` - withdrawn
+/// * `reinstated` - reinstated
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksDocumentStatusEventStatusEnum {
+    /// `withdrawn`
+    #[serde(rename = "withdrawn")]
+    Withdrawn,
+    /// `reinstated`
+    #[serde(rename = "reinstated")]
+    Reinstated,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksDocumentStatusEventStatusEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Withdrawn => "withdrawn",
+            Self::Reinstated => "reinstated",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksDocumentStatusEventStatusEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "withdrawn" => Self::Withdrawn,
+            "reinstated" => Self::Reinstated,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksDocumentStatusEventStatusEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksDocumentStatusEventStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// A VAT return whose response is a document.
@@ -1417,7 +1898,65 @@ impl fmt::Display for BooksEntryStateEnum {
 /// The exemption that judges a bank transaction.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooksExemption {
-    pub counter_role: BooksExemptionRoleEnum,
+    /// The account role the payment is booked to, or null.
+    ///
+    /// * `transfer_transit` - transfer_transit
+    /// * `supplier_prepayment` - supplier_prepayment
+    /// * `customer_prepayment` - customer_prepayment
+    /// * `vat_input` - vat_input
+    /// * `vat_input_rc` - vat_input_rc
+    /// * `vat_output` - vat_output
+    /// * `vat_output_rc` - vat_output_rc
+    /// * `vat_payable` - vat_payable
+    /// * `vat_non_deductible` - vat_non_deductible
+    /// * `tax_receivable` - tax_receivable
+    /// * `expense_default` - expense_default
+    /// * `software_expense` - software_expense
+    /// * `hosting_expense` - hosting_expense
+    /// * `prof_fees` - prof_fees
+    /// * `travel_expense` - travel_expense
+    /// * `bank_charges` - bank_charges
+    /// * `income_default` - income_default
+    /// * `interest_income` - interest_income
+    /// * `interest_expense` - interest_expense
+    /// * `fx_gain` - fx_gain
+    /// * `fx_loss` - fx_loss
+    /// * `rounding` - rounding
+    /// * `payroll_expense` - payroll_expense
+    /// * `payroll_liability` - payroll_liability
+    /// * `payroll_tax` - payroll_tax
+    /// * `grant_liability` - grant_liability
+    /// * `grant_income` - grant_income
+    /// * `loan_payable` - loan_payable
+    /// * `loan_receivable` - loan_receivable
+    /// * `owner_capital` - owner_capital
+    /// * `owner_drawings` - owner_drawings
+    /// * `accrued_expense` - accrued_expense
+    /// * `prepaid_expense` - prepaid_expense
+    /// * `deferred_income` - deferred_income
+    /// * `opening_balance` - opening_balance
+    /// * `retained_earnings` - retained_earnings
+    /// * `current_year_result` - current_year_result
+    /// * `discount_received` - discount_received
+    /// * `discount_allowed` - discount_allowed
+    /// * `writeoff` - writeoff
+    /// * `bad_debt` - bad_debt
+    /// * `dividend_payable` - dividend_payable
+    /// * `distribution_tax_expense` - distribution_tax_expense
+    /// * `distribution_tax_liability` - distribution_tax_liability
+    /// * `share_capital` - share_capital
+    /// * `legal_reserve` - legal_reserve
+    /// * `vat_output_oss` - vat_output_oss
+    /// * `vat_output_ioss` - vat_output_ioss
+    /// * `vat_output_gb` - vat_output_gb
+    /// * `vat_input_gb` - vat_input_gb
+    /// * `vat_output_au` - vat_output_au
+    /// * `vat_output_import` - vat_output_import
+    /// * `vat_input_import` - vat_input_import
+    /// * `vat_input_fixed_asset` - vat_input_fixed_asset
+    pub counter_role: Option<BooksExemptionRoleEnum>,
+    /// The code of the account the payment is booked to, when the exemption names an account and no role.
+    pub counter_account_code: Option<String>,
     pub reason: String,
     pub created_at: String,
 }
@@ -1468,6 +2007,14 @@ pub struct BooksExemption {
 /// * `distribution_tax_liability` - distribution_tax_liability
 /// * `share_capital` - share_capital
 /// * `legal_reserve` - legal_reserve
+/// * `vat_output_oss` - vat_output_oss
+/// * `vat_output_ioss` - vat_output_ioss
+/// * `vat_output_gb` - vat_output_gb
+/// * `vat_input_gb` - vat_input_gb
+/// * `vat_output_au` - vat_output_au
+/// * `vat_output_import` - vat_output_import
+/// * `vat_input_import` - vat_input_import
+/// * `vat_input_fixed_asset` - vat_input_fixed_asset
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BooksExemptionRoleEnum {
     /// `transfer_transit`
@@ -1608,6 +2155,30 @@ pub enum BooksExemptionRoleEnum {
     /// `legal_reserve`
     #[serde(rename = "legal_reserve")]
     LegalReserve,
+    /// `vat_output_oss`
+    #[serde(rename = "vat_output_oss")]
+    VatOutputOss,
+    /// `vat_output_ioss`
+    #[serde(rename = "vat_output_ioss")]
+    VatOutputIoss,
+    /// `vat_output_gb`
+    #[serde(rename = "vat_output_gb")]
+    VatOutputGb,
+    /// `vat_input_gb`
+    #[serde(rename = "vat_input_gb")]
+    VatInputGb,
+    /// `vat_output_au`
+    #[serde(rename = "vat_output_au")]
+    VatOutputAu,
+    /// `vat_output_import`
+    #[serde(rename = "vat_output_import")]
+    VatOutputImport,
+    /// `vat_input_import`
+    #[serde(rename = "vat_input_import")]
+    VatInputImport,
+    /// `vat_input_fixed_asset`
+    #[serde(rename = "vat_input_fixed_asset")]
+    VatInputFixedAsset,
     /// A value this version of the client does not know.
     #[serde(untagged)]
     UnknownValue(String),
@@ -1663,6 +2234,14 @@ impl BooksExemptionRoleEnum {
             Self::DistributionTaxLiability => "distribution_tax_liability",
             Self::ShareCapital => "share_capital",
             Self::LegalReserve => "legal_reserve",
+            Self::VatOutputOss => "vat_output_oss",
+            Self::VatOutputIoss => "vat_output_ioss",
+            Self::VatOutputGb => "vat_output_gb",
+            Self::VatInputGb => "vat_input_gb",
+            Self::VatOutputAu => "vat_output_au",
+            Self::VatOutputImport => "vat_output_import",
+            Self::VatInputImport => "vat_input_import",
+            Self::VatInputFixedAsset => "vat_input_fixed_asset",
             Self::UnknownValue(value) => value,
         }
     }
@@ -1717,6 +2296,14 @@ impl From<&str> for BooksExemptionRoleEnum {
             "distribution_tax_liability" => Self::DistributionTaxLiability,
             "share_capital" => Self::ShareCapital,
             "legal_reserve" => Self::LegalReserve,
+            "vat_output_oss" => Self::VatOutputOss,
+            "vat_output_ioss" => Self::VatOutputIoss,
+            "vat_output_gb" => Self::VatOutputGb,
+            "vat_input_gb" => Self::VatInputGb,
+            "vat_output_au" => Self::VatOutputAu,
+            "vat_output_import" => Self::VatOutputImport,
+            "vat_input_import" => Self::VatInputImport,
+            "vat_input_fixed_asset" => Self::VatInputFixedAsset,
             other => Self::UnknownValue(other.to_owned()),
         }
     }
@@ -1854,6 +2441,8 @@ pub struct BooksGeneralLedger {
     /// The currency of every `*_base_minor` amount: the base currency of the books.
     pub base_currency: String,
     pub accounts: Vec<BooksLedgerAccount>,
+    /// The `hidden_corrections` of every account, summed.
+    pub hidden_corrections: i64,
 }
 
 /// The income statement of a period, in the base currency.
@@ -1916,12 +2505,138 @@ pub struct BooksInvoice {
     pub base_gross_minor: Option<i64>,
     /// The currency of every `*_base_minor` amount: the base currency of the books.
     pub base_currency: String,
+    /// The current revision is flagged for a person to check (`review_note` says why) and no person marked it as reviewed (`review_decision`).
     pub needs_review: bool,
+    /// What the checks of the current revision found, or null. With no flag and no `review_decision` it is only information. It stays after a review decision.
     pub review_note: Option<String>,
+    /// The decision that the review flag of the current revision needs no change: who, when and the note. Null while there is none; a new revision, or a new review note, needs a new decision.
+    pub review_decision: Option<BooksInvoiceReviewDecision>,
     /// What is still open of the posted invoice, in its currency: 0 when settled; null while not posted.
     pub open_minor: Option<i64>,
     /// `unposted`, `unpaid`, `part_paid`, `paid`, or `overdue`: unpaid or part paid, due before today.
     pub settlement_state: BooksInvoiceSettlementStateEnum,
+    /// When the current revision was posted to the ledger; null while not posted.
+    pub posted_at: Option<String>,
+}
+
+/// An active allocation that settles a line of the invoice: a payment, a refund, a credit note.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceAllocation {
+    pub id: String,
+    pub kind: BooksAllocationKindEnum,
+    /// Who allocated it: `human`, `matcher`, `import` or `migration`.
+    pub origin: String,
+    pub item_currency: String,
+    pub item_minor: i64,
+    pub counter_currency: String,
+    pub counter_minor: i64,
+    pub effective_date: String,
+    pub created_at: String,
+    /// The bank transaction of the other side; null when the other side is not a bank line (a credit note).
+    pub bank_transaction_id: Option<String>,
+}
+
+/// One bank account an invoice prints.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceBankAccount {
+    /// The bank account; null for an issued invoice, which prints its frozen copy.
+    pub bank_account_id: Option<String>,
+    /// The label of the bank account; null for an issued invoice.
+    pub label: Option<String>,
+    pub iban: String,
+    pub bic: Option<String>,
+    pub currency: String,
+}
+
+/// Why a draft cannot be issued with the bank accounts a person chose for it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceBankAccountProblem {
+    /// `invoice_bank_account_unavailable`: the issue refuses with this code.
+    pub code: String,
+    pub message: String,
+    /// The chosen accounts that can no longer print.
+    pub bank_account_ids: Vec<String>,
+}
+
+/// The bank accounts an own sales invoice prints, in print order, and where the choice comes from.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceBankAccounts {
+    pub invoice_id: String,
+    /// The current revision.
+    pub revision_id: String,
+    /// The currency of the invoice.
+    pub currency: String,
+    /// `override`: the accounts a person chose for this draft; `default`: the company default, those in the invoice currency if any; `automatic`: every active account in the invoice currency, else every active account; `snapshot`: an issued invoice, the accounts it froze.
+    ///
+    /// * `override` - override
+    /// * `default` - default
+    /// * `automatic` - automatic
+    /// * `snapshot` - snapshot
+    pub source: BooksInvoiceBankAccountsSourceEnum,
+    /// In print order; the first is the payment account of the e-invoice.
+    pub bank_accounts: Vec<BooksInvoiceBankAccount>,
+    /// Null, or the chosen accounts that can no longer print: the issue refuses until a person changes the choice; `bank_accounts` holds the chosen accounts that still print.
+    pub problem: Option<BooksInvoiceBankAccountProblem>,
+}
+
+/// * `override` - override
+/// * `default` - default
+/// * `automatic` - automatic
+/// * `snapshot` - snapshot
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksInvoiceBankAccountsSourceEnum {
+    /// `override`
+    #[serde(rename = "override")]
+    Override,
+    /// `default`
+    #[serde(rename = "default")]
+    Default,
+    /// `automatic`
+    #[serde(rename = "automatic")]
+    Automatic,
+    /// `snapshot`
+    #[serde(rename = "snapshot")]
+    Snapshot,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksInvoiceBankAccountsSourceEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Override => "override",
+            Self::Default => "default",
+            Self::Automatic => "automatic",
+            Self::Snapshot => "snapshot",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksInvoiceBankAccountsSourceEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "override" => Self::Override,
+            "default" => Self::Default,
+            "automatic" => Self::Automatic,
+            "snapshot" => Self::Snapshot,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksInvoiceBankAccountsSourceEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksInvoiceBankAccountsSourceEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// The VAT of a foreign-currency invoice in the base currency (KMS § 37 (7) p 10, EE-VAT-026).
@@ -1998,16 +2713,25 @@ pub struct BooksInvoiceDetail {
     pub base_gross_minor: Option<i64>,
     /// The currency of every `*_base_minor` amount: the base currency of the books.
     pub base_currency: String,
+    /// The current revision is flagged for a person to check (`review_note` says why) and no person marked it as reviewed (`review_decision`).
     pub needs_review: bool,
+    /// What the checks of the current revision found, or null. With no flag and no `review_decision` it is only information. It stays after a review decision.
     pub review_note: Option<String>,
+    /// The decision that the review flag of the current revision needs no change: who, when and the note. Null while there is none; a new revision, or a new review note, needs a new decision.
+    pub review_decision: Option<BooksInvoiceReviewDecision>,
     /// What is still open of the posted invoice, in its currency: 0 when settled; null while not posted.
     pub open_minor: Option<i64>,
     /// `unposted`, `unpaid`, `part_paid`, `paid`, or `overdue`: unpaid or part paid, due before today.
     pub settlement_state: BooksInvoiceSettlementStateEnum,
+    /// When the current revision was posted to the ledger; null while not posted.
+    pub posted_at: Option<String>,
     pub revision: BooksInvoiceRevision,
     pub revisions: Vec<BooksInvoiceRevisionSummary>,
     pub entries: Vec<BooksInvoiceEntry>,
     pub settlement: Option<BooksSettlement>,
+    pub allocations: Vec<BooksInvoiceAllocation>,
+    /// The source of an invoice a migration import recorded (`origin` `migration`); null otherwise. A migrated invoice is history: it is corrected with a credit note, never revised, cancelled or voided.
+    pub migrated_from: Option<BooksInvoiceMigratedFrom>,
 }
 
 /// * `purchase` - purchase
@@ -2066,6 +2790,12 @@ pub struct BooksInvoiceDocument {
     pub role: String,
     pub filename: String,
     pub kind: BooksDocumentKindEnum,
+    /// The sqid of the stored file (`files/{file_id}/`), or null when none is stored.
+    pub file_id: Option<String>,
+    /// The API path that gives a short-lived URL of the bytes (`files/{file_id}/download/`), or null.
+    pub download_url: Option<String>,
+    /// Where the stored file came from: `email` (the invoice inbox), `upload` (a person), `api` (an API key or an app connected through OAuth), `import` (a migration or a Stripe import), `generated` (made by Oscar) or `other`. More values may come. Null when no file is stored.
+    pub source: Option<String>,
 }
 
 /// A journal entry posted from a revision of an invoice.
@@ -2151,7 +2881,10 @@ pub struct BooksInvoiceLine {
     /// A decimal string.
     pub quantity: Option<String>,
     pub unit: Option<String>,
+    /// The unit price in whole minor units; null on an item line whose price has a fraction of a minor unit.
     pub unit_price_minor: Option<i64>,
+    /// The unit price in major units, a decimal string of at most 6 decimals without trailing zeros (`150.334`); null on a line without a price.
+    pub unit_price: Option<String>,
     pub allowance_minor: i64,
     pub charge_minor: i64,
     pub net_minor: i64,
@@ -2180,12 +2913,61 @@ pub struct BooksInvoiceLine {
     pub fixed_asset_link: Option<BooksFixedAssetLinkEnum>,
 }
 
+/// Where a migrated invoice comes from: the source system and its id, and the journal of the import it is linked to.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceMigratedFrom {
+    /// The accounting program it was imported from (`e-arveldaja`).
+    pub system: String,
+    /// The id of the invoice in that program (`sale_invoices/5658124`).
+    pub r#ref: String,
+    /// The imported journal entry that posts the invoice. The invoice record posts nothing itself.
+    pub entry_id: String,
+    /// The open item at the cutover that the invoice owns; null when it was settled before the cutover.
+    pub open_line_id: Option<String>,
+}
+
 /// One page of BooksInvoice items, and the cursor of the next page.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BooksInvoicePage {
     pub items: Vec<BooksInvoice>,
     /// Send it back as `cursor` for the next page; null on the last page.
     pub next_cursor: Option<String>,
+}
+
+/// A document firm staff removed from the current revision of an invoice.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceRemovedDocument {
+    pub document_id: String,
+    /// `original` or `supporting`.
+    pub role: String,
+    /// The document that took its place, in the same role; null for none.
+    pub replaced_by_document_id: Option<String>,
+    /// `not_company_document`, `wrong_file` or `duplicate`.
+    pub reason_code: Option<String>,
+    pub reason: String,
+    pub removed_at: String,
+    /// The core actor who removed it.
+    pub actor_id: String,
+    /// The sqid of the stored file of the removed document; null when the file was deleted.
+    pub file_id: Option<String>,
+    /// The name of that stored file; empty when the file was deleted.
+    pub filename: String,
+    /// The sqid of the stored file of the replacement; null for none, or when the file was deleted.
+    pub replacement_file_id: Option<String>,
+    /// The name of that stored file; empty for none, or when the file was deleted.
+    pub replacement_filename: String,
+}
+
+/// A person's decision that the review flag of the current revision needs no change (`mark_invoice_reviewed`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BooksInvoiceReviewDecision {
+    /// The core actor who marked the flag as reviewed.
+    pub decided_by: String,
+    /// The display name of that actor.
+    pub decided_by_name: String,
+    pub decided_at: String,
+    /// The person's note, or null.
+    pub note: Option<String>,
 }
 
 /// The current revision of an invoice, with its lines and documents.
@@ -2224,15 +3006,29 @@ pub struct BooksInvoiceRevision {
     pub buyer_snapshot: serde_json::Value,
     /// The payload the invoice was recorded from, or null.
     pub source_payload: serde_json::Value,
+    /// The current revision is flagged for a person to check (`review_note` says why) and no person marked it as reviewed (`review_decision`).
     pub needs_review: bool,
+    /// What the checks of the revision found, or null. With no flag and no `review_decision` it is only information. It stays after a review decision.
     pub review_note: Option<String>,
+    /// The decision that the review flag of the current revision needs no change: who, when and the note. Null while there is none; a new revision, or a new review note, needs a new decision.
+    pub review_decision: Option<BooksInvoiceReviewDecision>,
     pub reason: Option<String>,
     /// An own sales invoice: the note printed for the customer.
     pub customer_note: Option<String>,
+    /// An own sales invoice: the buyer's contact person.
+    pub buyer_contact_name: Option<String>,
+    /// An own sales invoice: the number of the buyer's order.
+    pub order_number: Option<String>,
+    /// An own sales invoice: the number of the contract with the buyer.
+    pub contract_number: Option<String>,
+    /// An own sales invoice: the reference the buyer asks for.
+    pub buyer_reference: Option<String>,
     /// An own sales invoice: the unit prices of the item lines include VAT; the books computed each net.
     pub prices_include_vat: bool,
     /// An own sales invoice: the language of its document, `et` or `en`; null when unset.
     pub language: Option<String>,
+    /// An own sales invoice: the bank accounts this revision prints, in order, as a person chose them; null: the company default (`invoice_position` of the bank accounts), else every active account in the invoice currency. `GET .../invoices/{invoice_id}/bank-accounts/` reads the accounts it prints.
+    pub bank_account_ids: Option<Vec<String>>,
     /// The VAT in the base currency of a revision in another currency that charges VAT; null otherwise, and for a draft while no rate is known.
     pub base_vat: Option<BooksInvoiceBaseVat>,
     pub created_at: String,
@@ -2241,6 +3037,8 @@ pub struct BooksInvoiceRevision {
     pub command_id: String,
     pub lines: Vec<BooksInvoiceLine>,
     pub documents: Vec<BooksInvoiceDocument>,
+    /// The documents firm staff removed from this revision, with the reason, oldest first. `documents` leaves them out.
+    pub removed_documents: Vec<BooksInvoiceRemovedDocument>,
 }
 
 /// One revision in the history of an invoice.
@@ -2462,8 +3260,12 @@ pub struct BooksLedgerAccount {
     pub account_name: String,
     /// The English name of the account; null when it has none.
     pub account_name_en: Option<String>,
+    /// The balance before the range, every line counted.
     pub opening_base_minor: i64,
+    /// The balance at the end of the range, every line counted, hidden ones too.
     pub closing_base_minor: i64,
+    /// How many lines of the range belong to a correction pair, so how many `include_corrections=false` leaves out. The same number whether they are included or not. The balances count them either way.
+    pub hidden_corrections: i64,
     pub lines: Vec<BooksLedgerLine>,
 }
 
@@ -2482,6 +3284,7 @@ pub struct BooksLedgerLine {
     /// Signed, debit positive, in `currency`.
     pub amount_minor: i64,
     pub base_minor: i64,
+    /// The balance of the account after this line. It counts the lines of the correction pairs too, so it can jump across a line `include_corrections=false` leaves out.
     pub running_base_minor: i64,
     pub memo: Option<String>,
 }
@@ -2691,6 +3494,8 @@ pub struct BooksParty {
     pub email: Option<String>,
     /// The phone number of the party.
     pub phone: Option<String>,
+    /// What the party is to the company: `supplier` when its kind is supplier or it has a purchase invoice (or an open purchase draft), `customer` when its kind is customer or it has a sales invoice. Void invoices do not count. Empty for a party of another kind with no invoice.
+    pub roles: Vec<PartyRoleEnum>,
 }
 
 /// The defaults the books apply to a party's invoices.
@@ -2700,6 +3505,11 @@ pub struct BooksPartyDefaults {
     pub vat_code: Option<String>,
     pub currency: Option<String>,
     pub payment_days: Option<i64>,
+    /// The language a new own sales invoice to the party starts in; null: no preference.
+    ///
+    /// * `et` - et
+    /// * `en` - en
+    pub language: Option<KycLanguageEnum>,
 }
 
 /// A party with its defaults.
@@ -2733,6 +3543,8 @@ pub struct BooksPartyDetail {
     pub email: Option<String>,
     /// The phone number of the party.
     pub phone: Option<String>,
+    /// What the party is to the company: `supplier` when its kind is supplier or it has a purchase invoice (or an open purchase draft), `customer` when its kind is customer or it has a sales invoice. Void invoices do not count. Empty for a party of another kind with no invoice.
+    pub roles: Vec<PartyRoleEnum>,
     pub defaults: Option<BooksPartyDefaults>,
 }
 
@@ -3258,6 +4070,31 @@ pub struct BooksVatCode {
     pub review_state: BooksReviewStateEnum,
     /// An exempt code: `real_estate`, `insurance`, `financial` (counted in the VAT registration turnover) or `other` (not counted); null when not classified (counted).
     pub exempt_category: Option<String>,
+    /// The scheme of the code (`oss_union`, `ioss`, `gb_vat` or `au_gst`); null for a code of no scheme. A picker shows such a code only on a date the company is registered for the scheme.
+    ///
+    /// * `oss_union` - oss_union
+    /// * `ioss` - ioss
+    /// * `gb_vat` - gb_vat
+    /// * `au_gst` - au_gst
+    pub special_scheme: Option<BooksVatSchemeEnum>,
+    /// The state of consumption of a scheme code (`DE`, `EL`, `XI`; `GB` or `AU` for a foreign scheme); else null.
+    pub member_state: Option<String>,
+    /// A scheme code: `goods` or `services`; else null.
+    ///
+    /// * `goods` - goods
+    /// * `services` - services
+    pub supply_kind: Option<BooksVatSupplyKindEnum>,
+    /// A scheme code: `standard`, `reduced` or `zero` (a foreign scheme only); else null.
+    ///
+    /// * `standard` - standard
+    /// * `reduced` - reduced
+    /// * `zero` - zero
+    pub rate_type: Option<BooksVatRateTypeEnum>,
+    /// A foreign scheme code of goods: `abroad` (shipped from Estonia) or `in_country` (held in the UK); null for a service and every other code.
+    ///
+    /// * `abroad` - abroad
+    /// * `in_country` - in_country
+    pub goods_location: Option<GoodsLocationEnum>,
     pub active: bool,
     pub created_at: String,
     pub rates: Vec<BooksVatRate>,
@@ -3386,6 +4223,9 @@ pub struct BooksVatPreview {
     pub base_currency: String,
     /// The VAT recognitions the return would include.
     pub recognitions: i64,
+    /// The deadline of the return of the period (the core calendar). A KMD: the 20th of the next month, moved to the next working day after a weekend or a public holiday; null when the period is not one calendar month. An OSS return: the last day of the month after the quarter; an IOSS return: the last day of the month after the month; null when the period is not one quarter or one month.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub due_date: Option<String>,
 }
 
 /// A rate of a VAT code over a range of dates.
@@ -3402,6 +4242,168 @@ pub struct BooksVatRate {
 /// * `standard` - standard
 /// * `reduced` - reduced
 /// * `zero` - zero
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksVatRateTypeEnum {
+    /// `standard`
+    #[serde(rename = "standard")]
+    Standard,
+    /// `reduced`
+    #[serde(rename = "reduced")]
+    Reduced,
+    /// `zero`
+    #[serde(rename = "zero")]
+    Zero,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksVatRateTypeEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Standard => "standard",
+            Self::Reduced => "reduced",
+            Self::Zero => "zero",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksVatRateTypeEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "standard" => Self::Standard,
+            "reduced" => Self::Reduced,
+            "zero" => Self::Zero,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksVatRateTypeEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksVatRateTypeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `oss_union` - oss_union
+/// * `ioss` - ioss
+/// * `gb_vat` - gb_vat
+/// * `au_gst` - au_gst
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksVatSchemeEnum {
+    /// `oss_union`
+    #[serde(rename = "oss_union")]
+    OssUnion,
+    /// `ioss`
+    #[serde(rename = "ioss")]
+    Ioss,
+    /// `gb_vat`
+    #[serde(rename = "gb_vat")]
+    GbVat,
+    /// `au_gst`
+    #[serde(rename = "au_gst")]
+    AuGst,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksVatSchemeEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::OssUnion => "oss_union",
+            Self::Ioss => "ioss",
+            Self::GbVat => "gb_vat",
+            Self::AuGst => "au_gst",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksVatSchemeEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "oss_union" => Self::OssUnion,
+            "ioss" => Self::Ioss,
+            "gb_vat" => Self::GbVat,
+            "au_gst" => Self::AuGst,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksVatSchemeEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksVatSchemeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `goods` - goods
+/// * `services` - services
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BooksVatSupplyKindEnum {
+    /// `goods`
+    #[serde(rename = "goods")]
+    Goods,
+    /// `services`
+    #[serde(rename = "services")]
+    Services,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl BooksVatSupplyKindEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Goods => "goods",
+            Self::Services => "services",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for BooksVatSupplyKindEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "goods" => Self::Goods,
+            "services" => Self::Services,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for BooksVatSupplyKindEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for BooksVatSupplyKindEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `standard` - standard
+/// * `reduced` - reduced
+/// * `zero` - zero
 /// * `exempt` - exempt
 /// * `out_of_scope` - out_of_scope
 /// * `rc_eu_services` - rc_eu_services
@@ -3410,6 +4412,8 @@ pub struct BooksVatRate {
 /// * `rc_non_eu` - rc_non_eu
 /// * `foreign_vat` - foreign_vat
 /// * `oss` - oss
+/// * `foreign_scheme` - foreign_scheme
+/// * `import` - import
 /// * `unknown` - unknown
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BooksVatTreatmentEnum {
@@ -3446,6 +4450,12 @@ pub enum BooksVatTreatmentEnum {
     /// `oss`
     #[serde(rename = "oss")]
     Oss,
+    /// `foreign_scheme`
+    #[serde(rename = "foreign_scheme")]
+    ForeignScheme,
+    /// `import`
+    #[serde(rename = "import")]
+    Import,
     /// `unknown`
     #[serde(rename = "unknown")]
     Unknown,
@@ -3469,6 +4479,8 @@ impl BooksVatTreatmentEnum {
             Self::RcNonEu => "rc_non_eu",
             Self::ForeignVat => "foreign_vat",
             Self::Oss => "oss",
+            Self::ForeignScheme => "foreign_scheme",
+            Self::Import => "import",
             Self::Unknown => "unknown",
             Self::UnknownValue(value) => value,
         }
@@ -3489,6 +4501,8 @@ impl From<&str> for BooksVatTreatmentEnum {
             "rc_non_eu" => Self::RcNonEu,
             "foreign_vat" => Self::ForeignVat,
             "oss" => Self::Oss,
+            "foreign_scheme" => Self::ForeignScheme,
+            "import" => Self::Import,
             "unknown" => Self::Unknown,
             other => Self::UnknownValue(other.to_owned()),
         }
@@ -3542,8 +4556,6 @@ pub struct CommandOutcome {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Company {
     pub id: String,
-    /// The sqid of the company's organization, without loading it.
-    pub organization_id: String,
     pub name: String,
     pub registry_code: String,
     /// The VAT number of the latest VAT registration by date. It changes only through `POST vat-registrations` (`record_vat_registration`).
@@ -3574,8 +4586,6 @@ pub struct Company {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompanyDetail {
     pub id: String,
-    /// The sqid of the company's organization, without loading it.
-    pub organization_id: String,
     pub name: String,
     pub registry_code: String,
     /// The VAT number of the latest VAT registration by date. It changes only through `POST vat-registrations` (`record_vat_registration`).
@@ -3608,6 +4618,7 @@ pub struct CompanyDetail {
 /// * `provisioning` - Provisioning
 /// * `ready` - Ready
 /// * `failed` - Failed
+/// * `deleted` - Data deleted
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CompanyStateEnum {
     /// `provisioning`
@@ -3619,6 +4630,9 @@ pub enum CompanyStateEnum {
     /// `failed`
     #[serde(rename = "failed")]
     Failed,
+    /// `deleted`
+    #[serde(rename = "deleted")]
+    Deleted,
     /// A value this version of the client does not know.
     #[serde(untagged)]
     UnknownValue(String),
@@ -3631,6 +4645,7 @@ impl CompanyStateEnum {
             Self::Provisioning => "provisioning",
             Self::Ready => "ready",
             Self::Failed => "failed",
+            Self::Deleted => "deleted",
             Self::UnknownValue(value) => value,
         }
     }
@@ -3642,6 +4657,7 @@ impl From<&str> for CompanyStateEnum {
             "provisioning" => Self::Provisioning,
             "ready" => Self::Ready,
             "failed" => Self::Failed,
+            "deleted" => Self::Deleted,
             other => Self::UnknownValue(other.to_owned()),
         }
     }
@@ -3663,15 +4679,22 @@ impl fmt::Display for CompanyStateEnum {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CompanyStatus {
     pub bank_lines_to_classify: i64,
-    /// Money out still open that no uploaded file explains.
+    /// Money out still open that no file of a matched invoice explains: the payments of `bank-transactions/?to_explain=true`, each with its `receipt_state` (missing, a receipt not booked yet, or an invoice booked and not matched).
     pub payments_to_explain: i64,
     /// Uploaded invoices and receipts nothing in the books refers to, recorded purchase invoices not posted, and open drafts.
     pub documents_to_book: i64,
     pub pending_proposals: i64,
     pub open_periods: i64,
+    /// The VAT returns not filed from the takeover on: a return due on or before the day Oscar took over the books is the previous accountant's and is not counted.
     pub vat_returns_due: i64,
-    /// The due date of the next VAT return (KMD): the 20th of a month.
+    /// The due date of the next VAT return (KMD) from the takeover on: the 20th of the next month, moved to the next working day after a weekend or a public holiday.
     pub next_vat_due_date: Option<String>,
+    /// The VAT months before the takeover with no record of a filed return ("not checked"): never due, never overdue.
+    pub vat_months_not_checked: i64,
+    /// The first day of the first month not checked; null when none.
+    pub vat_not_checked_from: Option<String>,
+    /// The first day of the last month not checked; null when none.
+    pub vat_not_checked_to: Option<String>,
     pub last_bank_import_at: Option<String>,
     pub overdue_receivables: i64,
     /// The residual of the overdue receivables in the base currency, in cents.
@@ -3796,6 +4819,145 @@ pub struct CreatePartyResult {
     pub name_key: String,
 }
 
+/// Whether the file can be deleted now, and what stops it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Deletion {
+    /// True when a member with `documents.write` may delete the file: nothing in the books refers to it.
+    pub deletable: bool,
+    /// Firm staff only, null for anyone else: true when staff may delete the file with a reason (the books refer to it only by inactive records: a superseded revision, a void or cancelled invoice, a reversed event, a document removed from an invoice; or a payment match linked it to a bank line).
+    pub staff_deletable: Option<bool>,
+    /// What stops the caller's deletion; empty when it may delete the file.
+    pub blocked_by: Vec<DeletionBlocker>,
+}
+
+/// One thing that stops the deletion of a file.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DeletionBlocker {
+    /// The problem code a deletion would get: `document_in_use` (the books use the file, or a payment match linked it to a bank line), `document_legal_hold`, `document_system` (Oscar stored the file, or keeps it), `company_data_deleted`.
+    ///
+    /// * `company_data_deleted` - company_data_deleted
+    /// * `document_legal_hold` - document_legal_hold
+    /// * `document_system` - document_system
+    /// * `document_in_use` - document_in_use
+    pub code: DocumentDeletionBlockerCodeEnum,
+    /// What blocks: a record of the books (`invoice`, `accounting_event`, `bank_statement`, `vat_return`, `exchange_rate`, `annual_report`, `unpaid_capital`, `dividend_received`, `dividend_decision`, `vat_registration`, `vat_scheme_registration`, `investment_valuation`), a `bank_transaction`, the `company`, the `document` (a legal hold in the books), an `upload` of the system, or the record that keeps the file.
+    pub kind: String,
+    /// The ULID of a record of the books, or a sqid; null when none.
+    pub id: Option<String>,
+    /// The state of that record (an invoice: `void`, ...), or null.
+    pub state: Option<String>,
+    /// A short label of that record for people, or null: an invoice gives its number (a purchase invoice: the supplier's number) and its party name, `"{number}, {party}"`, or the party name alone.
+    pub label: Option<String>,
+}
+
+/// * `company_data_deleted` - company_data_deleted
+/// * `document_legal_hold` - document_legal_hold
+/// * `document_system` - document_system
+/// * `document_in_use` - document_in_use
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum DocumentDeletionBlockerCodeEnum {
+    /// `company_data_deleted`
+    #[serde(rename = "company_data_deleted")]
+    CompanyDataDeleted,
+    /// `document_legal_hold`
+    #[serde(rename = "document_legal_hold")]
+    DocumentLegalHold,
+    /// `document_system`
+    #[serde(rename = "document_system")]
+    DocumentSystem,
+    /// `document_in_use`
+    #[serde(rename = "document_in_use")]
+    DocumentInUse,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl DocumentDeletionBlockerCodeEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::CompanyDataDeleted => "company_data_deleted",
+            Self::DocumentLegalHold => "document_legal_hold",
+            Self::DocumentSystem => "document_system",
+            Self::DocumentInUse => "document_in_use",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for DocumentDeletionBlockerCodeEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "company_data_deleted" => Self::CompanyDataDeleted,
+            "document_legal_hold" => Self::DocumentLegalHold,
+            "document_system" => Self::DocumentSystem,
+            "document_in_use" => Self::DocumentInUse,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for DocumentDeletionBlockerCodeEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for DocumentDeletionBlockerCodeEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `sale` - Sale
+/// * `purchase` - Purchase
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum DocumentDirectionEnum {
+    /// `sale`
+    #[serde(rename = "sale")]
+    Sale,
+    /// `purchase`
+    #[serde(rename = "purchase")]
+    Purchase,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl DocumentDirectionEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Sale => "sale",
+            Self::Purchase => "purchase",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for DocumentDirectionEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "sale" => Self::Sale,
+            "purchase" => Self::Purchase,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for DocumentDirectionEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for DocumentDirectionEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum DocumentsListOrdering {
     /// `created_at`
@@ -3902,6 +5064,454 @@ impl fmt::Display for DraftStateEnum {
     }
 }
 
+/// An employee of the company, with the facts of the newest employment. The personal code is masked.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Employee {
+    pub id: String,
+    pub first_name: String,
+    pub last_name: String,
+    /// The masked personal code: `*******` and 4 digits.
+    pub personal_code: String,
+    pub birth_date: Option<String>,
+    pub citizenship: String,
+    pub iban: String,
+    pub email: String,
+    pub basic_exemption: BasicExemptionEnum,
+    pub basic_exemption_minor: Option<i64>,
+    pub pension_rate: PensionRateEnum,
+    pub source: EmployeeSourceEnum,
+    /// The type of the newest employment.
+    pub employment_type: Option<i64>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub status: Option<EmploymentStatusEnum>,
+    /// Whether TÖR shows an employment of the person, or a change of one, not made through OscarAI.
+    pub registered_outside: bool,
+    pub created_at: String,
+}
+
+/// An employee with every employment and its absences.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EmployeeDetail {
+    pub id: String,
+    pub first_name: String,
+    pub last_name: String,
+    /// The masked personal code: `*******` and 4 digits.
+    pub personal_code: String,
+    pub birth_date: Option<String>,
+    pub citizenship: String,
+    pub iban: String,
+    pub email: String,
+    pub basic_exemption: BasicExemptionEnum,
+    pub basic_exemption_minor: Option<i64>,
+    pub pension_rate: PensionRateEnum,
+    pub source: EmployeeSourceEnum,
+    /// The type of the newest employment.
+    pub employment_type: Option<i64>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub status: Option<EmploymentStatusEnum>,
+    /// Whether TÖR shows an employment of the person, or a change of one, not made through OscarAI.
+    pub registered_outside: bool,
+    pub created_at: String,
+    pub employments: Vec<Employment>,
+    pub absences: Vec<Absence>,
+}
+
+/// The person of a new employee, or the changed fields of an employee.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct EmployeeInputRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_name: Option<String>,
+    /// The Estonian personal code: a new employee only. Sealed, never returned.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub personal_code: Option<String>,
+    /// A new employee with a valid Estonian personal code and no birth date gets the date the code holds.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub birth_date: Option<Option<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub citizenship: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub iban: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub basic_exemption: Option<BasicExemptionEnum>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub basic_exemption_minor: Option<Option<i64>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pension_rate: Option<PensionRateEnum>,
+}
+
+/// * `oscar` - OscarAI
+/// * `tor_external` - Registered outside OscarAI
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EmployeeSourceEnum {
+    /// `oscar`
+    #[serde(rename = "oscar")]
+    Oscar,
+    /// `tor_external`
+    #[serde(rename = "tor_external")]
+    TorExternal,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl EmployeeSourceEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Oscar => "oscar",
+            Self::TorExternal => "tor_external",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for EmployeeSourceEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "oscar" => Self::Oscar,
+            "tor_external" => Self::TorExternal,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for EmployeeSourceEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for EmployeeSourceEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `new_employee` - New employee
+/// * `new_employment` - New employment
+/// * `change` - Change
+/// * `suspension` - Suspension
+/// * `end` - End
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EmployeeSubmissionKindEnum {
+    /// `new_employee`
+    #[serde(rename = "new_employee")]
+    NewEmployee,
+    /// `new_employment`
+    #[serde(rename = "new_employment")]
+    NewEmployment,
+    /// `change`
+    #[serde(rename = "change")]
+    Change,
+    /// `suspension`
+    #[serde(rename = "suspension")]
+    Suspension,
+    /// `end`
+    #[serde(rename = "end")]
+    End,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl EmployeeSubmissionKindEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::NewEmployee => "new_employee",
+            Self::NewEmployment => "new_employment",
+            Self::Change => "change",
+            Self::Suspension => "suspension",
+            Self::End => "end",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for EmployeeSubmissionKindEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "new_employee" => Self::NewEmployee,
+            "new_employment" => Self::NewEmployment,
+            "change" => Self::Change,
+            "suspension" => Self::Suspension,
+            "end" => Self::End,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for EmployeeSubmissionKindEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for EmployeeSubmissionKindEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `submitted` - Submitted
+/// * `approved` - Approved
+/// * `registered` - Registered
+/// * `applied` - Applied
+/// * `rejected` - Rejected
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EmployeeSubmissionStatusEnum {
+    /// `submitted`
+    #[serde(rename = "submitted")]
+    Submitted,
+    /// `approved`
+    #[serde(rename = "approved")]
+    Approved,
+    /// `registered`
+    #[serde(rename = "registered")]
+    Registered,
+    /// `applied`
+    #[serde(rename = "applied")]
+    Applied,
+    /// `rejected`
+    #[serde(rename = "rejected")]
+    Rejected,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl EmployeeSubmissionStatusEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Submitted => "submitted",
+            Self::Approved => "approved",
+            Self::Registered => "registered",
+            Self::Applied => "applied",
+            Self::Rejected => "rejected",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for EmployeeSubmissionStatusEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "submitted" => Self::Submitted,
+            "approved" => Self::Approved,
+            "registered" => Self::Registered,
+            "applied" => Self::Applied,
+            "rejected" => Self::Rejected,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for EmployeeSubmissionStatusEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for EmployeeSubmissionStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// One employment as TÖR records it, with the status of the workflow. A 601 entry has no rate or workplace.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Employment {
+    pub id: String,
+    /// TÖR's id of the employment; null until registered.
+    pub toot_id: Option<i64>,
+    /// The TÖR type: 1 employment contract, 600 services contract, 601 board member, 501 unpaid work.
+    pub employment_type: i64,
+    pub employment_type_name: String,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub end_reason_code: String,
+    pub work_time_rate: Option<String>,
+    pub occupation_code: String,
+    /// The name of `occupation_code` in the classifier of Statistics Estonia, in the language of the answer (English when the code has an English name); empty when the code is not in the classifier.
+    pub occupation_name: String,
+    pub workplace_address_id: Option<i64>,
+    /// The full address of the workplace building (`workplace_address_id`); empty when unknown.
+    pub workplace_address: String,
+    pub contract_ref: String,
+    /// The monthly contract gross, in cents.
+    pub gross_salary_minor: Option<i64>,
+    /// The monthly board member fee, in cents.
+    pub board_fee_minor: Option<i64>,
+    pub currency: String,
+    pub suspensions: Vec<Suspension>,
+    pub tor_state_code: String,
+    pub tor_state_name: String,
+    pub tor_seen_at: Option<String>,
+    pub source: EmployeeSourceEnum,
+    pub status: EmploymentStatusEnum,
+    /// TÖR shows something of it not made through OscarAI.
+    pub registered_outside: bool,
+}
+
+/// The employment of a start, or the changed fields of an employment.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct EmploymentInputRequest {
+    /// The TÖR type: 1 employment contract, 600 services contract, 601 board member, 501 unpaid work.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employment_type: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_date: Option<String>,
+    /// A fixed term: the last day, given with a start.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_date: Option<String>,
+    /// 0.01 to 1.00. Required for type 1.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub work_time_rate: Option<String>,
+    /// The occupation code of Statistics Estonia: a selectable 8-digit code of its occupation classifier, else 400.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub occupation_code: Option<String>,
+    /// The ADS address id (ADR_ID) of the workplace building.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub workplace_address_id: Option<i64>,
+    /// The full address of that building. Kept by OscarAI for the lists; TÖR takes the id only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub workplace_address: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contract_ref: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub gross_salary_minor: Option<Option<i64>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub board_fee_minor: Option<Option<i64>>,
+}
+
+/// * `draft` - Draft
+/// * `submitted` - Submitted
+/// * `approved` - Approved
+/// * `registered` - Registered
+/// * `rejected` - Rejected
+/// * `ended` - Ended
+/// * `cancelled` - Cancelled in TÖR
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum EmploymentStatusEnum {
+    /// `draft`
+    #[serde(rename = "draft")]
+    Draft,
+    /// `submitted`
+    #[serde(rename = "submitted")]
+    Submitted,
+    /// `approved`
+    #[serde(rename = "approved")]
+    Approved,
+    /// `registered`
+    #[serde(rename = "registered")]
+    Registered,
+    /// `rejected`
+    #[serde(rename = "rejected")]
+    Rejected,
+    /// `ended`
+    #[serde(rename = "ended")]
+    Ended,
+    /// `cancelled`
+    #[serde(rename = "cancelled")]
+    Cancelled,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl EmploymentStatusEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Draft => "draft",
+            Self::Submitted => "submitted",
+            Self::Approved => "approved",
+            Self::Registered => "registered",
+            Self::Rejected => "rejected",
+            Self::Ended => "ended",
+            Self::Cancelled => "cancelled",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for EmploymentStatusEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "draft" => Self::Draft,
+            "submitted" => Self::Submitted,
+            "approved" => Self::Approved,
+            "registered" => Self::Registered,
+            "rejected" => Self::Rejected,
+            "ended" => Self::Ended,
+            "cancelled" => Self::Cancelled,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for EmploymentStatusEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for EmploymentStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// The end of an employment.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EndInputRequest {
+    /// The last day of the employment.
+    pub end_date: String,
+    /// The end reason code of the TLP classifier.
+    pub reason_code: i64,
+}
+
+impl EndInputRequest {
+    /// A value with the required fields, and every other field unset.
+    pub fn new(end_date: impl Into<String>, reason_code: i64) -> Self {
+        Self {
+            end_date: end_date.into(),
+            reason_code,
+        }
+    }
+}
+
+/// The body of the deletion of a file by a member of the company. Every field is optional.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FileDeleteRequest {
+    /// Why the file is deleted, kept in the audit log.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
 /// The newest Gmail forwarding confirmation that oscarai forwarded to its requester. Never the code or the link.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ForwardingConfirmation {
@@ -3953,6 +5563,63 @@ impl fmt::Display for ForwardingConfirmationStatusEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
+}
+
+/// * `abroad` - abroad
+/// * `in_country` - in_country
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum GoodsLocationEnum {
+    /// `abroad`
+    #[serde(rename = "abroad")]
+    Abroad,
+    /// `in_country`
+    #[serde(rename = "in_country")]
+    InCountry,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl GoodsLocationEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Abroad => "abroad",
+            Self::InCountry => "in_country",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for GoodsLocationEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "abroad" => Self::Abroad,
+            "in_country" => Self::InCountry,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for GoodsLocationEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for GoodsLocationEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// One month of the pay history the average pay is taken from.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HistoryMonth {
+    /// YYYY-MM
+    pub month: String,
+    pub wages_minor: i64,
+    pub days: i64,
 }
 
 /// One mail the inbox received, and what came of it.
@@ -4156,7 +5823,7 @@ pub struct InboxOrigin {
     pub dmarc: MailAuthResultEnum,
     /// The member's address that forwarded the mail through a Gmail filter, empty when none did.
     pub forwarded_by: String,
-    /// Neither the sender nor the address that forwarded it is a member of the organization.
+    /// Neither the sender nor the address that forwarded it is a member of the company.
     pub unknown_sender: bool,
     /// The DMARC check of the mail failed.
     pub not_authenticated: bool,
@@ -4205,12 +5872,20 @@ pub struct InvoiceLineRequest {
         deserialize_with = "super::runtime::double_option"
     )]
     pub unit: Option<Option<String>>,
+    /// The unit price in whole minor units. `unit_price` also takes a fraction of a minor unit.
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         deserialize_with = "super::runtime::double_option"
     )]
     pub unit_price_minor: Option<Option<i64>>,
+    /// The unit price in major units, a decimal string of at most 6 decimals (`150.334`). The books compute the net as quantity x unit price, rounded half up to the minor unit. With `unit_price_minor` too, both must name the same price.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub unit_price: Option<Option<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allowance_minor: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -4405,6 +6080,34 @@ pub struct InvoiceRevisionRequest {
         deserialize_with = "super::runtime::double_option"
     )]
     pub customer_note: Option<Option<String>>,
+    /// An own sales invoice: the buyer's contact person, one line, at most 100 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub buyer_contact_name: Option<Option<String>>,
+    /// An own sales invoice: the number of the buyer's order, one line, at most 100 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub order_number: Option<Option<String>>,
+    /// An own sales invoice: the number of the contract with the buyer, one line, at most 100 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub contract_number: Option<Option<String>>,
+    /// An own sales invoice: the reference the buyer asks for, one line, at most 20 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub buyer_reference: Option<Option<String>>,
     /// An own sales invoice: the unit prices, discounts and charges of the item lines include VAT. The books compute the net and the VAT of each line, so the total is the sum of the gross amounts. Every line is an `item` without `net_minor` or `tax_minor`. Default false.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub prices_include_vat: Option<bool>,
@@ -4421,6 +6124,13 @@ pub struct InvoiceRevisionRequest {
     pub lines: Vec<InvoiceLineRequest>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub documents: Option<Vec<InvoiceDocumentRequest>>,
+    /// An own sales invoice: the bank accounts it prints, in order (at most 20); the first is the payment account of the e-invoice. Each must be an active account of the company with an IBAN, not a debtor, named once (400 `invoice_bank_account_invalid`). Null uses the company default, else every active account in the invoice currency. On `revise_invoice` a missing field keeps the choice of the previous revision and null clears it. A purchase invoice refuses it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub bank_account_ids: Option<Option<Vec<String>>>,
 }
 
 impl InvoiceRevisionRequest {
@@ -4453,10 +6163,15 @@ impl InvoiceRevisionRequest {
             received_date: None,
             base_tax_minor: None,
             customer_note: None,
+            buyer_contact_name: None,
+            order_number: None,
+            contract_number: None,
+            buyer_reference: None,
             prices_include_vat: None,
             language: None,
             lines,
             documents: None,
+            bank_account_ids: None,
         }
     }
 }
@@ -4602,6 +6317,34 @@ pub struct IssueInvoiceBodyRequest {
         deserialize_with = "super::runtime::double_option"
     )]
     pub seller_address: Option<Option<String>>,
+    /// An own sales invoice: the buyer's contact person, one line, at most 100 characters. A value here replaces the one of the draft; none keeps it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub buyer_contact_name: Option<Option<String>>,
+    /// An own sales invoice: the number of the buyer's order, one line, at most 100 characters. A value here replaces the one of the draft; none keeps it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub order_number: Option<Option<String>>,
+    /// An own sales invoice: the number of the contract with the buyer, one line, at most 100 characters. A value here replaces the one of the draft; none keeps it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub contract_number: Option<Option<String>>,
+    /// An own sales invoice: the reference the buyer asks for, one line, at most 20 characters. A value here replaces the one of the draft; none keeps it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub buyer_reference: Option<Option<String>>,
 }
 
 /// The `CommandOutcome` of `issue_invoice`, with its result.
@@ -4823,7 +6566,7 @@ impl fmt::Display for MailAuthResultEnum {
     }
 }
 
-/// `GET /api/me/`: the user, the credential, and the organizations and companies the caller can see.
+/// `GET /api/me/`: the user, the credential, and the companies the caller can see.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Me {
     /// The session user, or the creator of the API key or OAuth grant.
@@ -4833,7 +6576,6 @@ pub struct Me {
     pub staff_mfa_required: bool,
     pub email_verified: bool,
     pub credential: MeCredential,
-    pub organizations: Vec<MeOrganization>,
     pub companies: Vec<MeCompany>,
     pub features: MeFeatures,
     /// The oldest version of the oscar CLI that may run the onboarding (semver). An older CLI asks the user to update first. Always returned; optional in the schema, so a client keeps working against a server older than the field.
@@ -4845,7 +6587,6 @@ pub struct Me {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MeCompany {
     pub id: String,
-    pub organization_id: String,
     pub name: String,
     pub registry_code: String,
     pub vat_number: String,
@@ -4855,7 +6596,12 @@ pub struct MeCompany {
     /// * `provisioning` - Provisioning
     /// * `ready` - Ready
     /// * `failed` - Failed
+    /// * `deleted` - Data deleted
     pub state: CompanyStateEnum,
+    /// The role the caller acts with in the company: `owner`, `member` or `viewer`. Firm staff act as owner also where they hold no membership (see `is_member`). Null when the call has no role there.
+    pub role: Option<RoleEnum>,
+    /// Whether the user holds a membership of the company. False for firm staff who see it without one.
+    pub is_member: bool,
 }
 
 /// How the call was authenticated.
@@ -4864,7 +6610,7 @@ pub struct MeCredential {
     pub kind: MeCredentialKindEnum,
     /// The scopes of an API key or an OAuth token; null for a session, which is not narrowed.
     pub scopes: Option<Vec<String>>,
-    /// True for a staff API key: a key of no organization that acts as owner in every organization, made in the admin by a superuser. `user` is then its creator.
+    /// True for a staff API key: a key of no company that acts as owner in every company, made in the admin by a superuser. `user` is then its creator.
     pub staff_key: bool,
 }
 
@@ -4929,16 +6675,23 @@ pub struct MeFeatures {
     pub agent: bool,
     /// The invoice inbox, a forwarding address for each company. Off, its endpoints answer 409 inbox_disabled.
     pub inbox: bool,
-}
-
-/// An organization the caller can see, with its role there.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MeOrganization {
-    pub id: String,
-    pub name: String,
-    pub role: Option<RoleEnum>,
-    /// False for staff who see the organization without a membership.
-    pub is_member: bool,
+    /// The employee register and its sync with TÖR. Off, its endpoints answer 409 employees_disabled.
+    pub employees: bool,
+    /// Payroll and the payroll tax returns (TSD). Off, their endpoints answer 409 payroll_disabled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payroll: Option<bool>,
+    /// The VAT return (KMD) is sent to the tax authority over X-tee. Off, the KMD submit answers 503 kmd_submission_disabled: download the file and upload it in e-MTA.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kmd_submission: Option<bool>,
+    /// UK VAT: the registration of the scheme `gb_vat` and the UK VAT returns. Off, the registration and the `foreign-tax/gb-vat/` endpoints answer 409 foreign_tax_disabled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub foreign_tax_gb: Option<bool>,
+    /// Australian GST: the registration of the scheme `au_gst`, its returns and `au-gst-threshold/`. Off, they answer 409 foreign_tax_disabled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub foreign_tax_au: Option<bool>,
+    /// The Investments screen: the Lightyear account statement upload, the positions and the year-end valuation. Off, every `investments/` endpoint answers 404.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lightyear: Option<bool>,
 }
 
 /// The user behind the call.
@@ -4948,7 +6701,7 @@ pub struct MeUser {
     pub id: String,
     pub email: String,
     pub name: String,
-    /// Firm staff: sees every organization as owner.
+    /// Firm staff: sees every company as owner.
     pub is_staff: bool,
     /// The mode of the client dashboard the user chose: simple or advanced.
     ///
@@ -4957,18 +6710,17 @@ pub struct MeUser {
     pub ui_mode: UiModeEnum,
 }
 
-/// An organization, with the caller's role and effective permissions in it, and its companies.
-///
-/// Needs the caller's `principal` in the serializer context.
+/// A payment of an employee's net pay: an allocation in the books.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Organization {
+pub struct NetPayment {
+    /// The allocation in the books.
     pub id: String,
-    pub name: String,
-    pub role: Option<RoleEnum>,
-    pub permissions: Vec<String>,
-    pub companies: Vec<Company>,
-    pub created_at: String,
-    pub updated_at: String,
+    pub state: String,
+    /// The bank date.
+    pub effective_date: String,
+    pub amount_minor: i64,
+    pub currency: String,
+    pub bank_transaction_id: Option<String>,
 }
 
 /// * `` - None yet
@@ -5069,14 +6821,20 @@ pub struct PaginatedCompanyList {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PaginatedEmployeeList {
+    pub items: Vec<Employee>,
+    pub next_cursor: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PaginatedInboundEmailList {
     pub items: Vec<InboundEmail>,
     pub next_cursor: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PaginatedOrganizationList {
-    pub items: Vec<Organization>,
+pub struct PaginatedPayRunList {
+    pub items: Vec<PayRun>,
     pub next_cursor: Option<String>,
 }
 
@@ -5086,14 +6844,340 @@ pub struct PaginatedStoredDocumentList {
     pub next_cursor: Option<String>,
 }
 
-/// * `organization.read` - organization.read
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PaginatedSubmissionList {
+    pub items: Vec<Submission>,
+    pub next_cursor: Option<String>,
+}
+
+/// * `supplier` - supplier
+/// * `customer` - customer
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum PartyRoleEnum {
+    /// `supplier`
+    #[serde(rename = "supplier")]
+    Supplier,
+    /// `customer`
+    #[serde(rename = "customer")]
+    Customer,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl PartyRoleEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Supplier => "supplier",
+            Self::Customer => "customer",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for PartyRoleEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "supplier" => Self::Supplier,
+            "customer" => Self::Customer,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for PartyRoleEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for PartyRoleEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// The body of `PATCH .../parties/{party_id}/`: the fields to change.
+///
+/// A field left out keeps its value; null or blank clears a field that may be empty. A locked field (`locks` of
+/// the party) changes only with `override_reason`, from firm staff; the name of an Estonian company may take
+/// `register_name` without one. `is_confirmed: true` confirms the party; false un-confirms it, a person only.
+/// A staff key, an agent or an OAuth client that overrides a lock gets 403 `human_actor_required`: it proposes the
+/// command `override_party_lock`, and a person of the firm confirms it.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct PatchedPartyUpdateRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub reg_code: Option<Option<String>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub vat_number: Option<Option<String>>,
+    /// An ISO 3166 alpha-2 code, for example `EE`.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub country: Option<Option<String>>,
+    /// The postal address, one or more lines. At most 500.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub address: Option<Option<String>>,
+    /// The email address of the party. At most 254 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub email: Option<Option<String>>,
+    /// The phone number of the party. At most 40 characters.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub phone: Option<Option<String>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub notes: Option<Option<String>>,
+    /// True confirms the party; false un-confirms it (a person only).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_confirmed: Option<bool>,
+    /// Firm staff only: why a locked field changes. Written to the audit log. A client gets 403 `override_not_allowed`.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub override_reason: Option<Option<String>>,
+}
+
+/// A pay run: the month, the status, the totals.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PayRun {
+    pub id: String,
+    /// YYYY-MM
+    pub month: String,
+    pub payday: String,
+    pub status: PayRunStatusEnum,
+    pub currency: String,
+    pub employee_count: i64,
+    pub gross_minor: Option<i64>,
+    pub net_minor: Option<i64>,
+    pub withheld_minor: Option<i64>,
+    pub employer_tax_minor: Option<i64>,
+    pub expense_minor: Option<i64>,
+    /// Posted: the net pay not paid yet.
+    pub open_net_minor: Option<i64>,
+    /// A draft: why the calculation of the books failed.
+    pub calculation_error: String,
+    /// Posted: the pay run in the books.
+    pub pay_run_id: Option<String>,
+    pub approved_at: Option<String>,
+    pub posted_at: Option<String>,
+}
+
+/// A pay run with every employee.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PayRunDetail {
+    pub id: String,
+    /// YYYY-MM
+    pub month: String,
+    pub payday: String,
+    pub status: PayRunStatusEnum,
+    pub currency: String,
+    pub employee_count: i64,
+    pub gross_minor: Option<i64>,
+    pub net_minor: Option<i64>,
+    pub withheld_minor: Option<i64>,
+    pub employer_tax_minor: Option<i64>,
+    pub expense_minor: Option<i64>,
+    /// Posted: the net pay not paid yet.
+    pub open_net_minor: Option<i64>,
+    /// A draft: why the calculation of the books failed.
+    pub calculation_error: String,
+    /// Posted: the pay run in the books.
+    pub pay_run_id: Option<String>,
+    pub approved_at: Option<String>,
+    pub posted_at: Option<String>,
+    pub employees: Vec<PayRunEmployee>,
+}
+
+/// One employee of a pay run: the inputs, and once posted the result, the open net pay and its payments.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PayRunEmployee {
+    pub id: String,
+    pub employee_id: String,
+    pub employee_name: String,
+    pub currency: String,
+    pub salary_minor: i64,
+    pub bonus_minor: i64,
+    pub board_fee_minor: i64,
+    pub fringe_benefit_minor: i64,
+    /// The TSD annex 4 code of the fringe benefits.
+    pub fringe_benefit_code: String,
+    pub holiday_days: i64,
+    pub sick_leaves: Vec<SickLeave>,
+    /// The pay history staff gave; null: taken from the posted runs.
+    pub pay_history: Option<Vec<HistoryMonth>>,
+    pub pension_rate_bps: i64,
+    pub basic_exemption: BasicExemptionEnum,
+    pub basic_exemption_minor: Option<i64>,
+    pub social_tax_minimum: SocialTaxMinimumEnum,
+    pub social_tax_minimum_days: Option<i64>,
+    pub unemployment_insurance_employee: bool,
+    /// Posted: the gross pay of the month.
+    pub gross_minor: Option<i64>,
+    /// Posted: the net pay.
+    pub net_minor: Option<i64>,
+    /// Posted: the net pay not paid yet.
+    pub open_net_minor: Option<i64>,
+    pub payments: Vec<NetPayment>,
+}
+
+/// * `draft` - Draft
+/// * `approved` - Approved
+/// * `posting` - Posting
+/// * `posted` - Posted
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum PayRunStatusEnum {
+    /// `draft`
+    #[serde(rename = "draft")]
+    Draft,
+    /// `approved`
+    #[serde(rename = "approved")]
+    Approved,
+    /// `posting`
+    #[serde(rename = "posting")]
+    Posting,
+    /// `posted`
+    #[serde(rename = "posted")]
+    Posted,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl PayRunStatusEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Draft => "draft",
+            Self::Approved => "approved",
+            Self::Posting => "posting",
+            Self::Posted => "posted",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for PayRunStatusEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "draft" => Self::Draft,
+            "approved" => Self::Approved,
+            "posting" => Self::Posting,
+            "posted" => Self::Posted,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for PayRunStatusEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for PayRunStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `none` - None
+/// * `2` - 2 percent
+/// * `4` - 4 percent
+/// * `6` - 6 percent
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum PensionRateEnum {
+    /// `none`
+    #[serde(rename = "none")]
+    None,
+    /// `2`
+    #[serde(rename = "2")]
+    V2,
+    /// `4`
+    #[serde(rename = "4")]
+    V4,
+    /// `6`
+    #[serde(rename = "6")]
+    V6,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl PensionRateEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::None => "none",
+            Self::V2 => "2",
+            Self::V4 => "4",
+            Self::V6 => "6",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for PensionRateEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "none" => Self::None,
+            "2" => Self::V2,
+            "4" => Self::V4,
+            "6" => Self::V6,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for PensionRateEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for PensionRateEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `companies.read` - companies.read
 /// * `members.read` - members.read
 /// * `api_keys.read` - api_keys.read
 /// * `audit.read` - audit.read
 /// * `books.read` - books.read
 /// * `documents.read` - documents.read
 /// * `payments.read` - payments.read
-/// * `organization.manage` - organization.manage
+/// * `companies.manage` - companies.manage
 /// * `members.manage` - members.manage
 /// * `api_keys.manage` - api_keys.manage
 /// * `companies.create` - companies.create
@@ -5108,18 +7192,23 @@ pub struct PaginatedStoredDocumentList {
 /// * `invoices.post_purchase` - invoices.post_purchase
 /// * `invoices.void` - invoices.void
 /// * `allocations.write` - allocations.write
+/// * `reconciliation.decide` - reconciliation.decide
 /// * `events.write` - events.write
 /// * `periods.close` - periods.close
 /// * `periods.reopen` - periods.reopen
 /// * `vat.prepare` - vat.prepare
 /// * `vat.file` - vat.file
 /// * `payments.manage` - payments.manage
+/// * `einvoicing.manage` - einvoicing.manage
+/// * `employees.submit` - employees.submit
+/// * `foreign_tax.file` - foreign_tax.file
 /// * `agent.use` - agent.use
+/// * `support.use` - support.use
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PermissionEnum {
-    /// `organization.read`
-    #[serde(rename = "organization.read")]
-    OrganizationRead,
+    /// `companies.read`
+    #[serde(rename = "companies.read")]
+    CompaniesRead,
     /// `members.read`
     #[serde(rename = "members.read")]
     MembersRead,
@@ -5138,9 +7227,9 @@ pub enum PermissionEnum {
     /// `payments.read`
     #[serde(rename = "payments.read")]
     PaymentsRead,
-    /// `organization.manage`
-    #[serde(rename = "organization.manage")]
-    OrganizationManage,
+    /// `companies.manage`
+    #[serde(rename = "companies.manage")]
+    CompaniesManage,
     /// `members.manage`
     #[serde(rename = "members.manage")]
     MembersManage,
@@ -5183,6 +7272,9 @@ pub enum PermissionEnum {
     /// `allocations.write`
     #[serde(rename = "allocations.write")]
     AllocationsWrite,
+    /// `reconciliation.decide`
+    #[serde(rename = "reconciliation.decide")]
+    ReconciliationDecide,
     /// `events.write`
     #[serde(rename = "events.write")]
     EventsWrite,
@@ -5201,9 +7293,21 @@ pub enum PermissionEnum {
     /// `payments.manage`
     #[serde(rename = "payments.manage")]
     PaymentsManage,
+    /// `einvoicing.manage`
+    #[serde(rename = "einvoicing.manage")]
+    EinvoicingManage,
+    /// `employees.submit`
+    #[serde(rename = "employees.submit")]
+    EmployeesSubmit,
+    /// `foreign_tax.file`
+    #[serde(rename = "foreign_tax.file")]
+    ForeignTaxFile,
     /// `agent.use`
     #[serde(rename = "agent.use")]
     AgentUse,
+    /// `support.use`
+    #[serde(rename = "support.use")]
+    SupportUse,
     /// A value this version of the client does not know.
     #[serde(untagged)]
     UnknownValue(String),
@@ -5213,14 +7317,14 @@ impl PermissionEnum {
     /// The value as it goes on the wire.
     pub fn as_str(&self) -> &str {
         match self {
-            Self::OrganizationRead => "organization.read",
+            Self::CompaniesRead => "companies.read",
             Self::MembersRead => "members.read",
             Self::ApiKeysRead => "api_keys.read",
             Self::AuditRead => "audit.read",
             Self::BooksRead => "books.read",
             Self::DocumentsRead => "documents.read",
             Self::PaymentsRead => "payments.read",
-            Self::OrganizationManage => "organization.manage",
+            Self::CompaniesManage => "companies.manage",
             Self::MembersManage => "members.manage",
             Self::ApiKeysManage => "api_keys.manage",
             Self::CompaniesCreate => "companies.create",
@@ -5235,13 +7339,18 @@ impl PermissionEnum {
             Self::InvoicesPostPurchase => "invoices.post_purchase",
             Self::InvoicesVoid => "invoices.void",
             Self::AllocationsWrite => "allocations.write",
+            Self::ReconciliationDecide => "reconciliation.decide",
             Self::EventsWrite => "events.write",
             Self::PeriodsClose => "periods.close",
             Self::PeriodsReopen => "periods.reopen",
             Self::VatPrepare => "vat.prepare",
             Self::VatFile => "vat.file",
             Self::PaymentsManage => "payments.manage",
+            Self::EinvoicingManage => "einvoicing.manage",
+            Self::EmployeesSubmit => "employees.submit",
+            Self::ForeignTaxFile => "foreign_tax.file",
             Self::AgentUse => "agent.use",
+            Self::SupportUse => "support.use",
             Self::UnknownValue(value) => value,
         }
     }
@@ -5250,14 +7359,14 @@ impl PermissionEnum {
 impl From<&str> for PermissionEnum {
     fn from(value: &str) -> Self {
         match value {
-            "organization.read" => Self::OrganizationRead,
+            "companies.read" => Self::CompaniesRead,
             "members.read" => Self::MembersRead,
             "api_keys.read" => Self::ApiKeysRead,
             "audit.read" => Self::AuditRead,
             "books.read" => Self::BooksRead,
             "documents.read" => Self::DocumentsRead,
             "payments.read" => Self::PaymentsRead,
-            "organization.manage" => Self::OrganizationManage,
+            "companies.manage" => Self::CompaniesManage,
             "members.manage" => Self::MembersManage,
             "api_keys.manage" => Self::ApiKeysManage,
             "companies.create" => Self::CompaniesCreate,
@@ -5272,13 +7381,18 @@ impl From<&str> for PermissionEnum {
             "invoices.post_purchase" => Self::InvoicesPostPurchase,
             "invoices.void" => Self::InvoicesVoid,
             "allocations.write" => Self::AllocationsWrite,
+            "reconciliation.decide" => Self::ReconciliationDecide,
             "events.write" => Self::EventsWrite,
             "periods.close" => Self::PeriodsClose,
             "periods.reopen" => Self::PeriodsReopen,
             "vat.prepare" => Self::VatPrepare,
             "vat.file" => Self::VatFile,
             "payments.manage" => Self::PaymentsManage,
+            "einvoicing.manage" => Self::EinvoicingManage,
+            "employees.submit" => Self::EmployeesSubmit,
+            "foreign_tax.file" => Self::ForeignTaxFile,
             "agent.use" => Self::AgentUse,
+            "support.use" => Self::SupportUse,
             other => Self::UnknownValue(other.to_owned()),
         }
     }
@@ -5305,6 +7419,126 @@ pub struct Problem {
     pub code: String,
     pub detail: String,
     pub errors: Vec<BTreeMap<String, serde_json::Value>>,
+}
+
+/// * `reading` - reading
+/// * `review` - review
+/// * `recorded` - recorded
+/// * `failed` - failed
+/// * `no_extraction` - no_extraction
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ReceiptDetailEnum {
+    /// `reading`
+    #[serde(rename = "reading")]
+    Reading,
+    /// `review`
+    #[serde(rename = "review")]
+    Review,
+    /// `recorded`
+    #[serde(rename = "recorded")]
+    Recorded,
+    /// `failed`
+    #[serde(rename = "failed")]
+    Failed,
+    /// `no_extraction`
+    #[serde(rename = "no_extraction")]
+    NoExtraction,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl ReceiptDetailEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Reading => "reading",
+            Self::Review => "review",
+            Self::Recorded => "recorded",
+            Self::Failed => "failed",
+            Self::NoExtraction => "no_extraction",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for ReceiptDetailEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "reading" => Self::Reading,
+            "review" => Self::Review,
+            "recorded" => Self::Recorded,
+            "failed" => Self::Failed,
+            "no_extraction" => Self::NoExtraction,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for ReceiptDetailEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for ReceiptDetailEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `missing` - missing
+/// * `receipt_not_booked` - receipt_not_booked
+/// * `invoice_not_matched` - invoice_not_matched
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ReceiptStateEnum {
+    /// `missing`
+    #[serde(rename = "missing")]
+    Missing,
+    /// `receipt_not_booked`
+    #[serde(rename = "receipt_not_booked")]
+    ReceiptNotBooked,
+    /// `invoice_not_matched`
+    #[serde(rename = "invoice_not_matched")]
+    InvoiceNotMatched,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl ReceiptStateEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Missing => "missing",
+            Self::ReceiptNotBooked => "receipt_not_booked",
+            Self::InvoiceNotMatched => "invoice_not_matched",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for ReceiptStateEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "missing" => Self::Missing,
+            "receipt_not_booked" => Self::ReceiptNotBooked,
+            "invoice_not_matched" => Self::InvoiceNotMatched,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for ReceiptStateEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for ReceiptStateEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// The `CommandOutcome` of `record_invoice`, with its result.
@@ -5451,6 +7685,121 @@ impl fmt::Display for RoleEnum {
     }
 }
 
+/// The `CommandOutcome` of `set_default_invoice_bank_accounts`, with its result.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetDefaultInvoiceBankAccountsOutcome {
+    pub command: String,
+    /// The core id of the command, a ULID.
+    pub command_id: String,
+    /// The commit sequence of the file after it.
+    pub commit_seq: i64,
+    pub replayed: bool,
+    pub result: SetDefaultInvoiceBankAccountsResult,
+}
+
+/// `set_default_invoice_bank_accounts`: the bank accounts the sales invoices of the company print, in order.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetDefaultInvoiceBankAccountsPayloadRequest {
+    /// The default, in print order (at most 20). Each must be an active account of the company with an IBAN, not a debtor, named once (400 `invoice_bank_account_invalid`). An invoice prints those in its currency, else all of them. An empty list clears the default: every active account in the invoice currency prints, else every active account. A draft with its own choice keeps it.
+    pub bank_account_ids: Vec<String>,
+}
+
+impl SetDefaultInvoiceBankAccountsPayloadRequest {
+    /// A value with the required fields, and every other field unset.
+    pub fn new(bank_account_ids: Vec<String>) -> Self {
+        Self {
+            bank_account_ids,
+        }
+    }
+}
+
+/// The result of `set_default_invoice_bank_accounts`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetDefaultInvoiceBankAccountsResult {
+    /// The default as stored, in print order.
+    pub bank_account_ids: Vec<String>,
+    /// False when the default was this list already.
+    pub changed: bool,
+}
+
+/// `set_invoice_bank_accounts`: the bank accounts one draft sales invoice prints, in place of the company default.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetInvoiceBankAccountsBodyRequest {
+    /// Required: the accounts in print order (at most 20), the first the payment account of the e-invoice, or null to use the company default. Each must be an active account of the company with an IBAN, not a debtor, named once (400 `invoice_bank_account_invalid`). Only a draft (`recorded`) own sales invoice: 409 `invalid_state` otherwise.
+    pub bank_account_ids: Option<Vec<String>>,
+}
+
+impl SetInvoiceBankAccountsBodyRequest {
+    /// A value with the required fields, and every other field unset.
+    pub fn new(bank_account_ids: Option<Vec<String>>) -> Self {
+        Self {
+            bank_account_ids,
+        }
+    }
+}
+
+/// The `CommandOutcome` of `set_invoice_bank_accounts`, with its result.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetInvoiceBankAccountsOutcome {
+    pub command: String,
+    /// The core id of the command, a ULID.
+    pub command_id: String,
+    /// The commit sequence of the file after it.
+    pub commit_seq: i64,
+    pub replayed: bool,
+    pub result: SetInvoiceBankAccountsResult,
+}
+
+/// The result of `set_invoice_bank_accounts`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetInvoiceBankAccountsResult {
+    /// The choice as stored, in print order; null: the company default.
+    pub bank_account_ids: Option<Vec<String>>,
+    /// False when the draft had this choice already.
+    pub changed: bool,
+    pub invoice_id: String,
+    pub revision_id: String,
+}
+
+/// `set_party_address`: change the postal address of a party. An issued invoice keeps the address it froze.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct SetPartyAddressBodyRequest {
+    /// The new address; null or blank removes it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "super::runtime::double_option"
+    )]
+    pub address: Option<Option<String>>,
+}
+
+/// The `CommandOutcome` of `set_party_address`, with its result.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetPartyAddressOutcome {
+    pub command: String,
+    /// The core id of the command, a ULID.
+    pub command_id: String,
+    /// The commit sequence of the file after it.
+    pub commit_seq: i64,
+    pub replayed: bool,
+    pub result: SetPartyAddressResult,
+}
+
+/// The result of `set_party_address`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SetPartyAddressResult {
+    /// The address as stored, trimmed; null when it was removed.
+    pub address: Option<String>,
+    pub party_id: String,
+}
+
+/// The days of one sick leave the run pays, counted from the first day of the leave (day 1).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SickLeave {
+    pub from_day: i64,
+    pub to_day: i64,
+}
+
 /// An attachment that was not kept. Its bytes were never stored.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SkippedAttachment {
@@ -5525,6 +7874,60 @@ impl fmt::Display for SkippedAttachmentReasonEnum {
     }
 }
 
+/// * `full` - The whole minimum
+/// * `prorated` - In proportion to the days
+/// * `none` - None
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum SocialTaxMinimumEnum {
+    /// `full`
+    #[serde(rename = "full")]
+    Full,
+    /// `prorated`
+    #[serde(rename = "prorated")]
+    Prorated,
+    /// `none`
+    #[serde(rename = "none")]
+    None,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl SocialTaxMinimumEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Full => "full",
+            Self::Prorated => "prorated",
+            Self::None => "none",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for SocialTaxMinimumEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "full" => Self::Full,
+            "prorated" => Self::Prorated,
+            "none" => Self::None,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for SocialTaxMinimumEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for SocialTaxMinimumEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// A stored file of a company, as the API shows it. The storage name never leaves the server.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StoredDocument {
@@ -5545,6 +7948,326 @@ pub struct StoredDocument {
     /// The mail the file came from, when it came from the invoice inbox; null for an upload.
     pub origin: Option<InboxOrigin>,
     pub created_at: String,
+    /// When the file was deleted, or null. A deleted file keeps its hash, size, kind and dates; its name is empty and its bytes are gone (the content answers 410 `document_deleted`).
+    pub deleted_at: Option<String>,
+}
+
+/// A stored file of a company, with whether it can be deleted.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StoredDocumentDetail {
+    /// The sqid of the file.
+    pub id: String,
+    pub kind: BooksDocumentKindEnum,
+    pub name: String,
+    pub content_type: String,
+    pub size_bytes: i64,
+    pub sha256: String,
+    pub received_on: Option<String>,
+    /// The ULID of the document in the books.
+    pub core_document_id: Option<String>,
+    /// The core ULIDs of the bank transactions this file explains.
+    pub bank_transaction_ids: Vec<String>,
+    /// The sqid of the user who uploaded the file.
+    pub uploaded_by: Option<String>,
+    /// The mail the file came from, when it came from the invoice inbox; null for an upload.
+    pub origin: Option<InboxOrigin>,
+    pub created_at: String,
+    /// When the file was deleted, or null. A deleted file keeps its hash, size, kind and dates; its name is empty and its bytes are gone (the content answers 410 `document_deleted`).
+    pub deleted_at: Option<String>,
+    /// Whether the file can be deleted now (`POST .../delete/`), and what stops it.
+    pub deletion: Deletion,
+}
+
+/// A submission and its review: the client reads its status, and the reason of a refusal.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Submission {
+    pub id: String,
+    pub kind: EmployeeSubmissionKindEnum,
+    pub status: EmployeeSubmissionStatusEnum,
+    pub event_date: String,
+    /// The employee of the submission.
+    pub employee_id: String,
+    /// The name of the employee.
+    pub employee_name: String,
+    pub employment_id: String,
+    /// The submitted values by field name. Never a personal code.
+    pub data: serde_json::Value,
+    /// The words of the codes in `data.employment`.
+    pub names: SubmissionNames,
+    pub submitted_at: String,
+    pub submitted_by_staff: bool,
+    pub reviewed_at: Option<String>,
+    /// Why staff rejected it.
+    pub review_reason: String,
+    /// TÖR's id of the employment, once registered.
+    pub toot_id: Option<i64>,
+    /// The messages of TÖR on a refused event.
+    pub tor_messages: Vec<TorMessage>,
+    /// Why the last send to TÖR did not finish; empty when it did.
+    pub tor_error_code: String,
+    pub registered_at: Option<String>,
+}
+
+/// The words of the codes in `data.employment`, for a person to read.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SubmissionNames {
+    /// The name of `data.employment.occupation_code` in the classifier of Statistics Estonia, in the language of the answer; empty when there is no code or the classifier lacks it.
+    pub occupation_name: String,
+    /// The full address of `data.employment.workplace_address_id`: the submitted text, else the text the employment holds for the same id; empty when unknown.
+    pub workplace_address: String,
+}
+
+/// A new employee, a new employment, a change, a suspension or an end, for staff to review.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SubmissionRequestRequest {
+    pub kind: EmployeeSubmissionKindEnum,
+    /// A new employment: the employee.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employee_id: Option<String>,
+    /// A change, a suspension, an end: the employment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employment_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employee: Option<EmployeeInputRequest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employment: Option<EmploymentInputRequest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suspension: Option<SuspensionInputRequest>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end: Option<EndInputRequest>,
+    /// A change: the day it applies from. Default today.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub event_date: Option<String>,
+}
+
+impl SubmissionRequestRequest {
+    /// A value with the required fields, and every other field unset.
+    pub fn new(kind: impl Into<EmployeeSubmissionKindEnum>) -> Self {
+        Self {
+            kind: kind.into(),
+            employee_id: None,
+            employment_id: None,
+            employee: None,
+            employment: None,
+            suspension: None,
+            end: None,
+            event_date: None,
+        }
+    }
+}
+
+/// One suspension of an employment, as TÖR holds it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Suspension {
+    pub suspension_id: Option<i64>,
+    pub start: Option<String>,
+    pub end: Option<String>,
+    pub reason_code: String,
+    pub reason_name: String,
+}
+
+/// A suspension of an employment.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SuspensionInputRequest {
+    pub start_date: String,
+    /// The suspension reason code of TÖR.
+    pub reason_code: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_date: Option<String>,
+    /// When an existing suspension is changed: its first day as TÖR holds it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_start_date: Option<String>,
+}
+
+impl SuspensionInputRequest {
+    /// A value with the required fields, and every other field unset.
+    pub fn new(start_date: impl Into<String>, reason_code: i64) -> Self {
+        Self {
+            start_date: start_date.into(),
+            reason_code,
+            end_date: None,
+            first_start_date: None,
+        }
+    }
+}
+
+/// * `never` - Never refreshed
+/// * `ok` - OK
+/// * `rights_missing` - Rights missing
+/// * `failed` - Failed
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum TaxAccountAccessStatusEnum {
+    /// `never`
+    #[serde(rename = "never")]
+    Never,
+    /// `ok`
+    #[serde(rename = "ok")]
+    Ok,
+    /// `rights_missing`
+    #[serde(rename = "rights_missing")]
+    RightsMissing,
+    /// `failed`
+    #[serde(rename = "failed")]
+    Failed,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl TaxAccountAccessStatusEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Never => "never",
+            Self::Ok => "ok",
+            Self::RightsMissing => "rights_missing",
+            Self::Failed => "failed",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for TaxAccountAccessStatusEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "never" => Self::Never,
+            "ok" => Self::Ok,
+            "rights_missing" => Self::RightsMissing,
+            "failed" => Self::Failed,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for TaxAccountAccessStatusEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for TaxAccountAccessStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// The tax account of the company at EMTA, from the stored copy of the last successful refresh.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TaxAccountBalance {
+    /// How the last refresh went: `ok`; `rights_missing`, the company has not granted `ACCOUNTING_XROAD` to OscarAI in e-MTA; `failed`; `never`, no refresh yet.
+    ///
+    /// * `never` - Never refreshed
+    /// * `ok` - OK
+    /// * `rights_missing` - Rights missing
+    /// * `failed` - Failed
+    pub access_status: TaxAccountAccessStatusEnum,
+    /// The code of the last failure; empty when ok.
+    pub access_error_code: String,
+    pub last_attempt_at: Option<String>,
+    pub last_success_at: Option<String>,
+    /// When the stored copy was read from EMTA; null before the first read.
+    pub as_of: Option<String>,
+    /// The day of the balance at EMTA.
+    pub request_date: Option<String>,
+    /// The balance of the claims. Above zero: the company owes it.
+    pub total: Option<String>,
+    /// The interest on the taxes not paid in time.
+    pub interest: Option<String>,
+    /// The balance of the prepayment account (E).
+    pub prepayment_balance: Option<String>,
+    /// The balance of each account by its EMTA code (E: the prepayment account).
+    pub account_balances: BTreeMap<String, String>,
+    pub claims: Vec<TaxAccountClaim>,
+    pub notices: Vec<TaxAccountNotice>,
+    /// A refresh is queued or running.
+    pub refresh_pending: bool,
+}
+
+/// One open claim of the tax account (`balanceOfClaimTypes`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TaxAccountClaim {
+    /// EMTA's claim type, for example `KM` (VAT).
+    pub claim_type_code: String,
+    pub tax_period_code: String,
+    pub document_nr: String,
+    /// `KMD` or `TSD`, as EMTA names it.
+    pub document_type_code: String,
+    pub claim_identifier: String,
+    /// The balance of the claim. Above zero: the company owes it.
+    pub balance: Option<String>,
+    pub tax_period_end: Option<String>,
+    /// The due date, from the stored movements of the claim; null when unknown.
+    pub due_date: Option<String>,
+}
+
+/// A notice for the client: a tax debt, or a claim due within 7 days.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TaxAccountNotice {
+    pub kind: TaxAccountNoticeKindEnum,
+    pub amount: String,
+    pub due_date: Option<String>,
+    /// Empty for a debt.
+    pub claim_type_code: String,
+    pub tax_period_code: String,
+    pub document_nr: String,
+}
+
+/// * `debt` - Debt
+/// * `claim_due_soon` - Claim due soon
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum TaxAccountNoticeKindEnum {
+    /// `debt`
+    #[serde(rename = "debt")]
+    Debt,
+    /// `claim_due_soon`
+    #[serde(rename = "claim_due_soon")]
+    ClaimDueSoon,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl TaxAccountNoticeKindEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Debt => "debt",
+            Self::ClaimDueSoon => "claim_due_soon",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for TaxAccountNoticeKindEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "debt" => Self::Debt,
+            "claim_due_soon" => Self::ClaimDueSoon,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for TaxAccountNoticeKindEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for TaxAccountNoticeKindEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// A message of TÖR on a refused event, personal codes masked.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TorMessage {
+    /// `E` an error, `W` a warning.
+    pub r#type: String,
+    pub field: String,
+    pub code: String,
+    pub description: String,
 }
 
 /// * `simple` - Simple
@@ -5644,6 +8367,114 @@ impl From<String> for VatStatusEnum {
 }
 
 impl fmt::Display for VatStatusEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `document_withdrawn` - document_withdrawn
+/// * `document_legal_hold` - document_legal_hold
+/// * `document_in_use` - document_in_use
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum WithdrawBlockedByEnum {
+    /// `document_withdrawn`
+    #[serde(rename = "document_withdrawn")]
+    DocumentWithdrawn,
+    /// `document_legal_hold`
+    #[serde(rename = "document_legal_hold")]
+    DocumentLegalHold,
+    /// `document_in_use`
+    #[serde(rename = "document_in_use")]
+    DocumentInUse,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl WithdrawBlockedByEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::DocumentWithdrawn => "document_withdrawn",
+            Self::DocumentLegalHold => "document_legal_hold",
+            Self::DocumentInUse => "document_in_use",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for WithdrawBlockedByEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "document_withdrawn" => Self::DocumentWithdrawn,
+            "document_legal_hold" => Self::DocumentLegalHold,
+            "document_in_use" => Self::DocumentInUse,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for WithdrawBlockedByEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for WithdrawBlockedByEnum {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// * `any` - any
+/// * `human_with_reason` - human_with_reason
+/// * `no` - no
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum WithdrawableEnum {
+    /// `any`
+    #[serde(rename = "any")]
+    Any,
+    /// `human_with_reason`
+    #[serde(rename = "human_with_reason")]
+    HumanWithReason,
+    /// `no`
+    #[serde(rename = "no")]
+    No,
+    /// A value this version of the client does not know.
+    #[serde(untagged)]
+    UnknownValue(String),
+}
+
+impl WithdrawableEnum {
+    /// The value as it goes on the wire.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Any => "any",
+            Self::HumanWithReason => "human_with_reason",
+            Self::No => "no",
+            Self::UnknownValue(value) => value,
+        }
+    }
+}
+
+impl From<&str> for WithdrawableEnum {
+    fn from(value: &str) -> Self {
+        match value {
+            "any" => Self::Any,
+            "human_with_reason" => Self::HumanWithReason,
+            "no" => Self::No,
+            other => Self::UnknownValue(other.to_owned()),
+        }
+    }
+}
+
+impl From<String> for WithdrawableEnum {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
+    }
+}
+
+impl fmt::Display for WithdrawableEnum {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
